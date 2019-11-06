@@ -40,6 +40,8 @@ npm-debug.log
 yarn-error.log
 testem.log
 /typings
+
+#npm node modules
 node_modules
 
 # System Files
