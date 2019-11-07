@@ -34,7 +34,7 @@
               "src/assets/js/input-helper.js",
               "src/assets/js/gamepad-test.js",
               "src/assets/js/hb-editor-main.js",
-              "src/heartbeat/build/heartbeat.js"
+              "node_modules/heartbeat-sequencer/build/heartbeat.js"
             ],
             "es5BrowserSupport": true
           },

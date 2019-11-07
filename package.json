@@ -20,8 +20,12 @@
     "@angular/platform-browser-dynamic": "~8.2.13",
     "@angular/router": "~8.2.13",
     "core-js": "^2.5.4",
+    "heartbeat-sequencer": "0.0.16",
+    "jzz": "^0.9.7",
     "rxjs": "~6.5.3",
     "tslib": "^1.9.0",
+    "webmidi": "^2.5.1",
+    "zone": "^0.3.4",
     "zone.js": "~0.9.1"
   },
   "devDependencies": {

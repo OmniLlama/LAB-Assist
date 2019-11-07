@@ -1,4 +1,21 @@
 // satisfy jslint
+// window.onload = e_OnLoad();
+// function e_OnLoad() {
+window.onload = function () {
+
+  'use strict';
+  edtrHTML = EditorHTML();
+
+  enableGUI(false);
+  addAssetsToSequencer(sequencer);
+  sequencer.addAssetPack({
+    url: '../../../assets/examples/asset_pack_basic.json'
+  },
+    init
+  );
+  // e_OnLoad();
+};
+
 function e_OnLoad() {
   'use strict';
   edtrHTML = EditorHTML();
@@ -11,24 +28,6 @@ function e_OnLoad() {
     init
   );
 }
-// $(function () { alert('Hello, custom js'); });
-// window.onload = e_OnLoad();
-// function e_OnLoad() {
-window.onload = function () {
-
-  'use strict';
-  edtrHTML = EditorHTML();
-
-  enableGUI(false);
-  addAssetsToSequencer(sequencer);
-  sequencer.addAssetPack({
-    url: '/src/assets/audio/asset_pack_basic.json'
-  },
-    init
-  );
-};
-
-
 
 
 function EditorHTML() {
@@ -44,7 +43,8 @@ function EditorHTML() {
 
     sldr_barsPerPage = document.getElementById('scale-slider'),
     lbl_sldr_barsPerPage = document.getElementById('scale-label'),
-    div_Controls = document.getElementById('editor-controls'),
+
+    div_Controls = document.getElementById('controls'),
     div_BarsBeats = document.getElementById('time-bars-beats'),
     div_Seconds = document.getElementById('time-seconds'),
     div_MouseX = document.getElementById('mouse-x'),
@@ -68,10 +68,8 @@ function EditorHTML() {
     allParts = {}, // stores references to all midi parts
     gridHoriMargin = 24,
     gridVertMargin = 24;
-  return this;
 }
 var
-  btn_Play,
   btn_Stop,
   btn_Prev,
   btn_Next,
@@ -131,18 +129,17 @@ var testMethod = 1,
   midiFileList,
   audCntxt,
   padShell;
-var sequencer = window.sequencer;
 var
+  sequencer = window.sequencer,
   console = window.console,
   alert = window.alert,
   requestAnimationFrame = window.requestAnimationFrame;
 
 
 function init() {
-  var
-    // tmp_c = div_Controls.getBoundingClientRect().height,
+  var tmp_c = div_Controls.getBoundingClientRect().height,
     tmp_w = window.innerWidth - (gridHoriMargin * 2),
-    tmp_h = 480 /* - (tmp_c * 2) */,
+    tmp_h = window.innerHeight - (tmp_c * 2),
     tmp_event,
     /**
      * Uncomment one to test different tracks, will add listing function soon
@@ -228,7 +225,6 @@ function init() {
 
   draw();
   render();
-
 }
 
 function initWindowEvents() {
@@ -251,7 +247,6 @@ function initContextEvents() {
   song.addEventListener('play', function () { setElementValue(btn_Play, 'pause'); });
   song.addEventListener('pause', function () { setElementValue(btn_Play, 'play'); });
   song.addEventListener('stop', function () { setElementValue(btn_Play, 'play'); });
-
   div_Editor.addEventListener('mousedown', function () {
     div_currPart.innerHTML = 'Sel Part: ' + (currPart !== null ? currPart.id : 'none');
     div_currNote.innerHTML = 'Sel Note: ' + (currNote !== null ? currNote.id : 'none');
@@ -263,12 +258,12 @@ function initInputEvents() {
    * Text
    */
   txt_KeyRangeStart.addEventListener('change', function (e) {
-    // song.setPitchRange(txt_KeyRangeStart.value, keyEditor.highestNote);
+    song.setPitchRange(txt_KeyRangeStart.value, keyEditor.highestNote);
     // keyEditor.lowestNote = txt_KeyRangeStart.value;
     song.update();
   });
   txt_KeyRangeEnd.addEventListener('change', function (e) {
-    // song.setPitchRange(keyEditor.lowestNote, txt_KeyRangeEnd.value);
+    song.setPitchRange(keyEditor.lowestNote, txt_KeyRangeEnd.value);
     // keyEditor.highestNote = txt_KeyRangeEnd.value;
     song.update();
   });
@@ -300,7 +295,6 @@ function initInputEvents() {
       currPart = currNote.part;
       return;
     } else if (tmp_className.indexOf('part') !== -1) {
-      // keyEditor.setPlayheadToX(e.pageX);
       currPart = allParts[e.target.id];
       currNote = null;
       return;
@@ -319,17 +313,12 @@ function initInputEvents() {
     if (!audCntxt) {
       audCntxt = new AudioContext();
       audCntxt.resume();
-      if (window.AudioContext && window.AudioContext != audCntxt) {
-        window.AudioContext = audCntxt;
-        console.log('hitting the context startup');
-      }
+      if (window.AudioContext && window.AudioContext != audCntxt) { window.AudioContext = audCntxt; }
     }
   });
   // if you scroll the score by hand you must inform the key editor. necessary for calculating
   // the song position by x coordinate and the pitch by y coordinate
-  div_Editor.addEventListener('scroll', function () {
-    keyEditor.updateScroll(div_Editor.scrollLeft, div_Editor.scrollTop);
-  }, false);
+  div_Editor.addEventListener('scroll', function () { keyEditor.updateScroll(div_Editor.scrollLeft, div_Editor.scrollTop); }, false);
   /**
    * Score Mouse Movement Tracker
    */
@@ -348,7 +337,7 @@ function initInputEvents() {
       mouseY = tmp_y;
       mouseBarPos = tmp_pos.barsAsString;
       div_MouseX.innerHTML = 'x ' + mouseBarPos;
-      mousePitchPos = keyEditor.getPitchAt(tmp_y - div_Score.offsetTop).number;
+      mousePitchPos = keyEditor.getPitchAt(tmp_y).number;
       div_MouseY.innerHTML = 'y ' + mousePitchPos;
 
       // move part or note if selected
@@ -356,7 +345,7 @@ function initInputEvents() {
         keyEditor.movePart(tmp_x, tmp_y);
       }
       if (tmp_note !== undefined) {
-        keyEditor.moveNote(tmp_x, tmp_y - div_Score.offsetTop);
+        keyEditor.moveNote(tmp_x, tmp_y);
       }
     },
     false
@@ -446,18 +435,10 @@ function draw() {
 
   div_Score.style.width = keyEditor.width + 'px';
 
-  while (keyEditor.horizontalLine.hasNext('chromatic')) {
-    drawHorizontalLine(keyEditor.horizontalLine.next('chromatic'));
-  }
-  while (keyEditor.verticalLine.hasNext('sixteenth')) {
-    drawVerticalLine(keyEditor.verticalLine.next('sixteenth'));
-  }
-  while (keyEditor.noteIterator.hasNext()) {
-    drawNote(keyEditor.noteIterator.next());
-  }
-  while (keyEditor.partIterator.hasNext()) {
-    drawPart(keyEditor.partIterator.next());
-  }
+  while (keyEditor.horizontalLine.hasNext('chromatic')) { drawHorizontalLine(keyEditor.horizontalLine.next('chromatic')); }
+  while (keyEditor.verticalLine.hasNext('sixteenth')) { drawVerticalLine(keyEditor.verticalLine.next('sixteenth')); }
+  while (keyEditor.noteIterator.hasNext()) { drawNote(keyEditor.noteIterator.next()); }
+  while (keyEditor.partIterator.hasNext()) { drawPart(keyEditor.partIterator.next()); }
 }
 
 function drawHorizontalLine(ref_data) {
@@ -635,7 +616,7 @@ function updateElement(element, bbox) {
 function resize() {
   var c = div_Controls.getBoundingClientRect().height,
     w = window.innerWidth,
-    h = /* window.innerHeight  */ 480/*  - c */;
+    h = window.innerHeight - c;
 
   // tell the key editor that the viewport has canged, necessary for auto scroll during playback
   keyEditor.setViewport(w, h);
@@ -657,16 +638,16 @@ function enableGUI(flag) {
 
 function addAssetsToSequencer(ref_seq) {
   ref_seq.addMidiFile({
-    url: '../../assets/midi/minute_waltz.mid'
+    url: '../../../assets/midi/minute_waltz.mid'
   });
   ref_seq.addMidiFile({
-    url: '../../assets/midi/chpn_op66.mid'
+    url: '../../../assets/midi/chpn_op66.mid'
   });
   ref_seq.addMidiFile({
-    url: '../../assets/midi/Queen - Bohemian Rhapsody.mid'
+    url: '../../../assets/midi/Queen - Bohemian Rhapsody.mid'
   });
   ref_seq.addMidiFile({
-    url: '../../assets/midi/test.mid'
+    url: '../../../assets/midi/test.mid'
   });
 }
 
@@ -802,7 +783,7 @@ function addRandomPartAtMouse() {
     tmp_ticks = 0, //startPositions[getRandom(0, 4, true)],
     tmp_numNotes = 2,
     tmp_spread = 1,
-    tmp_basePitch = keyEditor.getPitchAt(mouseY - div_Score.offsetTop).number,
+    tmp_basePitch = keyEditor.getPitchAt(mouseY).number,
     tmp_part = sequencer.createPart(),
     tmp_events = [],
     tmp_noteLength = song.ppq / 2,
@@ -835,7 +816,7 @@ function addRandomPartAtMouse() {
  */
 function createNewNoteInPartAtMouse(tmp_part) {
   // keyEditor.setPlayheadToX(mouseX);
-  var tmp_pitch = keyEditor.getPitchAt(mouseY - div_Score.offsetTop).number,
+  var tmp_pitch = keyEditor.getPitchAt(mouseY).number,
     tmp_velocity = 127,
     tmp_events = [],
     tmp_noteLength = song.ppq / 2;
