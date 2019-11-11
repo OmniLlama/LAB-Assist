@@ -4,6 +4,14 @@ html
   //Heartbeat Editor Grid stuff
     ////I
     //
+  #editor-input-icons
+    float: left
+    position: absolute
+  #editor-input-icon
+  // float: left
+    // position: absolute
+    background-color: #181818
+    // min-width: 48px
 #editor-controls
   float: left
   background-color: #fff
@@ -91,19 +99,19 @@ html
   background-color: #ffc
   background-color: #211E1E
   background-color: #fff
-  float: left
   overflow: auto
-  overflow: hidden
+  float: right
+  // overflow: hidden
 
 #score
   height: 100%
   width: 100%
 
   min-width: 100px
-  background-color: #fcf
+  background-color: #ececec93d
   position: relative
 
-  overflow: hidden
+  // overflow: hidden
 
 #bar-lines, #tick-lines, #sixteenth-lines
   height: 100%
@@ -162,6 +170,14 @@ html
   z-index: 10
   border: 1px solid #00ff00
 
+.note-selected
+  position: absolute
+  background-color: #ff0095
+  border: none
+
+  z-index: 10
+  border: 1px solid #ecafff
+
 .note-active
   background-color: #00ff00
   border: none
@@ -182,7 +198,13 @@ html
 
   z-index: 9
   border: 1px solid #f00
+.part-selected
+  position: absolute
 
+  background-color: rgba(209, 92, 255, 0.5)
+
+  z-index: 9
+  border: 1px solid #b700ff
 .part-active
   background-color: rgba(255, 0, 0, 0.5)
 

@@ -46,6 +46,7 @@ export class InputDisplayComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
+
   }
 
 }

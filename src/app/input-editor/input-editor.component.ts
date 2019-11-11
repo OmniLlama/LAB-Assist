@@ -5,7 +5,31 @@ import { Note, Part } from "heartbeat-sequencer";
   templateUrl: './input-editor.component.html',
   styleUrls: ['./input-editor.component.sass'],
   template: `
+  <div id='editor-input-icons'>
+  <div id='editor-input-icon' height="128">
+    <img src="assets/editor/img/x360/360_Dpad.png" width="64">
+  </div>
+  <div id='editor-input-icon' height="128">
+    <img src="assets/editor/img/x360/360_X.png" width="64">
+  </div>
+  <div id='editor-input-icon' height="128">
+    <img src="assets/editor/img/x360/360_Y.png" width="64">
+  </div>
+  <div id='editor-input-icon' height="128">
+    <img src="assets/editor/img/x360/360_RB.png" width="64">
+  </div>
+  <div id='editor-input-icon' height="128">
+    <img src="assets/editor/img/x360/360_A.png" width="64">
+  </div>
+  <div id='editor-input-icon' height="128">
+    <img src="assets/editor/img/x360/360_B.png" width="64">
+  </div>
+  <div id='editor-input-icon' height="128">
+    <img src="assets/editor/img/x360/360_RT.png" width="64">
+  </div>
+</div>
   <div #edit id='editor'>
+
   <div id='score'>
     <div id='pitch-lines'></div>
     <div id='bar-lines'></div>
@@ -74,9 +98,11 @@ import { Note, Part } from "heartbeat-sequencer";
     </span>
   </span>
   <input type='button' id='add-part' value='add part' />
+  <span class="editor-control">
   <div id='dbg-curr-note'>Sel Note: </div>
   <div id='dbg-curr-part'>Sel Part: </div>
-</div>
+    </span>
+    </div>
   `
 })
 export class InputEditorComponent implements OnInit {

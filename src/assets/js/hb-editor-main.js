@@ -118,7 +118,10 @@ var div_currNote,
   currNote = null,
   div_currPart,
   currPart = null,
-  flattenTracksToSingleTrack = true;
+  flattenTracksToSingleTrack = true,
+  editorHeight = 480,
+  pitchStart = 0,
+  pitchEnd = 80;
 
 var testMethod = 1,
   edtrHTML,
@@ -141,8 +144,10 @@ var
 function init() {
   var
     // tmp_c = div_Controls.getBoundingClientRect().height,
-    tmp_w = window.innerWidth - (gridHoriMargin * 2),
-    tmp_h = 480 /* - (tmp_c * 2) */,
+    tmp_icons_w = 128,
+    tmp_div_icons = document.getElementById('editor-input-icons'),
+    tmp_w = window.innerWidth - tmp_icons_w,
+    tmp_h = editorHeight /* - (tmp_c * 2) */,
     tmp_event,
     /**
      * Uncomment one to test different tracks, will add listing function soon
@@ -154,7 +159,8 @@ function init() {
       // 'minute_waltz';
       'Thing';
   // 'Fail';
-
+  tmp_div_icons.width = tmp_icons_w + 'px';
+  tmp_div_icons.height = tmp_h + 'px';
   div_Editor.style.width = tmp_w + 'px';
   div_Editor.style.height = tmp_h + 'px';
 
@@ -206,8 +212,8 @@ function init() {
     keyListener: true,
     viewportHeight: tmp_h,
     viewportWidth: tmp_w,
-    lowestNote: 40, //default: 21
-    highestNote: 80, //default: 108
+    lowestNote: pitchStart, //default: 21
+    highestNote: pitchEnd, //default: 108
     barsPerPage: 16 //default: 16
   });
   //set editor element values to editor defaults
@@ -274,21 +280,15 @@ function initInputEvents() {
   });
   // listen for scale and draw events, a scale event is fired when you change the number of bars per page
   // a draw event is fired when you change the size of the viewport by resizing the browser window
-  keyEditor.addEventListener('scale draw', function () {
-    draw();
-  });
+  keyEditor.addEventListener('scale draw', function () { draw(); });
 
   // listen for scroll events, the score automatically follows the song positon during playback: as soon as
   // the playhead moves off the right side of the screen, a scroll event is fired
-  keyEditor.addEventListener('scroll', function (data) {
-    div_Editor.scrollLeft = data.x;
-  });
+  keyEditor.addEventListener('scroll', function (data) { div_Editor.scrollLeft = data.x; });
   /**
    * EXPERIMENTAL - Add notes and parts when double clicked in certain contexts
    */
-  div_Score.addEventListener('dblclick', function (e) {
-    e_Grid_lMouDbl(e);
-  });
+  div_Score.addEventListener('dblclick', function (e) { e_Grid_lMouDbl(e); });
   // you can set the playhead at any position by clicking on the score
   /**
    * OR - if element clicked on is a part or note, it sets the current note / part to that element
@@ -296,16 +296,32 @@ function initInputEvents() {
   div_Score.addEventListener('mousedown', function (e) {
     var tmp_className = e.target.className;
     if (tmp_className.indexOf('note') !== -1) {
+      if (currNote !== null)
+        unselectNote(currNote);
       currNote = allNotes[e.target.id];
+      if (currNote !== null)
+        selectNote(currNote);
       currPart = currNote.part;
+      if (currPart !== null)
+        selectPart(currPart);
       return;
     } else if (tmp_className.indexOf('part') !== -1) {
       // keyEditor.setPlayheadToX(e.pageX);
+      if (currPart !== null)
+        unselectPart(currPart);
       currPart = allParts[e.target.id];
+      if (currPart !== null)
+        selectPart(currPart);
+      if (currNote !== null)
+        unselectNote(currNote);
       currNote = null;
       return;
     } else {
+      if (currNote !== null)
+        unselectNote(currNote);
       currNote = null;
+      if (currPart !== null)
+        unselectPart(currPart);
       currPart = null;
       keyEditor.setPlayheadToX(e.pageX);
     }
@@ -370,28 +386,13 @@ function initInputEvents() {
   /**
    * Buttons
    */
-  btn_Play.addEventListener('click', function () {
-    song.pause();
-  });
-  btn_Stop.addEventListener('click', function () {
-    song.stop();
-  });
-  btn_Next.addEventListener('click', function () {
-    keyEditor.scroll('>');
-  });
-  btn_Prev.addEventListener('click', function () {
-    keyEditor.scroll('<');
-  });
-  btn_First.addEventListener('click', function () {
-    keyEditor.scroll('<<');
-  });
-  btn_Last.addEventListener('click', function () {
-    keyEditor.scroll('>>');
-  });
-
-  btn_AddPart.addEventListener('click', function () {
-    addRandomPartAtPlayhead();
-  });
+  btn_Play.addEventListener('click', function () { song.pause(); });
+  btn_Stop.addEventListener('click', function () { song.stop(); });
+  btn_Next.addEventListener('click', function () { keyEditor.scroll('>'); });
+  btn_Prev.addEventListener('click', function () { keyEditor.scroll('<'); });
+  btn_First.addEventListener('click', function () { keyEditor.scroll('<<'); });
+  btn_Last.addEventListener('click', function () { keyEditor.scroll('>>'); });
+  btn_AddPart.addEventListener('click', function () { addRandomPartAtPlayhead(); });
   /**
    * Sliders
    */
@@ -413,10 +414,68 @@ function initInputEvents() {
     }
   });
 }
-
-function setElementValue(ref_elmt, val) {
-  ref_elmt.value = val;
+//#region [rgba(200, 0, 0, 0.1)] Selection Visuals Methods
+function setNoteActiveState(ref_note, ref_div_Note) {
+  ref_div_Note = document.getElementById(ref_note.id);
+  if (ref_note.part.mute === false) {
+    if (ref_note.mute !== true) {
+      if (ref_note.active) {
+        ref_div_Note.className = 'note note-active';
+      } else if (ref_note.active === false) {
+        ref_div_Note.className = 'note';
+      }
+    }
+  }
 }
+
+function selectNote(ref_note) {
+  var tmp_div_Note = document.getElementById(ref_note.id);
+  if (ref_note.part.mute === false) {
+    if (ref_note.mute !== true) {
+      tmp_div_Note.className = 'note note-selected';
+    }
+  }
+}
+function unselectNote(ref_note) {
+  var tmp_div_Note = document.getElementById(ref_note.id);
+  if (ref_note.part.mute === false) {
+    if (ref_note.mute !== true) {
+      if (tmp_div_Note !== null) {
+        tmp_div_Note.className = 'note';
+      }
+    }
+  }
+}
+function setPartActiveState(ref_part, ref_div_Part) {
+  ref_div_Part = document.getElementById(ref_part.id);
+  if (ref_part.mute !== true) {
+    if (ref_part.active) {
+      ref_div_Part.className = 'part part-active';
+    } else if (ref_part.active === false) {
+      ref_div_Part.className = 'part';
+    }
+  }
+}
+function selectPart(ref_part) {
+  var tmp_div_Part = document.getElementById(ref_part.id);
+  if (ref_part.mute === false) {
+    if (ref_part.mute !== true) {
+      tmp_div_Part.className = 'part part-selected';
+    }
+  }
+}
+function unselectPart(ref_part) {
+  var tmp_div_Part = document.getElementById(ref_part.id);
+  if (ref_part.mute === false) {
+    if (ref_part.mute !== true) {
+      if (tmp_div_Part !== null) {
+        tmp_div_Part.className = 'part';
+      }
+    }
+  }
+}
+//#endregion
+function setElementValue(ref_elmt, val) { ref_elmt.value = val; }
 
 function setSliderValues(ref_elmt, val, min, max, step) {
   ref_elmt.min = min;
@@ -446,18 +505,10 @@ function draw() {
 
   div_Score.style.width = keyEditor.width + 'px';
 
-  while (keyEditor.horizontalLine.hasNext('chromatic')) {
-    drawHorizontalLine(keyEditor.horizontalLine.next('chromatic'));
-  }
-  while (keyEditor.verticalLine.hasNext('sixteenth')) {
-    drawVerticalLine(keyEditor.verticalLine.next('sixteenth'));
-  }
-  while (keyEditor.noteIterator.hasNext()) {
-    drawNote(keyEditor.noteIterator.next());
-  }
-  while (keyEditor.partIterator.hasNext()) {
-    drawPart(keyEditor.partIterator.next());
-  }
+  while (keyEditor.horizontalLine.hasNext('chromatic')) { drawHorizontalLine(keyEditor.horizontalLine.next('chromatic')); }
+  while (keyEditor.verticalLine.hasNext('sixteenth')) { drawVerticalLine(keyEditor.verticalLine.next('sixteenth')); }
+  while (keyEditor.noteIterator.hasNext()) { drawNote(keyEditor.noteIterator.next()); }
+  while (keyEditor.partIterator.hasNext()) { drawPart(keyEditor.partIterator.next()); }
 }
 
 function drawHorizontalLine(ref_data) {
@@ -516,59 +567,27 @@ function render() {
     div_Notes.removeChild(document.getElementById(note.id));
   });
 
-  tmp_snapshot.notes.new.forEach(function (note) {
-    drawNote(note);
-  });
-  tmp_snapshot.notes.recorded.forEach(function (note) {
-    drawNote(note);
-  });
-  tmp_snapshot.notes.recording.forEach(function (note) {
-    updateElement(divs_AllNotes[note.id], note.bbox);
-  });
+  tmp_snapshot.notes.new.forEach(function (note) { drawNote(note); });
+  tmp_snapshot.notes.recorded.forEach(function (note) { drawNote(note); });
+  tmp_snapshot.notes.recording.forEach(function (note) { updateElement(divs_AllNotes[note.id], note.bbox); });
   // events.changed, notes.changed, parts.changed contain elements that have been moved or transposed
-  tmp_snapshot.notes.changed.forEach(function (note) {
-    updateElement(divs_AllNotes[note.id], note.bbox, 0);
-  });
+  tmp_snapshot.notes.changed.forEach(function (note) { updateElement(divs_AllNotes[note.id], note.bbox, 0); });
 
   // stateChanged arrays contain elements that have become active or inactive
-  tmp_snapshot.notes.stateChanged.forEach(function (note) {
-    tmp_div_Note = document.getElementById(note.id);
-    if (note.part.mute === false) {
-      if (note.mute !== true) {
-        if (note.active) {
-          tmp_div_Note.className = 'note note-active';
-        } else if (note.active === false) {
-          tmp_div_Note.className = 'note';
-        }
-      }
-    }
-  });
+  tmp_snapshot.notes.stateChanged.forEach(function (note) { setNoteActiveState(note, tmp_div_Note); });
 
   tmp_snapshot.parts.removed.forEach(function (part) {
     divs_AllParts[part.id].removeEventListener('mousedown', e_Part_lMouDown);
     div_Parts.removeChild(document.getElementById(part.id));
   });
 
-  tmp_snapshot.parts.new.forEach(function (part) {
-    drawPart(part);
-  });
+  tmp_snapshot.parts.new.forEach(function (part) { drawPart(part); });
 
   // events.changed, notes.changed, parts.changed contain elements that have been moved or transposed
-  tmp_snapshot.parts.changed.forEach(function (part) {
-    updateElement(divs_AllParts[part.id], part.bbox, 0);
-  });
+  tmp_snapshot.parts.changed.forEach(function (part) { updateElement(divs_AllParts[part.id], part.bbox, 0); });
 
   // stateChanged arrays contain elements that have become active or inactive
-  tmp_snapshot.parts.stateChanged.forEach(function (part) {
-    tmp_div_Part = document.getElementById(part.id);
-    if (part.mute !== true) {
-      if (part.active) {
-        tmp_div_Part.className = 'part part-active';
-      } else if (part.active === false) {
-        tmp_div_Part.className = 'part';
-      }
-    }
-  });
+  tmp_snapshot.parts.stateChanged.forEach(function (part) { setPartActiveState(part, tmp_div_Part); });
 
   if (tmp_snapshot.hasNewBars) {
     // set the new width of the score
@@ -633,14 +652,19 @@ function updateElement(element, bbox) {
 }
 
 function resize() {
-  var c = div_Controls.getBoundingClientRect().height,
-    w = window.innerWidth,
-    h = /* window.innerHeight  */ 480/*  - c */;
+  var
+    tmp_icons_w = 128,
+    tmp_div_icons = document.getElementById('editor-input-icons'),
+    tmp_c = div_Controls.getBoundingClientRect().height,
+    tmp_w = window.innerWidth - tmp_icons_w,
+    tmp_h = /* window.innerHeight  */ 480/*  - c */;
 
   // tell the key editor that the viewport has canged, necessary for auto scroll during playback
-  keyEditor.setViewport(w, h);
-  div_Editor.style.width = w + 'px';
-  div_Editor.style.height = h + 'px';
+  keyEditor.setViewport(tmp_w, tmp_h);
+  tmp_div_icons.width = tmp_icons_w + 'px';
+  tmp_div_icons.height = tmp_h + 'px';
+  div_Editor.style.width = tmp_w + 'px';
+  div_Editor.style.height = tmp_h + 'px';
 }
 //#endregion
 function enableGUI(flag) {
@@ -656,18 +680,10 @@ function enableGUI(flag) {
 }
 
 function addAssetsToSequencer(ref_seq) {
-  ref_seq.addMidiFile({
-    url: '../../assets/midi/minute_waltz.mid'
-  });
-  ref_seq.addMidiFile({
-    url: '../../assets/midi/chpn_op66.mid'
-  });
-  ref_seq.addMidiFile({
-    url: '../../assets/midi/Queen - Bohemian Rhapsody.mid'
-  });
-  ref_seq.addMidiFile({
-    url: '../../assets/midi/test.mid'
-  });
+  ref_seq.addMidiFile({ url: '../../assets/midi/test.mid' });
+  ref_seq.addMidiFile({ url: '../../assets/midi/minute_waltz.mid' });
+  ref_seq.addMidiFile({ url: '../../assets/midi/chpn_op66.mid' });
+  ref_seq.addMidiFile({ url: '../../assets/midi/Queen - Bohemian Rhapsody.mid' });
 }
 
 
