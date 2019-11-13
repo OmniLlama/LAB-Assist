@@ -11,21 +11,19 @@ function e_OnLoad() {
     init
   );
 }
-// $(function () { alert('Hello, custom js'); });
-// window.onload = e_OnLoad();
-// function e_OnLoad() {
 window.onload = function () {
 
-  'use strict';
-  edtrHTML = EditorHTML();
+  // 'use strict';
+  // edtrHTML = EditorHTML();
 
-  enableGUI(false);
-  addAssetsToSequencer(sequencer);
-  sequencer.addAssetPack({
-    url: '/src/assets/audio/asset_pack_basic.json'
-  },
-    init
-  );
+  // enableGUI(false);
+  // addAssetsToSequencer(sequencer);
+  // sequencer.addAssetPack({
+  //   url: '/src/assets/audio/asset_pack_basic.json'
+  // },
+  //   init
+  // );
+  this.e_OnLoad();
 };
 
 
@@ -292,42 +290,7 @@ function initInputEvents() {
   /**
    * OR - if element clicked on is a part or note, it sets the current note / part to that element
    */
-  div_Score.addEventListener('mousedown', function (e) {
-    var tmp_className = e.target.className;
-    if (tmp_className.indexOf('note') !== -1) {
-      if (currNote !== null)
-        unselectNote(currNote);
-      currNote = allNotes[e.target.id];
-      if (currNote !== null)
-        selectNote(currNote);
-      currPart = currNote.part;
-      if (currPart !== null)
-        selectPart(currPart);
-      return;
-    } else if (tmp_className.indexOf('part') !== -1) {
-      // keyEditor.setPlayheadToX(e.pageX);
-      if (currPart !== null)
-        unselectPart(currPart);
-      currPart = allParts[e.target.id];
-      if (currPart !== null)
-        selectPart(currPart);
-      if (currNote !== null)
-        unselectNote(currNote);
-      currNote = null;
-      return;
-    } else {
-      if (currNote !== null)
-        unselectNote(currNote);
-      currNote = null;
-      if (currPart !== null)
-        unselectPart(currPart);
-      currPart = null;
-      // keyEditor.setPlayheadToX(e.pageX);
-      keyEditor.setPlayheadToX(e.screenX);
-    }
-    // you could also use:
-    //song.setPlayhead('ticks', keyEditor.xToTicks(e.pageX));
-  });
+  div_Score.addEventListener('mousedown', function (e) { e_Generic_lMouDown(e); });
   /**
    * AUDIO CONTEXT CHECKER EVENT
    */
@@ -412,9 +375,11 @@ function initInputEvents() {
     if (e.key == "Backspace") { song.stop(); }
     if (e.key == " ") { song.pause(); }
     if (e.key == "Delete") { }
+    if (e.key == "ArrowRight") { keyEditor.setPlayheadToX(keyEditor.getPlayheadX() + slct_Snap.options[slct_Snap.selectedIndex].value); }
+    // if (e.key == "ArrowLeft") { keyEditor.scrollLeft -= 10; }
   });
 }
-//#region [rgba(200, 0, 0, 0.1)] Selection Visuals Methods
+//#region [rgba(200, 0, 0, 0.05)] Selection Visuals Methods
 function setNoteActiveState(ref_note, ref_div_Note) {
   ref_div_Note = document.getElementById(ref_note.id);
   if (ref_note.part.mute === false) {
@@ -598,15 +563,11 @@ function render() {
 
     // reset the index of the iterator because we're starting from 0 again
     keyEditor.horizontalLine.reset();
-    while (keyEditor.horizontalLine.hasNext('chromatic')) {
-      drawHorizontalLine(keyEditor.horizontalLine.next('chromatic'));
-    }
+    while (keyEditor.horizontalLine.hasNext('chromatic')) { drawHorizontalLine(keyEditor.horizontalLine.next('chromatic')); }
 
     // the index of the vertical line iterator has already been set to the right index by the key editor
     // so only the extra barlines will be drawn
-    while (keyEditor.verticalLine.hasNext('sixteenth')) {
-      drawVerticalLine(keyEditor.verticalLine.next('sixteenth'));
-    }
+    while (keyEditor.verticalLine.hasNext('sixteenth')) { drawVerticalLine(keyEditor.verticalLine.next('sixteenth')); }
   }
   requestAnimationFrame(render);
 }
@@ -636,8 +597,8 @@ function drawNote(ref_note) {
   allNotes[ref_note.id] = ref_note;
   divs_AllNotes[ref_note.id] = tmp_div_Note;
   tmp_div_Note.addEventListener('mousedown', e_Note_lMouDown, false);
-  tmp_div_Note_leftEdge.addEventListener('mouseover', function (e) { e_NoteEdge_MouOver(e); });
-  tmp_div_Note_rightEdge.addEventListener('mouseover', function (e) { e_NoteEdge_MouOver(e); });
+  tmp_div_Note_leftEdge.addEventListener('mouseover', function (e) { e_lNoteEdge_MouOver(e); });
+  tmp_div_Note_rightEdge.addEventListener('mouseover', function (e) { e_lNoteEdge_MouOver(e); });
   tmp_div_Note_rightEdge.addEventListener('mousedown', function (e) { e_rNoteEdge_lMouDown(e); });
 
   tmp_div_Note.append(tmp_div_Note_leftEdge);
@@ -746,8 +707,11 @@ function e_Note_lMouUp(e) {
   keyEditor.stopMoveNote();
   document.removeEventListener('mouseup', e_Note_lMouUp);
 }
-function e_NoteEdge_MouOver(e) {
-  e.target.style.cursor = 'ew-resize';
+function e_lNoteEdge_MouOver(e) {
+  e.target.style.cursor = 'w-resize';
+}
+function e_rNoteEdge_MouOver(e) {
+  e.target.style.cursor = 'e-resize';
 }
 function e_lNoteEdge_lMouDown(e) {
   e.target.style.cursor = 'w-resize';
@@ -763,10 +727,10 @@ function e_rNoteEdge_lMouDown(e) {
     sequencer.createMidiEvent(tmp_note_old.noteOn.ticks, sequencer.NOTE_ON, tmp_note_old.pitch, tmp_note_old.velocity),
     sequencer.createMidiEvent(tmp_ticks, sequencer.NOTE_OFF, tmp_note_old.pitch, 0)]);
   song.update();
-document.addEventListener('mouseup', e_rNoteEdge_lMouUp);
+  document.addEventListener('mouseup', e_rNoteEdge_lMouUp);
 }
 function e_rNoteEdge_lMouUp(e) {
-document.removeEventListener('mouseup', e_rNoteEdge_lMouUp);
+  document.removeEventListener('mouseup', e_rNoteEdge_lMouUp);
 }
 function e_Grid_lMouDown(e) { }
 

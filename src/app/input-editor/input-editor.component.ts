@@ -1,5 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { Note, Part, MIDINote } from "heartbeat-sequencer";
+import { Note, Part, MIDINote, Track, getMidiFiles, createSong, Instrument, Song } from "heartbeat-sequencer";
+// import { hbEditorMain } from '../../assets/js/hb-editor-main';
+declare var sequencer: any;
 @Component({
   selector: 'app-input-editor',
   templateUrl: './input-editor.component.html',
@@ -106,17 +108,130 @@ import { Note, Part, MIDINote } from "heartbeat-sequencer";
   `
 })
 export class InputEditorComponent implements OnInit {
+  testMethod = 1;
+  edtrHTML;
+  midiFile;
+  keyEditor;
+  instruments;
+  div_midiFileList;
+  midiFileList;
+  audCntxt;
+  padShell;
   editShell: EditorHTMLShell;
+  editInfo: EditorInfo;
+  track: Track;
+  tracks: Track[];
+  song: Song;
+  static init() {
+
+  }
   constructor() {
   }
   ngOnInit() {
     // console.log(this.editShell);
   }
   ngAfterViewInit(): void {
-    this.editShell = new EditorHTMLShell();
+    this.editInfo = new EditorInfo();
     console.log("Finished creating editor shell");
-
+    // this.song = this.initSong();
   }
+
+  initSong(): Song {
+    /**
+  * Uncomment one to test different tracks, will add listing function soon
+  */
+    const tmp_midiFileName =
+      'Blank Test';
+    // 'Fantasie Impromptu';
+    // 'Queen - Bohemian Rhapsody';
+    // 'minute_waltz';
+    // 'Thing';
+    // 'Fail';
+    let tmp_midiFiles = sequencer.getMidiFiles();
+    let tmp_midiFile = tmp_midiFiles[0];
+    if (!tmp_midiFile) {
+      console.error("MIDI file name string invalid, defaulting to blank score...");
+      tmp_midiFile = sequencer.getMidiFiles()[0];
+    }
+    let song: Song;
+    switch (this.testMethod) {
+      case 1:
+        // method 1: create a song directly from the midi file, this way the midi file is treated as a config object
+        song = sequencer.createSong(tmp_midiFile);
+        song.useMetronome = true;
+        this.track = song.tracks[0];
+        break;
+
+      case 2:
+        // method 2: copy over some parts of the midi to a config object
+        song = sequencer.createSong({
+          bpm: 80, // original tempo is 125 bpm
+          nominator: tmp_midiFile.nominator,
+          denominator: tmp_midiFile.denominator,
+          timeEvents: tmp_midiFile.timeEvents,
+          tracks: tmp_midiFile.tracks,
+          useMetronome: true
+        });
+        this.track = song.tracks[0];
+        break;
+      case 3:
+        //method 3: just add base midiFile to a song, and continue
+        song = sequencer.createSong(tmp_midiFile);
+    }
+    return song;
+  }
+
+  addAssetsToSequencer() {
+    sequencer.addMidiFile({ url: '../../assets/midi/test.mid' });
+    sequencer.addMidiFile({ url: '../../assets/midi/minute_waltz.mid' });
+    sequencer.addMidiFile({ url: '../../assets/midi/chpn_op66.mid' });
+    sequencer.addMidiFile({ url: '../../assets/midi/Queen - Bohemian Rhapsody.mid' });
+  }
+  enableGUI(flag) {
+    let tmp_elements = document.querySelectorAll('input, select');
+    let tmp_element;
+    let i;
+    let tmp_maxi = tmp_elements.length;
+
+    for (i = 0; i < tmp_maxi; i++) {
+      tmp_element = tmp_elements[i];
+      tmp_element.disabled = !flag;
+    }
+  }
+  flattenTracks(ref_song: Song) {
+    ref_song.tracks.forEach(
+      (track) => {
+        track.setInstrument('piano');
+        track.monitor = true;
+        track.setMidiInput('all', true);
+      }
+    );
+  }
+  setElementValue(ref_elmt, val: string) { ref_elmt.value = val; }
+
+  setSliderValues(ref_elmt, val: string, min: number, max: number, step: number) {
+    ref_elmt.min = min;
+    ref_elmt.max = max;
+    ref_elmt.step = step;
+    ref_elmt.value = val;
+  }
+
+}
+export class EditorInfo {
+  mouseX: number;
+  mouseBarPos;
+  mouseY: number;
+  mousePitchPos;
+  instruments: Instrument[];
+  currNote = null;
+  currPart = null;
+  pitchStart = 0;
+  pitchEnd = 80;
+  allNotes: Note[];
+  allParts: Part[];
+  flattenTracksToSingleTrack = true;
+  editorHeight = 480;
+  edHTMLShell = new EditorHTMLShell();
 }
 export class EditorHTMLShell {
   btn_Play: HTMLButtonElement;
@@ -137,12 +252,8 @@ export class EditorHTMLShell {
   div_Seconds: HTMLDivElement;
 
   div_MouseX: HTMLDivElement;
-  mouseX: number;
-  mouseBarPos;
-
   div_MouseY: HTMLDivElement;
-  mouseY: number;
-  mousePitchPos;
+
 
   div_currNote: HTMLDivElement;
   div_currPart: HTMLDivElement;
@@ -160,8 +271,8 @@ export class EditorHTMLShell {
   divs_AllNotes: HTMLDivElement[];
   divs_AllParts: HTMLDivElement[];
   slct_Snap: HTMLSelectElement;
-  allNotes: Note[];
-  allParts: Part[];
+
+
   gridHoriMargin: number;
   gridVertMargin: number;
   constructor() {
