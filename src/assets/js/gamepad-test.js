@@ -78,9 +78,15 @@ function updateStatus() {
       var pct = Math.round(val * 100) + "%";
       b.style.backgroundSize = pct + " " + pct;
       if (pressed) {
-        b.className = "button pressed";
+        // If pressed, switches to the pressed version of the button's image
+        let button = nameButton(i)
+        let imageString = `<img src="assets/images/pressed_${button}.png" width=80px height=80px>`
+        b.innerHTML = imageString
       } else {
-        b.className = "button";
+        // If released/not pressed, switches to the regular version of the button's image
+        let button = nameButton(i)
+        let imageString = `<img src="assets/images/${button}.png" width=80px height=80px>`
+        b.innerHTML = imageString;
       }
     }
     /**
@@ -111,7 +117,13 @@ function createButtonIcon(ind, lbl) {
   var e = document.createElement("span");
   e.className = "button";
   //e.id = "b" + i;
-  e.innerHTML = nameButton(ind);
+  //e.innerHTML = nameButton(ind);
+
+  // This allows me to manipulate the element and leave the current CSS styling.
+  // This just adds a span which contains an image of the buttons
+  let button = nameButton(ind)
+  let imageString = `<img src="assets/images/${button}.png" width=80px height=80px>`
+  e.innerHTML = imageString
   // e.innerHTML = i;
   return e;
 }
@@ -138,12 +150,21 @@ function nameButton(i) {
 
     case ButtonNotationType.StreetFighter:
       switch (i) {
-        case 0: return "LK";
-        case 1: return "MK";
-        case 2: return "LP";
-        case 3: return "MP";
-        case 4: return "HP";
-        case 5: return "HK";
+        // case 0: return "RP";
+        // case 1: return "MK";
+        // case 2: return "LP";
+        // case 3: return "MP";
+        // case 4: return "HP";
+        // case 5: return "HK";
+        // default: return i;
+        case 0: return "a";
+        case 1: return "b";
+        case 2: return "x";
+        case 3: return "y";
+        case 4: return "l1";
+        case 5: return "r1";
+        case 6: return "l2";
+        case 7: return "r2";
         default: return i;
       }
 
