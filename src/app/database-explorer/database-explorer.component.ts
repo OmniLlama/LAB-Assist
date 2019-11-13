@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { MIDIFileJSON } from "heartbeat-sequencer";
-// import * as sequencer from 'node_modules/heartbeat-sequencer/build/index';
 
 declare const sequencer: any;
 @Component({

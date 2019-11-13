@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { Note, Part } from "heartbeat-sequencer";
+import { Note, Part, MIDINote } from "heartbeat-sequencer";
 @Component({
   selector: 'app-input-editor',
   templateUrl: './input-editor.component.html',
@@ -117,7 +117,6 @@ export class InputEditorComponent implements OnInit {
     console.log("Finished creating editor shell");
 
   }
-
 }
 export class EditorHTMLShell {
   btn_Play: HTMLButtonElement;
