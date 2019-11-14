@@ -285,12 +285,12 @@ function initInputEvents() {
   /**
    * EXPERIMENTAL - Add notes and parts when double clicked in certain contexts
    */
-  div_Score.addEventListener('dblclick', function (e) { e_Grid_lMouDbl(e); });
+  div_Score.addEventListener('dblclick', function (e) { evt_Grid_lMouDbl(e); });
   // you can set the playhead at any position by clicking on the score
   /**
    * OR - if element clicked on is a part or note, it sets the current note / part to that element
    */
-  div_Score.addEventListener('mousedown', function (e) { e_Generic_lMouDown(e); });
+  div_Score.addEventListener('mousedown', function (e) { evt_Generic_lMouDown(e); });
   /**
    * AUDIO CONTEXT CHECKER EVENT
    */
@@ -382,12 +382,14 @@ function initInputEvents() {
 //#region [rgba(200, 0, 0, 0.05)] Selection Visuals Methods
 function setNoteActiveState(ref_note, ref_div_Note) {
   ref_div_Note = document.getElementById(ref_note.id);
-  if (ref_note.part.mute === false) {
-    if (ref_note.mute !== true) {
-      if (ref_note.active) {
-        ref_div_Note.className = 'note note-active';
-      } else if (ref_note.active === false) {
-        ref_div_Note.className = 'note';
+  if (ref_div_Note !== null) {
+    if (ref_note.part.mute === false) {
+      if (ref_note.mute !== true) {
+        if (ref_note.active) {
+          ref_div_Note.className = 'note note-active';
+        } else if (ref_note.active === false) {
+          ref_div_Note.className = 'note';
+        }
       }
     }
   }
@@ -395,9 +397,11 @@ function setNoteActiveState(ref_note, ref_div_Note) {
 
 function selectNote(ref_note) {
   var tmp_div_Note = document.getElementById(ref_note.id);
-  if (ref_note.part.mute === false) {
-    if (ref_note.mute !== true) {
-      tmp_div_Note.className = 'note note-selected';
+  if (tmp_div_Note !== null) {
+    if (ref_note.part.mute === false) {
+      if (ref_note.mute !== true) {
+        tmp_div_Note.className = 'note note-selected';
+      }
     }
   }
 }
@@ -469,14 +473,14 @@ function draw() {
   keyEditor.partIterator.reset();
 
   div_Score.style.width = keyEditor.width + 'px';
-
-  while (keyEditor.horizontalLine.hasNext('chromatic')) { drawHorizontalLine(keyEditor.horizontalLine.next('chromatic')); }
+  var i = 0;
+  while (keyEditor.horizontalLine.hasNext('chromatic')) { drawHorizontalLine(keyEditor.horizontalLine.next('chromatic'), i); i++; }
   while (keyEditor.verticalLine.hasNext('sixteenth')) { drawVerticalLine(keyEditor.verticalLine.next('sixteenth')); }
   while (keyEditor.noteIterator.hasNext()) { drawNote(keyEditor.noteIterator.next()); }
   while (keyEditor.partIterator.hasNext()) { drawPart(keyEditor.partIterator.next()); }
 }
 
-function drawHorizontalLine(ref_data) {
+function drawHorizontalLine(ref_data, i) {
   var tmp_div_HLine = document.createElement('div'),
     pitchHeight = keyEditor.pitchHeight;
 
@@ -489,6 +493,7 @@ function drawHorizontalLine(ref_data) {
   tmp_div_HLine.style.height = pitchHeight + 'px';
   tmp_div_HLine.style.top = ref_data.y + 'px';
   tmp_div_HLine.y = ref_data.y;
+  tmp_div_HLine.innerHTML = i;
   div_PitchLines.appendChild(tmp_div_HLine);
 }
 
@@ -515,6 +520,81 @@ function drawVerticalLine(ref_data) {
   }
 }
 
+function drawNote(ref_note) {
+  var tmp_bbox = ref_note.bbox,
+    tmp_bbox_left = subdivBBox(ref_note.bbox, 0.1, 0, 1, 0),
+    tmp_bbox_right = subdivBBox(ref_note.bbox, 0.1, 0.9, 1, 0),
+    tmp_div_Note = document.createElement('div'),
+    tmp_div_Note_leftEdge = document.createElement('div'),
+    tmp_div_Note_rightEdge = document.createElement('div');
+
+  tmp_div_Note.id = ref_note.id;
+  tmp_div_Note.className = 'note';
+
+  tmp_div_Note_leftEdge.id = tmp_div_Note.id;
+  tmp_div_Note_leftEdge.className = 'note-edge';
+
+  tmp_div_Note_rightEdge.id = tmp_div_Note.id;
+  tmp_div_Note_rightEdge.className = 'note-edge';
+
+  updateElementBBox(tmp_div_Note, tmp_bbox);
+  updateElementBBox(tmp_div_Note_leftEdge, tmp_bbox_left);
+  updateElementBBox(tmp_div_Note_rightEdge, tmp_bbox_right);
+
+  // store note and div
+  allNotes[ref_note.id] = ref_note;
+  divs_AllNotes[ref_note.id] = tmp_div_Note;
+  tmp_div_Note.addEventListener('mousedown', evt_Note_lMouDown, false);
+  tmp_div_Note_leftEdge.addEventListener('mouseover', function (e) { evt_lNoteEdge_MouOver(e); });
+  tmp_div_Note_rightEdge.addEventListener('mouseover', function (e) { evt_lNoteEdge_MouOver(e); });
+  tmp_div_Note_rightEdge.addEventListener('mousedown', function (e) { evt_rNoteEdge_lMouDown(e); });
+
+  tmp_div_Note.append(tmp_div_Note_leftEdge);
+  tmp_div_Note.append(tmp_div_Note_rightEdge);
+  div_Notes.appendChild(tmp_div_Note);
+}
+
+function drawPart(ref_part) {
+  var tmp_bbox = ref_part.bbox,
+    tmp_div_Part = document.createElement('div');
+
+  tmp_div_Part.id = ref_part.id;
+  tmp_div_Part.className = 'part';
+  tmp_div_Part.style.left = tmp_bbox.left + 'px';
+  tmp_div_Part.style.top = tmp_bbox.top + 'px';
+  tmp_div_Part.style.width = tmp_bbox.width - 1 + 'px';
+  tmp_div_Part.style.height = tmp_bbox.height - 1 + 'px';
+
+  // store part and div
+  allParts[ref_part.id] = ref_part;
+  divs_AllParts[ref_part.id] = tmp_div_Part;
+  tmp_div_Part.addEventListener('mousedown', evt_Part_lMouDown, false);
+  div_Parts.appendChild(tmp_div_Part);
+}
+//Fits element within its bounding box
+function updateElementBBox(element, bbox) {
+  element.style.left = bbox.x + 'px';
+  element.style.top = bbox.y + 'px';
+  element.style.width = bbox.width + 'px';
+  element.style.height = bbox.height + 'px';
+}
+
+function resize() {
+  var
+    tmp_icons_w = 128,
+    tmp_div_icons = document.getElementById('editor-input-icons'),
+    tmp_c = div_Controls.getBoundingClientRect().height,
+    tmp_w = window.innerWidth - tmp_icons_w,
+    tmp_h = /* window.innerHeight  */ 480/*  - c */;
+
+  // tell the key editor that the viewport has canged, necessary for auto scroll during playback
+  keyEditor.setViewport(tmp_w, tmp_h);
+  tmp_div_icons.style.width = tmp_icons_w + 'px';
+  tmp_div_icons.style.height = tmp_h + 'px';
+  div_Editor.style.width = tmp_w + 'px';
+  div_Editor.style.height = tmp_h + 'px';
+}
+
 function render() {
   var tmp_snapshot = keyEditor.getSnapshot('key-editor'),
     tmp_div_Note,
@@ -528,7 +608,7 @@ function render() {
   div_Seconds.innerHTML = song.timeAsString;
 
   tmp_snapshot.notes.removed.forEach(function (note) {
-    divs_AllNotes[note.id].removeEventListener('mousedown', e_Note_lMouDown);
+    divs_AllNotes[note.id].removeEventListener('mousedown', evt_Note_lMouDown);
     div_Notes.removeChild(document.getElementById(note.id));
   });
 
@@ -542,7 +622,7 @@ function render() {
   tmp_snapshot.notes.stateChanged.forEach(function (note) { setNoteActiveState(note, tmp_div_Note); });
 
   tmp_snapshot.parts.removed.forEach(function (part) {
-    divs_AllParts[part.id].removeEventListener('mousedown', e_Part_lMouDown);
+    divs_AllParts[part.id].removeEventListener('mousedown', evt_Part_lMouDown);
     div_Parts.removeChild(document.getElementById(part.id));
   });
 
@@ -572,80 +652,6 @@ function render() {
   requestAnimationFrame(render);
 }
 
-function drawNote(ref_note) {
-  var tmp_bbox = ref_note.bbox,
-    tmp_bbox_left = subdivBBox(ref_note.bbox, 0.1, 0, 1, 0),
-    tmp_bbox_right = subdivBBox(ref_note.bbox, 0.1, 0.9, 1, 0),
-    tmp_div_Note = document.createElement('div'),
-    tmp_div_Note_leftEdge = document.createElement('div'),
-    tmp_div_Note_rightEdge = document.createElement('div');
-
-  tmp_div_Note.id = ref_note.id;
-  tmp_div_Note.className = 'note';
-
-  tmp_div_Note_leftEdge.id = ref_note.id;
-  tmp_div_Note_leftEdge.className = 'note-edge';
-
-  tmp_div_Note_rightEdge.id = ref_note.id;
-  tmp_div_Note_rightEdge.className = 'note-edge';
-
-  updateElementBBox(tmp_div_Note, tmp_bbox, 0);
-  updateElementBBox(tmp_div_Note_leftEdge, tmp_bbox_left, 0);
-  updateElementBBox(tmp_div_Note_rightEdge, tmp_bbox_right, 0);
-
-  // store note and div
-  allNotes[ref_note.id] = ref_note;
-  divs_AllNotes[ref_note.id] = tmp_div_Note;
-  tmp_div_Note.addEventListener('mousedown', e_Note_lMouDown, false);
-  tmp_div_Note_leftEdge.addEventListener('mouseover', function (e) { e_lNoteEdge_MouOver(e); });
-  tmp_div_Note_rightEdge.addEventListener('mouseover', function (e) { e_lNoteEdge_MouOver(e); });
-  tmp_div_Note_rightEdge.addEventListener('mousedown', function (e) { e_rNoteEdge_lMouDown(e); });
-
-  tmp_div_Note.append(tmp_div_Note_leftEdge);
-  tmp_div_Note.append(tmp_div_Note_rightEdge);
-  div_Notes.appendChild(tmp_div_Note);
-}
-
-function drawPart(ref_part) {
-  var tmp_bbox = ref_part.bbox,
-    tmp_div_Part = document.createElement('div');
-
-  tmp_div_Part.id = ref_part.id;
-  tmp_div_Part.className = 'part';
-  tmp_div_Part.style.left = tmp_bbox.left + 'px';
-  tmp_div_Part.style.top = tmp_bbox.top + 'px';
-  tmp_div_Part.style.width = tmp_bbox.width - 1 + 'px';
-  tmp_div_Part.style.height = tmp_bbox.height - 1 + 'px';
-
-  // store part and div
-  allParts[ref_part.id] = ref_part;
-  divs_AllParts[ref_part.id] = tmp_div_Part;
-  tmp_div_Part.addEventListener('mousedown', e_Part_lMouDown, false);
-  div_Parts.appendChild(tmp_div_Part);
-}
-//Fits element within its bounding box
-function updateElementBBox(element, bbox) {
-  element.style.left = bbox.x + 'px';
-  element.style.top = bbox.y + 'px';
-  element.style.width = bbox.width + 'px';
-  element.style.height = bbox.height + 'px';
-}
-
-function resize() {
-  var
-    tmp_icons_w = 128,
-    tmp_div_icons = document.getElementById('editor-input-icons'),
-    tmp_c = div_Controls.getBoundingClientRect().height,
-    tmp_w = window.innerWidth - tmp_icons_w,
-    tmp_h = /* window.innerHeight  */ 480/*  - c */;
-
-  // tell the key editor that the viewport has canged, necessary for auto scroll during playback
-  keyEditor.setViewport(tmp_w, tmp_h);
-  tmp_div_icons.width = tmp_icons_w + 'px';
-  tmp_div_icons.height = tmp_h + 'px';
-  div_Editor.style.width = tmp_w + 'px';
-  div_Editor.style.height = tmp_h + 'px';
-}
 //#endregion
 function enableGUI(flag) {
   var tmp_elements = document.querySelectorAll('input, select'),
@@ -668,9 +674,10 @@ function addAssetsToSequencer(ref_seq) {
   ref_seq.addMidiFile({ url: '../../assets/midi/Queen - Bohemian Rhapsody.mid' });
 }
 
-
+var heldEdge,
+  changingNote;
 //#region [rgba(0,100,0,0.2)] Grid Element Event Functions
-function e_Part_lMouDown(e) {
+function evt_Part_lMouDown(e) {
   var tmp_part = allParts[e.target.id];
   if (e.ctrlKey) {
     keyEditor.removePart(tmp_part);
@@ -682,43 +689,43 @@ function e_Part_lMouDown(e) {
   } else {
     keyEditor.startMovePart(tmp_part, e.pageX, e.pageY); //default values
     // keyEditor.startMovePart(tmp_part, e.clientY, e.clientY);
-    document.addEventListener('mouseup', e_Part_lMouUp, false);
+    document.addEventListener('mouseup', evt_Part_lMouUp, false);
   }
 }
 
-function e_Part_lMouUp(e) {
+function evt_Part_lMouUp(e) {
   keyEditor.stopMovePart();
-  document.removeEventListener('mouseup', e_Part_lMouUp);
+  document.removeEventListener('mouseup', evt_Part_lMouUp);
 }
 
-function e_Note_lMouDown(e) {
+function evt_Note_lMouDown(e) {
   var tmp_note = allNotes[e.target.id];
   if (e.ctrlKey) {
     keyEditor.removeNote(tmp_note);
     currNote = null;
   } else {
     keyEditor.startMoveNote(tmp_note, e.pageX, e.pageY); //default values
-    // keyEditor.startMoveNote(note, e.clientX, e.clientY);
-    document.addEventListener('mouseup', e_Note_lMouUp, false);
+    document.addEventListener('mouseup', evt_Note_lMouUp, false);
   }
 }
 
-function e_Note_lMouUp(e) {
+function evt_Note_lMouUp(e) {
   keyEditor.stopMoveNote();
-  document.removeEventListener('mouseup', e_Note_lMouUp);
+  document.removeEventListener('mouseup', evt_Note_lMouUp);
 }
-function e_lNoteEdge_MouOver(e) {
+function evt_lNoteEdge_MouOver(e) {
   e.target.style.cursor = 'w-resize';
 }
-function e_rNoteEdge_MouOver(e) {
-  e.target.style.cursor = 'e-resize';
+function evt_rNoteEdge_MouOver(e) {
+  heldEdge =
+    e.target.style.cursor = 'e-resize';
 }
-function e_lNoteEdge_lMouDown(e) {
+function evt_lNoteEdge_lMouDown(e) {
   e.target.style.cursor = 'w-resize';
   var tmp_note = keyEditor.getNoteAt(e.pageX, e.pageY);
 
 }
-function e_rNoteEdge_lMouDown(e) {
+function evt_rNoteEdge_lMouDown(e) {
   e.target.style.cursor = 'e-resize';
   var tmp_note_old = allNotes[e.target.id];
   tmp_note_old.part.removeEvents([tmp_note_old.noteOn, tmp_note_old.noteOff]);
@@ -727,18 +734,28 @@ function e_rNoteEdge_lMouDown(e) {
     sequencer.createMidiEvent(tmp_note_old.noteOn.ticks, sequencer.NOTE_ON, tmp_note_old.pitch, tmp_note_old.velocity),
     sequencer.createMidiEvent(tmp_ticks, sequencer.NOTE_OFF, tmp_note_old.pitch, 0)]);
   song.update();
-  document.addEventListener('mouseup', e_rNoteEdge_lMouUp);
+  changingNote = tmp_note_old;
+  heldEdge = e.target;
+  document.addEventListener('mouseup', evt_rNoteEdge_lMouUp);
 }
-function e_rNoteEdge_lMouUp(e) {
-  document.removeEventListener('mouseup', e_rNoteEdge_lMouUp);
+function evt_rNoteEdge_lMouUp(e) {
+  e.target.style.cursor = 'e-resize';
+  // var changingNote = allNotes[e.target.id];
+  changingNote.part.removeEvents([changingNote.noteOn, changingNote.noteOff]);
+  var tmp_ticks = keyEditor.getTicksAt(mouseX - div_Score.offsetLeft);
+  changingNote.part.addEvents([
+    sequencer.createMidiEvent(changingNote.noteOn.ticks, sequencer.NOTE_ON, changingNote.pitch, changingNote.velocity),
+    sequencer.createMidiEvent(tmp_ticks, sequencer.NOTE_OFF, changingNote.pitch, 0)]);
+  song.update();
+  document.removeEventListener('mouseup', evt_rNoteEdge_lMouUp);
 }
-function e_Grid_lMouDown(e) { }
+function evt_Grid_lMouDown(e) { }
 
-function e_Grid_lMouUp(e) {
+function evt_Grid_lMouUp(e) {
 
 }
 
-function e_Grid_lMouDbl(e) {
+function evt_Grid_lMouDbl(e) {
   var tmp_className = e.target.className;
   /**
    * if double clicking a note
@@ -776,7 +793,7 @@ function e_Grid_lMouDbl(e) {
   }
 
 }
-function e_Generic_lMouDown(e) {
+function evt_Generic_lMouDown(e) {
   var tmp_className = e.target.className;
   if (tmp_className.indexOf('note') !== -1) {
     if (currNote !== null)
@@ -899,7 +916,6 @@ function createNewNoteInPartAtMouse(tmp_part) {
     tmp_velocity = 127,
     tmp_events = [],
     tmp_noteLength = song.ppq/*  / 2 */;
-  // ticks = keyEditor.getTicksAt(mouseX);
   var tmp_ticks = keyEditor.getTicksAt(mouseX),
     tmp_noteOn,
     tmp_noteOff,
@@ -929,7 +945,7 @@ function flattenTracks(ref_song) {
     }
   );
 }
-function subdivBBox(ref_bbox, ref_xRatio, ref_xOffsetRatio, ref_yRatio, ref_yOffsetRatio) {
+function subdivBBox(ref_bbox, ref_xRatio, ref_xOffsetRatio, ref_yRatio, ref_yOffsetRatio/* , ref_minWidth, ref_maxWidth */) {
   var tmp_bbox = {
     left: (ref_bbox.width * ref_xOffsetRatio),
     top: (ref_bbox.height * ref_yOffsetRatio),
@@ -938,6 +954,19 @@ function subdivBBox(ref_bbox, ref_xRatio, ref_xOffsetRatio, ref_yRatio, ref_yOff
   }
   tmp_bbox.x = tmp_bbox.left;
   tmp_bbox.y = tmp_bbox.top;
-  if (tmp_bbox.width < 2) tmp_bbox.width = 2;
+  if (tmp_bbox.width < 1) tmp_bbox.width = 1;
+  return tmp_bbox;
+}
+function subdivBBoxByPixels(ref_bbox, ref_xRatio, ref_xOffsetRatio, ref_yRatio, ref_yOffsetRatio, ref_minWidth, ref_maxWidth) {
+  var tmp_bbox = {
+    left: (ref_bbox.width * ref_xOffsetRatio),
+    top: (ref_bbox.height * ref_yOffsetRatio),
+    width: ref_bbox.width * ref_xRatio,
+    height: ref_bbox.height * ref_yRatio
+  }
+  tmp_bbox.x = tmp_bbox.left;
+  tmp_bbox.y = tmp_bbox.top;
+  if (tmp_bbox.width < ref_minWidth) { tmp_bbox.width = ref_minWidth; }
+  else if (tmp_bbox.width > ref_maxWidth) { tmp_bbox.width = ref_maxWidth; }
   return tmp_bbox;
 }
