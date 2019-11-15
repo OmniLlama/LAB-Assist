@@ -117,8 +117,11 @@ export class InputEditorComponent implements OnInit {
   midiFileList;
   audCntxt;
   padShell;
+
   editShell: EditorHTMLShell;
   editInfo: EditorInfo;
+  pitchStart = 0;
+  pitchEnd = 80;
   track: Track;
   tracks: Track[];
   song: Song;
@@ -215,7 +218,6 @@ export class InputEditorComponent implements OnInit {
     ref_elmt.step = step;
     ref_elmt.value = val;
   }
-
 }
 export class EditorInfo {
   mouseX: number;
