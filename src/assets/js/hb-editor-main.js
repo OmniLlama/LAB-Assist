@@ -18,6 +18,8 @@ function e_OnLoad() {
 
 function EditorHTML() {
   btn_Play = document.getElementById('play'),
+  btn_Record = document.getElementById('record'),
+  btn_Loop = document.getElementById('loop'),
     btn_Stop = document.getElementById('stop'),
     btn_Prev = document.getElementById('prev'),
     btn_Next = document.getElementById('next'),
@@ -57,6 +59,8 @@ function EditorHTML() {
 }
 var
   btn_Play,
+  btn_Record,
+  btn_Loop,
   btn_Stop,
   btn_Prev,
   btn_Next,
@@ -144,6 +148,7 @@ function init() {
 
   initSong();
   instruments = sequencer.getInstruments();
+// song.tracks.forEach(function(track) {track.setMidiInput()})
   //|------------------------------------------------------------------------------------------|
 
 
@@ -343,6 +348,9 @@ function initInputEvents() {
    * Buttons
    */
   btn_Play.addEventListener('click', function () { song.pause(); });
+  btn_Record.addEventListener('click', function () { song.startRecording();});
+  btn_Loop.addEventListener('click', function () { song.loop = !song.loop;});
+
   btn_Stop.addEventListener('click', function () { song.stop(); });
   btn_Next.addEventListener('click', function () { keyEditor.scroll('>'); });
   btn_Prev.addEventListener('click', function () { keyEditor.scroll('<'); });
@@ -728,6 +736,7 @@ function evt_NoteEdge_Left_lMouDown(e) {
   holdingEdge = true;
   e.target.style.cursor = 'w-resize';
   var tmp_note = allNotes[e.target.id];
+  keyEditor.gripX = tmp_note.bbox.x;
   if (tmp_note == undefined) {
     tmp_note = changingNote;
   }
@@ -742,6 +751,7 @@ function evt_NoteEdge_Right_lMouDown(e) {
   holdingEdge = true;
   e.target.style.cursor = 'e-resize';
   var tmp_note = allNotes[e.target.id];
+  keyEditor.gripX = tmp_note.bbox.x;
   if (tmp_note == undefined) {
     tmp_note = changingNote;
   }
@@ -753,11 +763,12 @@ function evt_NoteEdge_Right_lMouDown(e) {
   document.addEventListener('mouseup', evt_NoteEdge_Right_lMouUp);
 }
 function evt_NoteEdge_Left_MouMove(e) {
-  var tmp_ticks = keyEditor.getTicksAt(mouseX - div_Editor.scrollLeft),
+  var tmp_ticks = keyEditor.getTicksAt(mouseX),
     tmp_rightEdge = heldEdge.parentElement.childNodes[1];
 
   if (changingNote !== null) {
     changingNote.part.moveEvent(changingNote.noteOn, tmp_ticks - changingNote.noteOn.ticks);
+    // changingNote.part.moveEvent(changingNote.noteOn, );
     changingNote.part.moveEvent(changingNote.noteOff, -(tmp_ticks - changingNote.noteOn.ticks));
     updateElementBBox(heldEdge, subdivBBox(changingNote.bbox, 0.1, 0, 1, 0));
     updateElementBBox(tmp_rightEdge, subdivBBox(changingNote.bbox, 0.1, 0.9, 1, 0));
@@ -768,7 +779,7 @@ function evt_NoteEdge_Left_MouMove(e) {
   }
 }
 function evt_NoteEdge_Right_MouMove(e) {
-  var tmp_ticks = keyEditor.getTicksAt(mouseX - div_Editor.scrollLeft),
+  var tmp_ticks = keyEditor.getTicksAt(mouseX),
     tmp_leftEdge = heldEdge.parentElement.childNodes[0];
   if (changingNote !== null) {
     changingNote.part.moveEvent(changingNote.noteOff, tmp_ticks - changingNote.noteOff.ticks);

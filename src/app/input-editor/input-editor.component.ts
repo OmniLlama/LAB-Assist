@@ -46,8 +46,10 @@ declare var sequencer: any;
 </div>
 <div id='editor-controls'>
   <span class="editor-control">
-    <input type='button' id='play' value='play' />
-    <input type='button' id='stop' value='stop' />
+    <input type='button'class="editor-control-param" id='play' value='play' />
+    <input type='button'class="editor-control-param" id='record' value='record' />
+    <input type='button'class="editor-control-param" id='loop' value='loop' />
+    <input type='button'class="editor-control-param" id='stop' value='stop' />
   </span>
   <span class="editor-control">
     <div id='time-bars-beats'></div>
