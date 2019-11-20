@@ -1,6 +1,5 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { Note, Part, MIDINote, Track, getMidiFiles, createSong, Instrument, Song } from "heartbeat-sequencer";
-// import { hbEditorMain } from '../../assets/js/hb-editor-main';
 declare var sequencer: any;
 @Component({
   selector: 'app-input-editor',
