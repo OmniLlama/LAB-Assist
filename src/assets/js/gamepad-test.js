@@ -34,7 +34,7 @@ function addgamepad(gamepad) {
 
   // Create Axis Meters
   var div_axes = document.createElement("div"); div_axes.className = "axes";
-  for (i = 0; i < gamepad.axes.length; i++) { div_axes.appendChild(createAxisMeter(i)); }
+  for (i = 0; i < gamepad.axes.length/2; i++) { div_axes.appendChild(createAxisMeter(i)); }
 
   //Append Meters to div
   div_cntrllr.appendChild(div_axes);
@@ -67,7 +67,8 @@ function updateStatus() {
     /**
      * Button Status Loop */
     var buttons = d.getElementsByClassName("button");
-    for (var i = 0; i < controller.buttons.length; i++) {
+    // for (var i = 0; i < controller.buttons.length; i++) {
+    for (var i = 0; i < 7; i++) {
       var b = buttons[i];
       var val = controller.buttons[i];
       var pressed = val == 1.0;
@@ -92,10 +93,41 @@ function updateStatus() {
     /**
      * Axis Status Loop */
     var axes = d.getElementsByClassName("axis");
-    for (var i = 0; i < controller.axes.length; i++) {
-      var a = axes[i];
-      a.innerHTML = i + ": " + controller.axes[i].toFixed(4);
-      a.setAttribute("value", controller.axes[i]);
+
+ 
+    // for (var i = 0; i < controller.axes.length/2; i++) {
+    //   var a = axes[i];
+    //   // console.log(axes.length)
+    //   // a.innerHTML = i + ": " + controller.axes[i].toFixed(4);
+    //   // console.log(axes[i].innerHTML)
+    //   a.setAttribute("value", controller.axes[i]);
+    // }
+
+    var leftAxis = axes[0]
+    var rightAxis = axes[1]
+
+    if ( controller.axes[0] < -0.75 && ( controller.axes[1] < 0.4 && controller.axes[1] > -.4 )) {
+      leftAxis.innerHTML = `<img src="assets/images/pressed_left.png" width=80px height=80px>`
+    } else if (controller.axes[1] < -0.75 && ( controller.axes[0] < 0.4 && controller.axes[0] > -.4 ))  {
+      leftAxis.innerHTML = `<img src="assets/images/pressed_up.png" width=80px height=80px>`
+    }  else if (controller.axes[0] > 0.75 && ( controller.axes[1] < 0.4 && controller.axes[1] > -.4 ))  {
+      leftAxis.innerHTML = `<img src="assets/images/pressed_right.png" width=80px height=80px>`
+    } else if (controller.axes[1] > 0.75 && ( controller.axes[0] < 0.4 && controller.axes[0] > -.4 ))  {
+      leftAxis.innerHTML = `<img src="assets/images/pressed_down.png" width=80px height=80px>`
+    } else {
+      leftAxis.innerHTML = `<img src="assets/images/left.png" width=80px height=80px>`
+    }
+
+    if ( controller.axes[2] < -0.75 && ( controller.axes[3] < 0.4 && controller.axes[3] > -.4 )) {
+      rightAxis.innerHTML = `<img src="assets/images/pressed_left.png" width=80px height=80px>`
+    } else if (controller.axes[3] < -0.75 && ( controller.axes[2] < 0.4 && controller.axes[2] > -.4 ))  {
+      rightAxis.innerHTML = `<img src="assets/images/pressed_up.png" width=80px height=80px>`
+    }  else if (controller.axes[2] > 0.75 && ( controller.axes[3] < 0.4 && controller.axes[3] > -.4 ))  {
+      rightAxis.innerHTML = `<img src="assets/images/pressed_right.png" width=80px height=80px>`
+    } else if (controller.axes[3] > 0.75 && ( controller.axes[2] < 0.4 && controller.axes[2] > -.4 ))  {
+      rightAxis.innerHTML = `<img src="assets/images/pressed_down.png" width=80px height=80px>`
+    } else {
+      rightAxis.innerHTML = `<img src="assets/images/right.png" width=80px height=80px>`
     }
   }
   rAF(updateStatus);
@@ -114,30 +146,35 @@ function scangamepads() {
   }
 }
 function createButtonIcon(ind, lbl) {
+  let button = nameButton(ind)
   var e = document.createElement("span");
   e.className = "button";
+  // This if allows me to post the button images to the page for the game. (If Street fighter doesn't need SELECT, 
+  // there won't be a broken image link for a SELECT button on the page)
+  if (button != null) {
+    // This allows me to manipulate the element and leave the current CSS styling.
+    // This just adds a span which contains an image of the buttons
+    let imageString = `<img src="assets/images/${button}.png" width=80px height=80px>`
+    e.innerHTML = imageString
+  }
   //e.id = "b" + i;
   //e.innerHTML = nameButton(ind);
-
-  // This allows me to manipulate the element and leave the current CSS styling.
-  // This just adds a span which contains an image of the buttons
-  let button = nameButton(ind)
-  let imageString = `<img src="assets/images/${button}.png" width=80px height=80px>`
-  e.innerHTML = imageString
   // e.innerHTML = i;
   return e;
 }
+
 function createAxisMeter(ind) {
-  var l = document.createElement("h3");
-  l.textContent = nameAxis(ind);
-  var e = document.createElement("meter");
+  let axisName = nameAxis(ind);
+  console.log(axisName)
+  var e = document.createElement("span");
   e.className = "axis";
+  
   //e.id = "a" + i;
   e.setAttribute("min", "-1");
   e.setAttribute("max", "1");
   e.setAttribute("value", "0");
-  e.innerHTML = ind;
-  l.appendChild(e);
+  let imageString = `<img src="assets/images/left.png" width=80px height=80px>`
+  e.innerHTML = imageString;
   // return e;
   return e;
 }
@@ -165,7 +202,7 @@ function nameButton(i) {
         case 5: return "r1";
         case 6: return "l2";
         case 7: return "r2";
-        default: return i;
+        default: return null;
       }
 
     case ButtonNotationType.GuiltyGear:
@@ -224,10 +261,10 @@ function nameAxis(i) {
     case 1: return "LS Y";
     case 2: return "RS X";
     case 3: return "RS Y";
-    case 4: return "LT";
-    case 5: return "RT";
+    // case 4: return "LT";
+    // case 5: return "RT";
     default:
-      break;
+      return null;
   }
 }
 /**

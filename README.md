@@ -1,3 +1,7 @@
+## NOTE FOR JEFF
+
+I had do do some significant changes with the Axis reading in order to get this to work. If anything you're doing is reliant on the current Axis information from the old version, let me know.
+
 # LABAssistNG
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.6.
