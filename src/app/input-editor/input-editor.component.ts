@@ -11,22 +11,22 @@ declare var sequencer: any;
     <img src="assets/editor/img/x360/360_Dpad.png" width="64">
   </div>
   <div id='editor-input-icon' height="128">
-    <img src="assets/editor/img/x360/360_X.png" width="64">
+    <img src="assets/images/x.png" width="64">
   </div>
   <div id='editor-input-icon' height="128">
-    <img src="assets/editor/img/x360/360_Y.png" width="64">
+    <img src="assets/images/y.png" width="64">
   </div>
   <div id='editor-input-icon' height="128">
-    <img src="assets/editor/img/x360/360_RB.png" width="64">
+    <img src="assets/images/a.png" width="64">
   </div>
   <div id='editor-input-icon' height="128">
-    <img src="assets/editor/img/x360/360_A.png" width="64">
+    <img src="assets/images/b.png" width="64">
   </div>
   <div id='editor-input-icon' height="128">
-    <img src="assets/editor/img/x360/360_B.png" width="64">
+    <img src="assets/images/r1.png" width="64">
   </div>
   <div id='editor-input-icon' height="128">
-    <img src="assets/editor/img/x360/360_RT.png" width="64">
+    <img src="assets/images/r2.png" width="64">
   </div>
 </div>
   <div #edit id='editor'>
