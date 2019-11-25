@@ -7,27 +7,33 @@ declare var sequencer: any;
   styleUrls: ['./input-editor.component.sass'],
   template: `
   <div id='editor-input-icons'>
-  <div id='editor-input-icon' height="128">
+  <div id='editor-input-icon' >
     <img src="assets/editor/img/x360/360_Dpad.png" width="64">
   </div>
-  <div id='editor-input-icon' height="128">
+  <div id='editor-input-icon' >
     <img src="assets/images/x.png" width="64">
   </div>
-  <div id='editor-input-icon' height="128">
+  <div id='editor-input-icon' >
     <img src="assets/images/y.png" width="64">
   </div>
-  <div id='editor-input-icon' height="128">
+  <div id='editor-input-icon' >
     <img src="assets/images/a.png" width="64">
   </div>
-  <div id='editor-input-icon' height="128">
+  <div id='editor-input-icon' >
     <img src="assets/images/b.png" width="64">
   </div>
-  <div id='editor-input-icon' height="128">
+  <div id='editor-input-icon' >
     <img src="assets/images/r1.png" width="64">
   </div>
-  <div id='editor-input-icon' height="128">
+  <div id='editor-input-icon' >
     <img src="assets/images/r2.png" width="64">
   </div>
+  <div id='editor-input-icon' >
+  <img src="assets/images/l1.png" width="64">
+</div>
+<div id='editor-input-icon' >
+  <img src="assets/images/l2.png" width="64">
+</div>
 </div>
   <div #edit id='editor'>
 
