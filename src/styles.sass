@@ -1,18 +1,6 @@
 html
   background-color: #e4e4e460
 
-  //Heartbeat Editor Grid stuff
-    ////I
-    //
-  #editor-input-icons
-    float: left
-    position: relative
-  // #editor-input-icon
-  // float: left
-    // position: absolute
-    // background-color: #181818
-    // min-width: 48px
-
 #editor-controls
   float: left
   background-color: #fff
@@ -39,53 +27,22 @@ html
     padding: 10px
     margin-top: 6px
     height: 20px
-#pitch-range
-  width: 8em
 
+#pitch-range
+  // width: 6em
+  font: .2em
   #key-range-start, #key-range-end
     width: 4em
+    font: .6em sans-serif
+  #key-range-start-label, #key-range-end-label
+    font: .6em sans-serif
 
-#play, #stop
-  font-weight: bold
-  width: 40px
-  height: 20px
-#record
-  background-color: #2c2c2c
-  font-weight: bold
-  color: #942424
-#loop
-  background-color: #3f7ea8
-  font-weight: bold
-  color: #fff1f1
-#editor-controls input[type='range']
-  float: left
-  height: 30px
-  margin-top: -3px
-  width: 120px
-
-#time-bars-beats
-  color: #FF1CAE
-
-#time-seconds
-  color: #71DE71
-
-#time-ticks
-  color: #FF9500
-
-#time-millis
-  color: #7100FF
-
-#tempo, #signature
-  color: #1BB2E0
-
-#position, #pitch
-  color: #FF9500
-
-#scale-label
-  color: #211E1E
+#debug-info
+  max-width: 10em
 
 #mouse-x, #mouse-y
-  font: 1em sans-serif
+  font: .7em sans-serif
+  font-weight: bold
   color: #181818
 
 .pipe
@@ -108,6 +65,7 @@ html
   background-color: #ffc
   background-color: #211E1E
   background-color: #5c5c5c
+  // position: absolute
   overflow: auto
   // float: right
   // overflow: hidden
@@ -117,9 +75,8 @@ html
   width: 100%
 
   min-width: 100px
-  background-color: #ececec93d
+  background-color: #6b6b6b3a
   position: relative
-
   // overflow: hidden
 
 // #bar-lines, #tick-lines, #sixteenth-lines
@@ -160,7 +117,7 @@ html
   background-image: url('assets/editor/img/bar-line.png')
   background-repeat: repeat-y
   background-position: left
-  height: 100%
+  // height: 100%
 
 .beat-line
   position: absolute
@@ -180,16 +137,19 @@ html
   position: absolute
   background-color: #3434ff
   border: none
-
+  font: .6em arial bolder
   z-index: 10
   border: 1px solid #00ff00
-
+.note-info
+  // text-align: center
+  // padding: 32px
+  // position: relative
 .note-selected
   position: absolute
   background-color: #ff0095
   border: none
 
-  z-index: 10
+  z-index: 11
   border: 1px solid #ecafff
 
 .note-active
@@ -204,22 +164,23 @@ html
 
   border: 1px solid #000
 
+.note-edge
+  background-color: #ffffff7e
+  position: absolute
 
 .part
   position: absolute
-
   background-color: rgba(55,55,55,0.5)
-  background-color: rgba(27, 178, 224, 0.5)
-
+  background-color: rgba(17, 42, 48, 0.5)
   z-index: 9
   border: 1px solid #f00
+
 .part-selected
   position: absolute
-
   background-color: rgba(209, 92, 255, 0.5)
-
   z-index: 9
   border: 1px solid #b700ff
+
 .part-active
   background-color: rgba(255, 0, 0, 0.5)
 

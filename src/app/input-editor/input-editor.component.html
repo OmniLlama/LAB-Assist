@@ -1,3 +1,88 @@
     <script src="../../../node_modules/heartbeat-sequencer/build/heartbeat.js"></script>
     <script src="/src/assets/js/hb-editor-main.js"></script>
     <script src="/src/app/input-editor/hb-editor-main.ts"></script>
+    <div #edit id='editor'>
+      <div id='score'>
+        <div id='pitch-lines'></div>
+        <div id='bar-lines'></div>
+        <div id='tick-lines'></div>
+        <div id='sub-tick-lines'></div>
+        <div id='notes'></div>
+        <div id='parts'></div>
+        <div id='playhead'>
+          <div id='playhead-line'></div>
+        </div>
+      </div>
+    </div>
+    <div id='editor-controls'>
+      <span class="editor-control">
+        <h4 id='midi-output-info'></h4>
+      </span>
+      <span class="editor-control">
+        <input type='button' class="editor-control-param" id='play' value='play' />
+        <input type='button' class="editor-control-param" id='record' value='record' />
+        <input type='button' class="editor-control-param" id='loop' value='loop' />
+        <input type='button' class="editor-control-param" id='stop' value='stop' />
+      </span>
+      <span class="editor-control">
+        <div id='bpm-label'>BPM:</div>
+        <input type='text' class="editor-control-param" id='bpm' />
+      </span>
+      <span class="editor-control">
+        <div id='time-bars-beats'></div>
+        <!-- <div class='pipe'>|</div> -->
+        <div id='time-seconds'></div>
+      </span>
+      <span class="editor-control" id="pitch-range">Pitch Range:
+        <div id="key-range-start-label">start<input type="text" id='key-range-start' (ngModel)="pitchStart" value="{{pitchStart}}" /></div>
+        <div id="key-range-end-label">end<input type="text" id='key-range-end' (ngModel)="pitchEnd" value="{{pitchEnd}}" /></div>
+        <button id="update-range" (click)="UpdatePitchRange()">Update</button>
+      </span>
+      <span class="editor-control" id="debug-info">
+        <!-- <div class='pipe'>|</div> -->
+        <div id='mouse-x'>0</div>
+
+        <!-- <div class='pipe'>|</div> -->
+        <div id='mouse-y'>0</div>
+      </span>
+      <div class='pipe'>|</div>
+
+      <span class="editor-control">
+        <input type='button' id='first' value='<<' />
+        <input type='button' id='prev' value='<' />
+        <div id='page-numbers'>page 0 of 0</div>
+        <input type='button' id='next' value='>' />
+        <input type='button' id='last' value='>>' />
+      </span>
+
+      <div class='pipe'>|</div>
+      <span class="editor-control">
+        <input type='range' id='scale-slider' />
+        <label for='scale-slider' id='scale-label'>#bars 16</label>
+      </span>
+      <span class="editor-control">
+        <span>snap:
+          <select id="snap">
+
+            <!-- <option value='bar'>bar</option> <option value='beat' >beat</option> -->
+
+            <option value='1'>whole</option>
+            <option value='2'>half</option>
+            <option value='4'>quarter</option>
+            <option value='8'>8th</option>
+            <option value='16'>16th</option>
+            <option value='32'>32th</option>
+            <option value='64'>64th</option>
+            <option value='tick'>tick</option>
+            <option value='off'>off</option>
+          </select>
+        </span>
+      </span>
+      <span class="editor-control">
+        <input type='button' id='add-part' value='add part' />
+      </span>
+      <span class="editor-control">
+        <div id='dbg-curr-note'>Sel Note: </div>
+        <div id='dbg-curr-part'>Sel Part: </div>
+      </span>
+    </div>

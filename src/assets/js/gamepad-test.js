@@ -94,7 +94,7 @@ function updateStatus() {
      * Axis Status Loop */
     var axes = d.getElementsByClassName("axis");
 
- 
+
     // for (var i = 0; i < controller.axes.length/2; i++) {
     //   var a = axes[i];
     //   // console.log(axes.length)
@@ -149,7 +149,7 @@ function createButtonIcon(ind, lbl) {
   let button = nameButton(ind)
   var e = document.createElement("span");
   e.className = "button";
-  // This if allows me to post the button images to the page for the game. (If Street fighter doesn't need SELECT, 
+  // This if allows me to post the button images to the page for the game. (If Street fighter doesn't need SELECT,
   // there won't be a broken image link for a SELECT button on the page)
   if (button != null) {
     // This allows me to manipulate the element and leave the current CSS styling.
@@ -168,7 +168,7 @@ function createAxisMeter(ind) {
   console.log(axisName)
   var e = document.createElement("span");
   e.className = "axis";
-  
+
   //e.id = "a" + i;
   e.setAttribute("min", "-1");
   e.setAttribute("max", "1");
