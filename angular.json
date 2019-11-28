@@ -32,7 +32,7 @@
             ],
             "scripts": [
               "src/assets/js/input-helper.js",
-              "src/assets/js/gamepad-test.js",
+
               "src/assets/js/hb-editor-main.js",
               "src/app/input-editor/hb-editor-main.ts",
               "node_modules/heartbeat-sequencer/build/heartbeat.js"

@@ -1,5 +1,5 @@
     <script src="../../../node_modules/heartbeat-sequencer/build/heartbeat.js"></script>
-    <script src="/src/assets/js/hb-editor-main.js"></script>
+    <!-- <script src="/src/assets/js/hb-editor-main.js"></script> -->
     <script src="/src/app/input-editor/hb-editor-main.ts"></script>
     <div #edit id='editor'>
       <div id='score'>
@@ -15,6 +15,12 @@
       </div>
     </div>
     <div id='editor-controls'>
+      <span class="editor-control" id="debug-info">
+        <!-- <div class='pipe'>|</div> -->
+        <div id='mouse-x'>0</div>
+        <!-- <div class='pipe'>|</div> -->
+        <div id='mouse-y'>0</div>
+      </span>
       <span class="editor-control">
         <h4 id='midi-output-info'></h4>
       </span>
@@ -34,17 +40,13 @@
         <div id='time-seconds'></div>
       </span>
       <span class="editor-control" id="pitch-range">Pitch Range:
-        <div id="key-range-start-label">start<input type="text" id='key-range-start' (ngModel)="pitchStart" value="{{pitchStart}}" /></div>
-        <div id="key-range-end-label">end<input type="text" id='key-range-end' (ngModel)="pitchEnd" value="{{pitchEnd}}" /></div>
+        <div id="key-range-start-label">start<input type="text" id='key-range-start' (ngModel)="pitchStart"
+            value="{{pitchStart}}" /></div>
+        <div id="key-range-end-label">end<input type="text" id='key-range-end' (ngModel)="pitchEnd"
+            value="{{pitchEnd}}" /></div>
         <button id="update-range" (click)="UpdatePitchRange()">Update</button>
       </span>
-      <span class="editor-control" id="debug-info">
-        <!-- <div class='pipe'>|</div> -->
-        <div id='mouse-x'>0</div>
 
-        <!-- <div class='pipe'>|</div> -->
-        <div id='mouse-y'>0</div>
-      </span>
       <div class='pipe'>|</div>
 
       <span class="editor-control">

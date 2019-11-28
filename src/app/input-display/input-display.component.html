@@ -1,6 +1,14 @@
-<script src="/src/assets/js/gamepad-test.js" type="module"></script>
+<!-- <script src="/src/assets/js/gamepad-test.js" type="module"></script> -->
 <script src="/src/assets/js/input-helper.js" type="module"></script>
-<!-- <script src="../../heartbeat/build/heartbeat.js"></script> -->
-
-
-<!-- <script src="inputhelper.js"></script> -->
+<div id="controllers"></div>
+<h2 id="start">Press a button on your controller to start</h2>
+<div id="noteTypesCont">
+  <label for="disp-slct-move-notation" id="disp-lbl-slct-move-notation">Move Notation</label>
+  <select id= 'disp-slct-move-notation'>
+    <option *ngFor="let sym of mntKeys">{{sym}}</option>
+  </select>
+  <label for="disp-slct-button-notation" id="disp-lbl-slct-button-notation">Button Notation</label>
+  <select id= 'disp-slct-button-notation'>
+    <option *ngFor="let sym of bntKeys">{{sym}}</option>
+  </select>
+</div>

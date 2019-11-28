@@ -12,6 +12,7 @@ declare let sequencer: any;
 export class InputEditorComponent implements OnInit {
   static NOTE_OFF = 0x80;
   static NOTE_ON = 0x90;
+  static MIDI_HEARTBEAT = 0xFE;
   static inpEdComp: InputEditorComponent;
   testMethod = 1;
   midiOutput;
@@ -19,14 +20,15 @@ export class InputEditorComponent implements OnInit {
   edtrInfo: EditorInfo;
   midiFile;
   keyEditor: KeyEditor;
-  div_midiFileList;
+  div_MidiFileList: HTMLDivElement;
   midiFileList;
-  audCntxt;
-  padShell;
+  audCntxt: AudioContext;
 
-  pitchStart = 0;
-  pitchEnd = 16;
-  pitchHeight = 32;
+  pitchStart = 12;
+  pitchEnd = 32;
+  pitchHeight = 16;
+  timeSigNom = 3;
+  timeSigDenom = 4;
   editorHeight = ((this.pitchEnd - this.pitchStart + 2) * this.pitchHeight);
   track: Track;
   tracks: Track[];
@@ -40,7 +42,6 @@ export class InputEditorComponent implements OnInit {
   flattenTracksToSingleTrack = true;
 
   bppStart = 8;  //default: 16
-  div_MidiFileList;
 
   console = window.console;
   alert = window.alert;
@@ -57,7 +58,7 @@ export class InputEditorComponent implements OnInit {
     console.log("Finished creating editor shell");
   }
   init(iec: InputEditorComponent) {
-    enableGUI(false);
+    this.enableGUI(false);
 
     // tmp_c = div_Controls.getBoundingClientRect().height,
     let tmp_icons_w = 128;
@@ -80,9 +81,7 @@ export class InputEditorComponent implements OnInit {
     /**
      * Compacts all song tracks onto single track, set to monitor, and set instrument to piano
      */
-    if (iec.flattenTracksToSingleTrack) {
-      flattenTracks(iec.song);
-    }
+    if (iec.flattenTracksToSingleTrack) { flattenTracks(iec.song); }
     /**
      *
      * This is where KeyEditor is Made!!!
@@ -109,7 +108,7 @@ export class InputEditorComponent implements OnInit {
     initInputEvents();
     initWindowEvents(iec);
 
-    enableGUI(true);
+    this.enableGUI(true);
 
     iec.edtrHtml.slct_Snap.selectedIndex = 4;
     tmp_event = document.createEvent('HTMLEvents');
@@ -120,6 +119,7 @@ export class InputEditorComponent implements OnInit {
     render();
 
   }
+
   initSong(): Song {
     /**
   * Uncomment one to test different tracks, will add listing function soon
@@ -168,6 +168,7 @@ export class InputEditorComponent implements OnInit {
         //method 3: just add base midiFile to a song, and continue
         song = sequencer.createSong(tmp_midiFile);
     }
+    song.setTimeSignature(3, 4, true);
     return song;
   }
   addAssetsToSequencer() {
@@ -179,10 +180,8 @@ export class InputEditorComponent implements OnInit {
   enableGUI(flag) {
     let tmp_elements = document.querySelectorAll('input, select');
     let tmp_element;
-    let i;
     let tmp_maxi = tmp_elements.length;
-
-    for (i = 0; i < tmp_maxi; i++) {
+    for (let i = 0; i < tmp_maxi; i++) {
       tmp_element = tmp_elements[i];
       tmp_element.disabled = !flag;
     }
@@ -266,7 +265,7 @@ export class InputEditorComponent implements OnInit {
       if (iec.currNote !== null) { this.unselectNote(iec.currNote); }
       iec.currNote = null;
     } else {
-      iec.keyEditor.startMovePart(tmp_part, iec.edtrInfo.mouseX, iec.edtrInfo.mouseY);
+      iec.keyEditor.startMovePart(tmp_part, iec.edtrInfo.screenX, iec.edtrInfo.screenY);
       document.addEventListener('mouseup', iec.evt_Part_lMouUp, false);
     }
   }
@@ -324,7 +323,8 @@ export class InputEditorComponent implements OnInit {
     document.addEventListener('mouseup', InputEditorComponent.inpEdComp.evt_NoteEdge_Right_lMouUp);
   }
   evt_NoteEdge_Left_MouMove(e: MouseEvent) {
-    let tmp_ticks = InputEditorComponent.inpEdComp.keyEditor.getTicksAt(InputEditorComponent.inpEdComp.edtrInfo.mouseX);
+    let iec = InputEditorComponent.inpEdComp;
+    let tmp_ticks = iec.edtrInfo.ticksAtX;
     let tmp_rightEdge = heldEdge.parentElement.childNodes[1];
 
     if (changingNote !== null) {
@@ -341,7 +341,8 @@ export class InputEditorComponent implements OnInit {
     }
   }
   evt_NoteEdge_Right_MouMove(e) {
-    let tmp_ticks = InputEditorComponent.inpEdComp.keyEditor.getTicksAt(InputEditorComponent.inpEdComp.edtrInfo.mouseX);
+    let iec = InputEditorComponent.inpEdComp;
+    let tmp_ticks = iec.edtrInfo.ticksAtX;
     let tmp_leftEdge = heldEdge.parentElement.childNodes[0];
     if (changingNote !== null) {
       changingNote.part.moveEvent(changingNote.noteOff, tmp_ticks - changingNote.noteOff.ticks);
@@ -448,10 +449,16 @@ export class InputEditorComponent implements OnInit {
   }
   //#endregion
   /**
-   * END InputEditorComponent Class -------|||||
+   * END InputEditorComponent Class -------|||||-----------------
+   *
+   *
+   *
    */
-}
 
+}
+let heldEdge;
+let changingNote;
+let holdingEdge = false;
 
 
 function initWindowEvents(iec: InputEditorComponent) {
@@ -531,50 +538,57 @@ function initInputEvents() {
   /**
    * Score Mouse Movement Tracker
    */
-  iec.edtrHtml.div_Score.addEventListener('mousemove', (e) => {
+  // iec.edtrHtml.div_Score.addEventListener('mousemove', (e) => {
+  window.addEventListener('mousemove', (e) => {
     e.preventDefault();
     let tmp_pageX = e.pageX;
     let tmp_pageY = e.pageY;
-    let tmp_mouseX = e.screenX;
-    let tmp_mouseY = e.screenY;
+    let tmp_screenX = e.screenX;
+    let tmp_screenY = e.screenY;
+    let tmp_clientX = e.clientX;
+    let tmp_clientY = e.clientY;
     let tmp_pos = iec.keyEditor.getPositionAt(tmp_pageX);
     let tmp_part = iec.keyEditor.selectedPart;
     let tmp_note = iec.keyEditor.selectedNote;
 
     // show the song position and pitch of the current mouse position; handy for debugging
-    iec.edtrInfo.mouseX = tmp_mouseX;
-    iec.edtrInfo.mouseY = tmp_mouseY;
+    iec.edtrInfo.screenX = tmp_screenX;
+    iec.edtrInfo.screenY = tmp_screenY;
     iec.edtrInfo.pageX = tmp_pageX;
     iec.edtrInfo.pageY = tmp_pageY;
+    iec.edtrInfo.clientX = tmp_clientX;
+    iec.edtrInfo.clientY = tmp_clientY;
+    iec.edtrInfo.screenX = tmp_screenX;
+    iec.edtrInfo.screenY = tmp_screenY;
     iec.edtrInfo.mouseBarPos = tmp_pos.barsAsString;
     iec.edtrInfo.editorScrollX = iec.edtrHtml.div_Editor.scrollLeft;
     iec.edtrInfo.editorScrollY = iec.edtrHtml.div_Editor.scrollTop;
-    iec.edtrInfo.editorFrameOffsetY = iec.edtrHtml.div_Editor.offsetHeight;
+    iec.edtrInfo.editorFrameOffsetY = iec.edtrHtml.div_Editor.offsetTop;
+    iec.edtrInfo.editorFrameOffsetX = iec.edtrHtml.div_Editor.offsetLeft;
     iec.edtrInfo.ticksAtX = iec.keyEditor.getTicksAt(
-      iec.edtrInfo.mouseX
-      - iec.edtrHtml.div_Editor.offsetLeft, false);
-    iec.edtrHtml.div_MouseX.innerHTML = 'x Bar: ' + iec.edtrInfo.mouseBarPos +
-      '\nx-client: ' + e.clientX +
-      '\nx-edit-scrl: ' + iec.edtrInfo.editorScrollX +
-      '\ny-edit-scrl: ' + iec.edtrInfo.editorScrollY +
-      '\nticks-at-mouse: ' + iec.edtrInfo.ticksAtX +
-      '\nx-head : ' + iec.keyEditor.getPlayheadX();
+      iec.edtrInfo.clientX - iec.edtrInfo.editorFrameOffsetX, false);
+
+    iec.edtrHtml.div_MouseX.innerHTML =
+      '\nclient: (' + iec.edtrInfo.clientX + ', ' + iec.edtrInfo.clientY + ')' +
+      '\n|screen: (' + iec.edtrInfo.screenX + ', ' + iec.edtrInfo.screenY + ')' +
+      '\n|editor-scrl: (' + iec.edtrInfo.editorScrollX + ', ' + iec.edtrInfo.editorScrollY + ')' +
+      '\n|page: (' + iec.edtrInfo.pageX + ', ' + iec.edtrInfo.pageY + ')' +
+      '\n|ticks-at-mouse: ' + iec.edtrInfo.ticksAtX.toFixed(1) +
+      '\n|x Bar: ' + iec.edtrInfo.mouseBarPos +
+      '\n|x-head : ' + iec.keyEditor.getPlayheadX().toFixed(2);
     ;
-    iec.edtrInfo.mousePitchPos = iec.keyEditor.getPitchAt(tmp_pageY - iec.edtrInfo.editorFrameOffsetY).number;
+    iec.edtrInfo.mousePitchPos = iec.keyEditor.getPitchAt(iec.edtrInfo.pageY - iec.edtrHtml.div_Editor.offsetTop).number;
     iec.edtrHtml.div_MouseY.innerHTML = 'y Pitch: ' + iec.edtrInfo.mousePitchPos +
-      '\npage-y: ' + iec.edtrInfo.pageY +
-      '\nmouse-y: ' + iec.edtrInfo.mouseY+
       '\nframe-offset-y: ' + iec.edtrInfo.editorFrameOffsetY;
-      ;
 
     // move part or note if selected
     if (tmp_part !== undefined) {
       // iec.keyEditor.movePart(tmp_x, tmp_y - iec.edtrHtml.div_Score.offsetTop);
-      iec.keyEditor.movePart(tmp_pageX, tmp_pageY - iec.edtrHtml.div_Editor.offsetTop);
+      iec.keyEditor.movePart(iec.edtrInfo.pageX, iec.edtrInfo.pageY - iec.edtrHtml.div_Editor.offsetTop);
     }
     if (tmp_note !== undefined) {
       // iec.keyEditor.moveNote(tmp_x, tmp_y - iec.edtrHtml.div_Score.offsetTop);
-      iec.keyEditor.moveNote(tmp_pageX, tmp_pageY - iec.edtrHtml.div_Editor.offsetTop);
+      iec.keyEditor.moveNote(iec.edtrInfo.pageX, iec.edtrInfo.pageY - iec.edtrHtml.div_Editor.offsetTop);
     }
   },
     false
@@ -706,9 +720,9 @@ function drawVerticalLine(ref_data) {
   }
 }
 
-function drawNote(ref_note: Note, iec) {
+function drawNote(ref_note: Note, iec: InputEditorComponent) {
   let tmp_bbox = ref_note.bbox;
-  let tmp_bbox_left = subdivBBox(ref_note.bbox, 0.1, 0, 1, 0);
+  const tmp_bbox_left = subdivBBox(ref_note.bbox, 0.1, 0, 1, 0);
   let tmp_bbox_right = subdivBBox(ref_note.bbox, 0.2, 0.8, 1, 0);
   let tmp_div_Note = document.createElement('div');
   let tmp_div_Note_leftEdge = document.createElement('div');
@@ -779,8 +793,9 @@ function updateElementBBox(element, bbox: BBox) {
 
 function resize() {
   let iec = InputEditorComponent.inpEdComp;
-  let tmp_div_icons = document.getElementById('editor-input-icons');
-  let tmp_icons_w = tmp_div_icons.clientWidth;
+  // let tmp_div_icons = document.getElementById('editor-input-icons');
+  // let tmp_icons_w = tmp_div_icons.clientWidth;
+  let tmp_icons_w = 32;
   let tmp_c = iec.edtrHtml.div_Controls.getBoundingClientRect().height;
   let tmp_w = window.innerWidth - tmp_icons_w;
   let tmp_h = iec.editorHeight;
@@ -796,23 +811,23 @@ function resize() {
 
 function render() {
   let iec = InputEditorComponent.inpEdComp;
-  let tmp_snapshot = iec.keyEditor.getSnapshot('key-editor'),
-    tmp_div_Note,
-    tmp_div_Part;
+  let tmp_snapshot = iec.keyEditor.getSnapshot('key-editor');
+  let tmp_div_Note: HTMLDivElement;
+  let tmp_div_Part: HTMLDivElement;
 
   iec.edtrHtml.div_Playhead.style.left = iec.keyEditor.getPlayheadX() - 10 + 'px';
   iec.edtrHtml.div_PageNumbers.innerHTML =
     'page ' + iec.keyEditor.currentPage + ' of ' + iec.keyEditor.numPages;
 
   iec.edtrHtml.div_BarsBeats.innerHTML = iec.song.barsAsString;
-  let position = iec.keyEditor.getPositionAt(iec.keyEditor.getPlayheadX());
+  const position = iec.keyEditor.getPositionAt(iec.keyEditor.getPlayheadX());
   if (position) {
-    let tmp_hms = new Date(position.ticks * iec.song.millisPerTick);
+    const tmp_hrMinSecMillisec = new Date(position.ticks * iec.song.millisPerTick);
     iec.edtrHtml.div_Seconds.innerHTML =
-      tmp_hms.getUTCHours() + ':'
-      + tmp_hms.getUTCMinutes() + ':'
-      + tmp_hms.getSeconds() + '.'
-      + tmp_hms.getUTCMilliseconds();
+      tmp_hrMinSecMillisec.getUTCHours() + ':'
+      + tmp_hrMinSecMillisec.getUTCMinutes() + ':'
+      + tmp_hrMinSecMillisec.getUTCSeconds() + '.'
+      + tmp_hrMinSecMillisec.getUTCMilliseconds();
   }
 
   tmp_snapshot.notes.removed.forEach((note) => {
@@ -851,34 +866,26 @@ function render() {
 
     // reset the index of the iterator because we're starting from 0 again
     iec.keyEditor.horizontalLine.reset();
-    while (iec.keyEditor.horizontalLine.hasNext('chromatic')) {
-      drawHorizontalLine(iec.keyEditor.horizontalLine.next('chromatic'));
-    }
+    while (iec.keyEditor.horizontalLine.hasNext('chromatic')) { drawHorizontalLine(iec.keyEditor.horizontalLine.next('chromatic')); }
 
     // the index of the vertical line iterator has already been set to the right index by the key editor
     // so only the extra barlines will be drawn
-    while (iec.keyEditor.verticalLine.hasNext('sixteenth')) {
-      drawVerticalLine(iec.keyEditor.verticalLine.next('sixteenth'));
-    }
+    while (iec.keyEditor.verticalLine.hasNext('sixteenth')) { drawVerticalLine(iec.keyEditor.verticalLine.next('sixteenth')); }
   }
   requestAnimationFrame(render);
 }
 
 //#endregion
-function enableGUI(flag: boolean) {
-  let tmp_elements = document.querySelectorAll('input, select'),
-    tmp_element,
-    i,
-    tmp_maxi = tmp_elements.length;
+// function enableGUI(flag: boolean) {
+//   let tmp_elements = document.querySelectorAll('input, select');
+//   let tmp_element;
+//   let tmp_maxi = tmp_elements.length;
+//   for (let i = 0; i < tmp_maxi; i++) {
+//     tmp_element = tmp_elements[i];
+//     tmp_element.disabled = !flag;
+//   }
+// }
 
-  for (i = 0; i < tmp_maxi; i++) {
-    tmp_element = tmp_elements[i];
-    tmp_element.disabled = !flag;
-  }
-}
-let heldEdge,
-  changingNote,
-  holdingEdge = false;
 
 
 //#region [ rgba(200, 200, 200, 0.1) ] Random Generation Functions
@@ -926,11 +933,10 @@ function addRandomPartAtPlayhead(iec: InputEditorComponent) {
 }
 
 function addPartAtMouse(iec: InputEditorComponent) {
-  InputEditorComponent.inpEdComp.keyEditor.setPlayheadToX(InputEditorComponent.inpEdComp.edtrInfo.mouseX);
+  iec.keyEditor.setPlayheadToX(iec.edtrInfo.clientX);
   let i;
-  let tmp_ticks = 0; //startPositions[getRandom(0, 4, true)],
+  let tmp_ticks = 0;
   let tmp_numNotes = 2;
-  let tmp_spread = 1;
   let tmp_basePitch = iec.edtrInfo.mousePitchPos;
   let tmp_part = sequencer.createPart();
   let tmp_events = [];
@@ -970,11 +976,11 @@ function addPartAtMouse(iec: InputEditorComponent) {
  * EXPERIMENTAL
  */
 function createNewNoteInPartAtMouse(tmp_part, iec) {
-  let tmp_pitch = InputEditorComponent.inpEdComp.keyEditor.getPitchAt(InputEditorComponent.inpEdComp.edtrInfo.mouseY - InputEditorComponent.inpEdComp.edtrHtml.div_Score.offsetTop).number;
+  let tmp_pitch = InputEditorComponent.inpEdComp.keyEditor.getPitchAt(InputEditorComponent.inpEdComp.edtrInfo.screenY - InputEditorComponent.inpEdComp.edtrHtml.div_Score.offsetTop).number;
   let tmp_velocity = 127;
   let tmp_events = [];
   let tmp_noteLength = iec.song.ppq/*  * 2 */;
-  let tmp_ticks = InputEditorComponent.inpEdComp.keyEditor.getTicksAt(InputEditorComponent.inpEdComp.edtrInfo.mouseX);
+  let tmp_ticks = InputEditorComponent.inpEdComp.keyEditor.getTicksAt(InputEditorComponent.inpEdComp.edtrInfo.screenX);
   let tmp_noteOn;
   let tmp_noteOff;
   let tmp_note;
@@ -983,7 +989,7 @@ function createNewNoteInPartAtMouse(tmp_part, iec) {
   tmp_ticks += tmp_noteLength;
   tmp_noteOff = sequencer.createMidiEvent(tmp_ticks, InputEditorComponent.NOTE_OFF, tmp_pitch, 0);
   tmp_events.push(tmp_noteOn, tmp_noteOff);
-  tmp_ticks = InputEditorComponent.inpEdComp.keyEditor.getTicksAt(InputEditorComponent.inpEdComp.edtrInfo.mouseX);
+  tmp_ticks = InputEditorComponent.inpEdComp.keyEditor.getTicksAt(InputEditorComponent.inpEdComp.edtrInfo.screenX);
   console.log('added new note: \n ' +
     'pitch: ' + tmp_pitch + '\n' +
     'at ticks: ' + tmp_ticks + '\n' +
@@ -1026,14 +1032,19 @@ function subdivBBoxByPixels(ref_bbox, ref_xRatio, ref_xOffsetRatio: number, ref_
   return tmp_bbox;
 }
 export class EditorInfo {
-  mouseX: number;
-  mouseY: number;
+  // screenX: number;
+  // screenY: number;
   pageX: number;
   pageY: number;
+  clientX: number;
+  clientY: number;
+  screenX: number;
+  screenY: number;
   mouseBarPos;
   mousePitchPos;
 
   editorFrameOffsetY;
+  editorFrameOffsetX;
   editorScrollX;
   editorScrollY;
   ticksAtX: number;
