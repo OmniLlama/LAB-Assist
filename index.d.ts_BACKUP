@@ -84,8 +84,12 @@ export interface Song {
   getPosition: () => SongPosition
   addTrack: (t: Track) => void
   paused: boolean
+  //new stuff??
+  //
+  //
   setPlayhead: (type: string, value: number) => void
   setPitchRange: (min: any, max: any) => void
+  setTimeSignature: (nominator: number, denominator: number, update?: boolean) => void
 }
 
 export interface MIDIEvent {
@@ -115,6 +119,14 @@ export type Note = {
   number: number
   frequency: number
   blackKey: boolean
+  //new values
+  //
+  //
+  id: string
+  bbox: any
+  active: boolean
+  mute: boolean
+  part: Part
 }
 
 export interface MIDINote extends MIDIEvent {
@@ -144,6 +156,12 @@ export interface Part {
     width: number
     height: number
   }
+  //new ones
+  //
+  //
+  active: boolean
+  mute: boolean
+
 }
 
 export type Track = {
@@ -269,6 +287,7 @@ export type KeyEditor = {
   stopMoveNote: () => void
   startMovePart: (part: Part, x: number, y: number) => void
   stopMovePart: () => void
+  moveNote: (x: number, y: number, updateSong?: boolean) => void
   movePart: (x: number, y: number, updateSong?: boolean) => void
   removeNote: (note: Note) => void
   removePart: (part: Part) => void
@@ -286,23 +305,63 @@ export type KeyEditor = {
   }
   selectedPart: Part
   song: Song
-  getSnapshot: () => SnapShot
+  getSnapshot: (song?, id?) => SnapShot
   //new ones
+  //
+  //
+  currentPage: number
+  numPages: number
   gripX: number
-  highestNote: Note
-  lowestNote: Note
+  pitchHeight: number
+  highestNote: number
+  lowestNote: number
   scroll: (action) => void
-  getTicksAt: (x: number, snap?: boolean)=> number
-  getPitchAt: (y: number)=> number
+  updateScroll: (x: number, y: number) => void
+  scrollY: number
+  getTicksAt: (x: number, snap?: boolean) => number
+  getPitchAt: (y: number) => Note
+  getPositionAt: (x: number) => SongPosition
   addEventListener: (event: string, typeOrCallback: any, callback?: (arg?: any) => void) => void
-
+  selectedNote: Note
+  getEventRect: (event: MIDIEvent) => any
 }
 
 export type SnapShot = {
-  parts: {
-    changed: Part[]
-  }
+  events: {
+    active: MIDIEvent[]
+    inActive: MIDIEvent[]
+    recorded: MIDIEvent[]
+    new: MIDIEvent[]
+    changed: MIDIEvent[]
+    removed: MIDIEvent[]
+    stateChanged: MIDIEvent[]
+  },
+
   notes: {
+    active: Note[]
+    inActive: Note[]
+    recorded: Note[]
+    recording: Note[]
+    new: Note[]
     changed: Note[]
-  }
+    removed: Note[]
+    stateChanged: Note[]
+  },
+
+  parts: {
+    active: Part[]
+    inActive: Part[]
+    new: Part[]
+    changed: Part[]
+    removed: Part[]
+    stateChanged: Part[]
+
+  },
+
+
+  hasNewBars: boolean
+  newWidth: number
+
+  pageNo: number
+  lastPage: number
 }

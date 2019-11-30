@@ -55,28 +55,18 @@ export class InputEditorComponent implements OnInit {
     this.init(this);
   }
   ngAfterViewInit(): void {
-    console.log("Finished creating editor shell");
   }
   init(iec: InputEditorComponent) {
     this.enableGUI(false);
-
-    // tmp_c = div_Controls.getBoundingClientRect().height,
     let tmp_icons_w = 128;
-    // let tmp_div_icons = document.getElementById('editor-input-icons');
     let tmp_w = window.innerWidth - tmp_icons_w;
     let tmp_h = iec.editorHeight;
     let tmp_event;
 
-    // tmp_div_icons.style.width = tmp_icons_w + 'px';
-    // tmp_div_icons.style.height = tmp_h + 'px';
-
-    // iec.edtrHtml.div_Editor.style.width = tmp_w + 'px';
-    // iec.edtrHtml.div_Editor.style.height = tmp_h + 'px';
     this.song = this.initSong();
     iec.instruments = sequencer.getInstruments();
     // song.tracks.forEach(function(track) {track.setMidiInput()})
     //|------------------------------------------------------------------------------------------|
-
 
     /**
      * Compacts all song tracks onto single track, set to monitor, and set instrument to piano
@@ -212,7 +202,7 @@ export class InputEditorComponent implements OnInit {
     }
   }
 
-  selectNote(ref_note) {
+  selectNote(ref_note: Note) {
     let tmp_div_Note = document.getElementById(ref_note.id);
     if (tmp_div_Note !== null && ref_note.part.mute === false && ref_note.mute !== true) {
       tmp_div_Note.className = 'note note-selected';
@@ -224,8 +214,8 @@ export class InputEditorComponent implements OnInit {
       tmp_div_Note.className = 'note';
     }
   }
-  setPartActiveState(ref_part: Part, ref_div_Part) {
-    ref_div_Part = document.getElementById(ref_part.id);
+  setPartActiveState(ref_part: Part, ref_div_Part: HTMLDivElement) {
+    ref_div_Part = document.getElementById(ref_part.id) as HTMLDivElement;
     if (ref_div_Part !== null && ref_part.mute !== true) {
       if (ref_part.active) {
         ref_div_Part.className = 'part part-active';

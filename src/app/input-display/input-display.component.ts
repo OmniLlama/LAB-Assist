@@ -31,19 +31,22 @@ export class InputDisplayComponent implements OnInit {
   butNotTypes = ButtonNotationType;
   mntKeys = Object.keys(MovementNotationType);
   bntKeys = Object.keys(ButtonNotationType);
+  // controllers:Gamepad[];
   // gpTest: gamepadTest;
   constructor() { }
 
   ngOnInit() {
     InputDisplayComponent.inpDispCmp = this;
-    controllers = {};
+    controllers = new Array<Gamepad>();
   }
-
+  getControllers() {
+    return controllers;
+  }
 }
 
 var haveEvents = 'GamepadEvent' in window;
 var haveWebkitEvents = 'WebKitGamepadEvent' in window;
-var controllers: Gamepad[];
+export var controllers: Array<Gamepad>;
 var rAF =
   // window.mozRequestAnimationFrame ||
   window.webkitRequestAnimationFrame ||
@@ -103,9 +106,10 @@ function updateStatus() {
   /**
    * Controller Status Loop */
   controllers.forEach((j) => {
-    // for (j in controllers) {
-    var controller = controllers[j.id];
-    var d = document.getElementById("controller" + j);
+    // for (let h = 0; h < controllers.length; h++) {
+    // var controller = controllers[j.id];
+    var controller = j;
+    var d = document.getElementById("controller" + j.index);
     /**
      * Button Status Loop */
     var buttons = d.getElementsByClassName("button");
@@ -113,12 +117,12 @@ function updateStatus() {
     for (var i = 0; i < 7; i++) {
       var b = buttons[i] as HTMLDivElement;
       var val = controller.buttons[i];
-      var pressed = val == 1.0;
+      var pressed = val.value == 1.0;
       if (typeof (val) == "object") {
         pressed = val.pressed;
-        val = val.value;
+        // val = val.value;
       }
-      var pct = Math.round(val * 100) + "%";
+      var pct = Math.round(val.value * 100) + "%";
       b.style.backgroundSize = pct + " " + pct;
       let imageString = 'a';
       let buttonString = 'a';
@@ -172,6 +176,8 @@ function updateStatus() {
       rightAxis.innerHTML = `<img src="assets/images/pressed_down.png" width=80px height=80px>`
     } else {
       rightAxis.innerHTML = `<img src="assets/images/right.png" width=80px height=80px>`
+    }
+    if (Math.abs(controller.axes[0]) >= .75) {
     }
     // }
   });
