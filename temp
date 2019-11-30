@@ -3,6 +3,3 @@
 "src/assets/js/gamepad-test.js",
 
 
-
-    "@types/webmidi": "^2.0.3",
-    "webmidi": "^2.5.1",

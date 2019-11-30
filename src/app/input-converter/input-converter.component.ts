@@ -23,7 +23,6 @@ export class InputConverterComponent implements OnInit {
     this.div_Editor = document.getElementById('editor') as HTMLDivElement;
     this.div_editInputIcons = document.getElementById('editor-input-icons') as HTMLDivElement;
     this.div_editInputIcons.addEventListener('mouseover', (e) => {
-      // events = Heartbeat.song;
     });
     this.inpEdCmp = InputEditorComponent.inpEdComp;
     this.inpDispCmp = InputDisplayComponent.inpDispCmp;
@@ -34,30 +33,26 @@ export class InputConverterComponent implements OnInit {
     if (InputDisplayComponent.inpDispCmp.getControllers().length != 0) {
       this.testController = InputDisplayComponent.inpDispCmp.getControllers()[0];
       window.removeEventListener("mousemove", (e) => this.getController(e));
+      // let virtualInput = new Input('Virtual input name', true);
       window.addEventListener("mousemove", (e) => this.checkController(e));
     }
   }
   checkController(e) {
-    let inputEvts: InputEvents;
-    console.log(inputEvts);
   }
 }
 var midiData;
-
+// declare var require: any;
+// var easymidi = require('easymidi');
 if (navigator.requestMIDIAccess) {
   navigator.requestMIDIAccess({
     sysex: false
   }).then(onMIDISuccess, onMIDIFailure);
-  console.log("There totally is MIDI support in your browser")
+  console.log("There totally is MIDI support in your browser");
 } else {
-  console.warn("No MIDI support in your browser")
+  console.warn("No MIDI support in your browser");
 }
 function onMIDISuccess(data) {
   midiData = data;
-  data.inputs.forEach(element => {
-    let input = element;
-
-  });
 }
 function onMIDIFailure(data) {
 }
