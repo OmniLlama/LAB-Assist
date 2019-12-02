@@ -105,32 +105,58 @@ function updateStatus() {
 
     var leftAxis = axes[0]
     var rightAxis = axes[1]
-
-    if ( controller.axes[0] < -0.75 && ( controller.axes[1] < 0.4 && controller.axes[1] > -.4 )) {
-      leftAxis.innerHTML = `<img src="assets/images/pressed_left.png" width=80px height=80px>`
-    } else if (controller.axes[1] < -0.75 && ( controller.axes[0] < 0.4 && controller.axes[0] > -.4 ))  {
-      leftAxis.innerHTML = `<img src="assets/images/pressed_up.png" width=80px height=80px>`
-    }  else if (controller.axes[0] > 0.75 && ( controller.axes[1] < 0.4 && controller.axes[1] > -.4 ))  {
-      leftAxis.innerHTML = `<img src="assets/images/pressed_right.png" width=80px height=80px>`
-    } else if (controller.axes[1] > 0.75 && ( controller.axes[0] < 0.4 && controller.axes[0] > -.4 ))  {
-      leftAxis.innerHTML = `<img src="assets/images/pressed_down.png" width=80px height=80px>`
-    } else {
-      leftAxis.innerHTML = `<img src="assets/images/left.png" width=80px height=80px>`
-    }
-
-    if ( controller.axes[2] < -0.75 && ( controller.axes[3] < 0.4 && controller.axes[3] > -.4 )) {
-      rightAxis.innerHTML = `<img src="assets/images/pressed_left.png" width=80px height=80px>`
-    } else if (controller.axes[3] < -0.75 && ( controller.axes[2] < 0.4 && controller.axes[2] > -.4 ))  {
-      rightAxis.innerHTML = `<img src="assets/images/pressed_up.png" width=80px height=80px>`
-    }  else if (controller.axes[2] > 0.75 && ( controller.axes[3] < 0.4 && controller.axes[3] > -.4 ))  {
-      rightAxis.innerHTML = `<img src="assets/images/pressed_right.png" width=80px height=80px>`
-    } else if (controller.axes[3] > 0.75 && ( controller.axes[2] < 0.4 && controller.axes[2] > -.4 ))  {
-      rightAxis.innerHTML = `<img src="assets/images/pressed_down.png" width=80px height=80px>`
-    } else {
-      rightAxis.innerHTML = `<img src="assets/images/right.png" width=80px height=80px>`
-    }
+    getJoystickDirections(controller, leftAxis, rightAxis)
   }
   rAF(updateStatus);
+}
+
+function getJoystickDirections(controller, leftAxis, rightAxis) {
+  // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
+  if ( controller.axes[0] < -0.4 && controller.axes[1] < -0.4 ) {
+    leftAxis.innerHTML = `<img src="assets/images/pressed_up_left.png" width=80px height=80px>`
+  } else if ( controller.axes[0] < -0.4 && controller.axes[1] > 0.4 ) {
+    leftAxis.innerHTML = `<img src="assets/images/pressed_down_left.png" width=80px height=80px>`
+  } else if ( controller.axes[0] > 0.4 && controller.axes[1] < -0.4 ) {
+    leftAxis.innerHTML = `<img src="assets/images/pressed_up_right.png" width=80px height=80px>`
+  } else if ( controller.axes[0] > 0.4 && controller.axes[1] > 0.4 ) {
+    leftAxis.innerHTML = `<img src="assets/images/pressed_down_right.png" width=80px height=80px>`
+  } 
+
+  // Now handle all the regular directions, if the constraints for diagonal directions are not met
+    else if ( controller.axes[0] < -0.75 && ( controller.axes[1] < 0.4 && controller.axes[1] > -.4 )) {
+    leftAxis.innerHTML = `<img src="assets/images/pressed_left.png" width=80px height=80px>`
+  } else if (controller.axes[1] < -0.75 && ( controller.axes[0] < 0.4 && controller.axes[0] > -.4 ))  {
+    leftAxis.innerHTML = `<img src="assets/images/pressed_up.png" width=80px height=80px>`
+  }  else if (controller.axes[0] > 0.75 && ( controller.axes[1] < 0.4 && controller.axes[1] > -.4 ))  {
+    leftAxis.innerHTML = `<img src="assets/images/pressed_right.png" width=80px height=80px>`
+  } else if (controller.axes[1] > 0.75 && ( controller.axes[0] < 0.4 && controller.axes[0] > -.4 ))  {
+    leftAxis.innerHTML = `<img src="assets/images/pressed_down.png" width=80px height=80px>`
+  } else {
+    leftAxis.innerHTML = `<img src="assets/images/ls.png" width=80px height=80px>`
+  }
+
+  // Same as above, but now for the Right Stick
+  if ( controller.axes[2] < -0.4 && controller.axes[3] < -0.4 ) {
+    rightAxis.innerHTML = `<img src="assets/images/pressed_up_left.png" width=80px height=80px>`
+  } else if ( controller.axes[2] < -0.4 && controller.axes[3] > 0.4 ) {
+    rightAxis.innerHTML = `<img src="assets/images/pressed_down_left.png" width=80px height=80px>`
+  } else if ( controller.axes[2] > 0.4 && controller.axes[3] < -0.4 ) {
+    rightAxis.innerHTML = `<img src="assets/images/pressed_up_right.png" width=80px height=80px>`
+  } else if ( controller.axes[2] > 0.4 && controller.axes[3] > 0.4 ) {
+    rightAxis.innerHTML = `<img src="assets/images/pressed_down_right.png" width=80px height=80px>`
+  } 
+  
+    else if ( controller.axes[2] < -0.75 && ( controller.axes[3] < 0.4 && controller.axes[3] > -.4 )) {
+    rightAxis.innerHTML = `<img src="assets/images/pressed_left.png" width=80px height=80px>`
+  } else if (controller.axes[3] < -0.75 && ( controller.axes[2] < 0.4 && controller.axes[2] > -.4 ))  {
+    rightAxis.innerHTML = `<img src="assets/images/pressed_up.png" width=80px height=80px>`
+  }  else if (controller.axes[2] > 0.75 && ( controller.axes[3] < 0.4 && controller.axes[3] > -.4 ))  {
+    rightAxis.innerHTML = `<img src="assets/images/pressed_right.png" width=80px height=80px>`
+  } else if (controller.axes[3] > 0.75 && ( controller.axes[2] < 0.4 && controller.axes[2] > -.4 ))  {
+    rightAxis.innerHTML = `<img src="assets/images/pressed_down.png" width=80px height=80px>`
+  } else {
+    rightAxis.innerHTML = `<img src="assets/images/rs.png" width=80px height=80px>`
+  }
 }
 
 function scangamepads() {
