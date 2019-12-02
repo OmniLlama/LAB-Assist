@@ -46,6 +46,7 @@ export class InputEditorComponent implements OnInit {
   console = window.console;
   alert = window.alert;
   requestAnimationFrame = window.requestAnimationFrame;
+  output = document.getElementById('console');
   constructor() {
   }
   ngOnInit() {
@@ -55,6 +56,7 @@ export class InputEditorComponent implements OnInit {
     this.init(this);
   }
   ngAfterViewInit(): void {
+
   }
   init(iec: InputEditorComponent) {
     this.enableGUI(false);
@@ -158,6 +160,7 @@ export class InputEditorComponent implements OnInit {
         //method 3: just add base midiFile to a song, and continue
         song = sequencer.createSong(tmp_midiFile);
     }
+    // song.tracks[0].recordEnabled = 'midi';
     song.setTimeSignature(3, 4, true);
     return song;
   }
