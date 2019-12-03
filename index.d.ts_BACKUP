@@ -18,6 +18,8 @@ export function getNoteNumber(step: string, octave: number): number
 export function createMidiEvent(ticks: number, type: number, data1: number, data2?: number): MIDIEvent
 export function processEvent(event: MIDIEvent, instrument: string): void
 export function stopProcessEvents(): void
+// export function initMidi(cb): void
+export function getDevices()
 export var browser: string
 export var midiInputs: WebMidi.MIDIInput[]
 export var midiOutputs: WebMidi.MIDIOutput[]
@@ -174,13 +176,14 @@ export type Track = {
   audioLatency: number
   monitor: boolean
   mute: boolean
+  recordEnabled
   addPart: (part: Part) => void
   addPartAt: (part: Part, type: [string, number]) => void
   removeEvents: (events: Array<MIDIEvent>) => void
   removeAllEvents: () => void
   processMidiEvent: (event: MIDIEvent | Array<MIDIEvent>) => void
-  setMidiInput: (id: string, flag: boolean) => void
-  setMidiOutput: (id: string, flag: boolean) => void
+  setMidiInput: (id: string, flag?: boolean) => void
+  setMidiOutput: (id: string, flag?: boolean) => void
   setInstrument: (id: string) => void
   removePart: (part: Part) => void
   update: () => void

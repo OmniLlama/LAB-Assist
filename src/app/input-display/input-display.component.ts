@@ -48,8 +48,6 @@ var haveEvents = 'GamepadEvent' in window;
 var haveWebkitEvents = 'WebKitGamepadEvent' in window;
 export var controllers: Array<Gamepad>;
 var rAF =
-  // window.mozRequestAnimationFrame ||
-  window.webkitRequestAnimationFrame ||
   window.requestAnimationFrame;
 
 
@@ -114,10 +112,10 @@ function updateStatus() {
      * Button Status Loop */
     var buttons = d.getElementsByClassName("button");
     // for (var i = 0; i < controller.buttons.length; i++) {
-    for (var i = 0; i < 7; i++) {
+    for (var i = 0; i <= 7; i++) {
       var b = buttons[i] as HTMLDivElement;
       var val = controller.buttons[i];
-      var pressed = val.value == 1.0;
+      var pressed = val.value > .8;
       if (typeof (val) == "object") {
         pressed = val.pressed;
         // val = val.value;
@@ -326,8 +324,7 @@ if (haveEvents) {
 }
 
 window.onload = function () {
-  console.log("onload in gamepadtest reached!");
-  // e_OnLoad();
+  // console.log("onload in gamepadtest reached!");
 }
 class gamepadHTMLShell {
   padTitle: HTMLHeadElement;

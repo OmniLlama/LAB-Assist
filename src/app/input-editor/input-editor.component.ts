@@ -1,5 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { Note, Part, MIDINote, Track, getMidiFiles, createSong, Instrument, Song, KeyEditor } from "heartbeat-sequencer";
+import { Note, Part, MIDINote, Track, getMidiFiles, createSong, Instrument, Song, KeyEditor, createTrack, MIDIEvent } from "heartbeat-sequencer";
+import { InputConverterComponent } from '../input-converter/input-converter.component';
+import { InputDisplayComponent } from '../input-display/input-display.component';
 // import * as sequencer from 'heartbeat-sequencer';
 declare let sequencer: any;
 
@@ -37,14 +39,16 @@ export class InputEditorComponent implements OnInit {
 
   allNotes = {}; // stores references to all midi notes;
   allParts = {}; // stores references to all midi parts;
-  currNote = null;
-  currPart = null;
+  currNote: Note = null;
+  currPart: Part = null;
   flattenTracksToSingleTrack = true;
 
   bppStart = 8;  //default: 16
 
   console = window.console;
   alert = window.alert;
+  idc = InputDisplayComponent.inpDispCmp;
+  icc = InputConverterComponent.inpConvComp;
   requestAnimationFrame = window.requestAnimationFrame;
   output = document.getElementById('console');
   constructor() {
@@ -56,7 +60,19 @@ export class InputEditorComponent implements OnInit {
     this.init(this);
   }
   ngAfterViewInit(): void {
-
+    if (this.song.tracks.length == 0) {
+      let tr = sequencer.createTrack('AutoTrack');
+      this.song.addTrack(tr);
+      this.song.update();
+    }
+    if (this.track == undefined) {
+      this.track = this.song.tracks[0];
+    }
+    this.track.recordEnabled = 'midi';
+    this.track.setMidiInput('all');
+    this.track.update();
+    this.song.update();
+    // sequencer.getMidiInputs();
   }
   init(iec: InputEditorComponent) {
     this.enableGUI(false);
@@ -66,9 +82,9 @@ export class InputEditorComponent implements OnInit {
     let tmp_event;
 
     this.song = this.initSong();
+
     iec.instruments = sequencer.getInstruments();
     // song.tracks.forEach(function(track) {track.setMidiInput()})
-    //|------------------------------------------------------------------------------------------|
 
     /**
      * Compacts all song tracks onto single track, set to monitor, and set instrument to piano
@@ -258,7 +274,8 @@ export class InputEditorComponent implements OnInit {
       if (iec.currNote !== null) { this.unselectNote(iec.currNote); }
       iec.currNote = null;
     } else {
-      iec.keyEditor.startMovePart(tmp_part, iec.edtrInfo.screenX, iec.edtrInfo.screenY);
+      // iec.keyEditor.startMovePart(tmp_part, iec.edtrInfo.screenX, iec.edtrInfo.screenY);
+      iec.keyEditor.startMovePart(tmp_part, iec.edtrInfo.clientX + InputEditorComponent.inpEdComp.edtrHtml.div_Editor.scrollLeft, iec.edtrInfo.pageY);
       document.addEventListener('mouseup', iec.evt_Part_lMouUp, false);
     }
   }
@@ -330,7 +347,6 @@ export class InputEditorComponent implements OnInit {
       updateElementBBox(tmp_rightEdge, subdivBBox(changingNote.bbox, 0.2, 0.8, 1, 0));
     }
     else {
-
     }
   }
   evt_NoteEdge_Right_MouMove(e) {
@@ -387,7 +403,7 @@ export class InputEditorComponent implements OnInit {
      * */
     else if (tmp_className.indexOf('part') !== -1) {
       iec.currPart = iec.allParts[e.target.id];
-      iec.currPart.addEvents(createNewNoteInPartAtMouse(iec.currPart, iec));
+      iec.currPart.addEvents(createNewNoteAtMouse(iec.currPart, iec));
       iec.song.update();
       return;
     }
@@ -447,7 +463,21 @@ export class InputEditorComponent implements OnInit {
    *
    *
    */
-
+  createNote(iec: InputEditorComponent, start: number, end: number, pitch: number): [MIDIEvent, MIDIEvent] {
+    if (iec.currPart != null && iec.currPart != undefined) {
+    }
+    else {
+      iec.currPart = sequencer.createPart('GeneratedPart');
+      // this.currPart.addEvents(createNewNote(this.currPart, iec, start, end, pitch));
+      iec.track.addPartAt(iec.currPart, ['ticks', start]);
+    }
+    let noteEvts = createNewNoteEvents(start, end, pitch);
+    iec.currPart.addEvents(noteEvts);
+    // this.currPart.addEvents(createNewNoteEvents(start, end, pitch));
+    iec.track.update();
+    iec.song.update();
+    return noteEvts;
+  }
 }
 let heldEdge;
 let changingNote;
@@ -534,33 +564,27 @@ function initInputEvents() {
   // iec.edtrHtml.div_Score.addEventListener('mousemove', (e) => {
   window.addEventListener('mousemove', (e) => {
     e.preventDefault();
-    let tmp_pageX = e.pageX;
-    let tmp_pageY = e.pageY;
-    let tmp_screenX = e.screenX;
-    let tmp_screenY = e.screenY;
-    let tmp_clientX = e.clientX;
-    let tmp_clientY = e.clientY;
-    let tmp_pos = iec.keyEditor.getPositionAt(tmp_pageX);
     let tmp_part = iec.keyEditor.selectedPart;
     let tmp_note = iec.keyEditor.selectedNote;
 
     // show the song position and pitch of the current mouse position; handy for debugging
-    iec.edtrInfo.screenX = tmp_screenX;
-    iec.edtrInfo.screenY = tmp_screenY;
-    iec.edtrInfo.pageX = tmp_pageX;
-    iec.edtrInfo.pageY = tmp_pageY;
-    iec.edtrInfo.clientX = tmp_clientX;
-    iec.edtrInfo.clientY = tmp_clientY;
-    iec.edtrInfo.screenX = tmp_screenX;
-    iec.edtrInfo.screenY = tmp_screenY;
-    iec.edtrInfo.mouseBarPos = tmp_pos.barsAsString;
+    iec.edtrInfo.screenX = e.screenX;
+    iec.edtrInfo.screenY = e.screenY;
+    iec.edtrInfo.pageX = e.pageX;
+    iec.edtrInfo.pageY = e.pageY;
+    iec.edtrInfo.clientX = e.clientX;
+    iec.edtrInfo.clientY = e.clientY;
+    iec.edtrInfo.mouseBarPos = iec.keyEditor.getPositionAt(iec.edtrInfo.pageX).barsAsString;
     iec.edtrInfo.editorScrollX = iec.edtrHtml.div_Editor.scrollLeft;
     iec.edtrInfo.editorScrollY = iec.edtrHtml.div_Editor.scrollTop;
     iec.edtrInfo.editorFrameOffsetY = iec.edtrHtml.div_Editor.offsetTop;
     iec.edtrInfo.editorFrameOffsetX = iec.edtrHtml.div_Editor.offsetLeft;
+    iec.edtrInfo.headX = iec.keyEditor.getPlayheadX();
+    iec.edtrInfo.scrolledHeadX = iec.keyEditor.getPlayheadX(true);
+    iec.edtrInfo.snapTicksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.headX);
+    iec.edtrInfo.ticksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.headX, false);
     iec.edtrInfo.ticksAtX = iec.keyEditor.getTicksAt(
       iec.edtrInfo.clientX - iec.edtrInfo.editorFrameOffsetX, false);
-
     iec.edtrHtml.div_MouseX.innerHTML =
       '\nclient: (' + iec.edtrInfo.clientX + ', ' + iec.edtrInfo.clientY + ')' +
       '\n|screen: (' + iec.edtrInfo.screenX + ', ' + iec.edtrInfo.screenY + ')' +
@@ -568,12 +592,14 @@ function initInputEvents() {
       '\n|page: (' + iec.edtrInfo.pageX + ', ' + iec.edtrInfo.pageY + ')' +
       '\n|ticks-at-mouse: ' + iec.edtrInfo.ticksAtX.toFixed(1) +
       '\n|x Bar: ' + iec.edtrInfo.mouseBarPos +
-      '\n|x-head : ' + iec.keyEditor.getPlayheadX().toFixed(2);
+      '\n|x-head: ' + iec.edtrInfo.headX.toFixed(2) +
+      '\n|scrolled-x-head: ' + iec.edtrInfo.scrolledHeadX.toFixed(2) +
+      '\n|snap-ticks-head: ' + iec.edtrInfo.snapTicksAtHead +
+      '\n|ticks-head: ' + iec.edtrInfo.ticksAtHead;
     ;
     iec.edtrInfo.mousePitchPos = iec.keyEditor.getPitchAt(iec.edtrInfo.pageY - iec.edtrHtml.div_Editor.offsetTop).number;
     iec.edtrHtml.div_MouseY.innerHTML = 'y Pitch: ' + iec.edtrInfo.mousePitchPos +
       '\nframe-offset-y: ' + iec.edtrInfo.editorFrameOffsetY;
-
     // move part or note if selected
     if (tmp_part !== undefined) {
       // iec.keyEditor.movePart(tmp_x, tmp_y - iec.edtrHtml.div_Score.offsetTop);
@@ -865,6 +891,24 @@ function render() {
     // so only the extra barlines will be drawn
     while (iec.keyEditor.verticalLine.hasNext('sixteenth')) { drawVerticalLine(iec.keyEditor.verticalLine.next('sixteenth')); }
   }
+  //update head values if playing
+  if (iec.song.playing) {
+    iec.edtrInfo.headX = iec.keyEditor.getPlayheadX();
+    iec.edtrInfo.scrolledHeadX = iec.keyEditor.getPlayheadX(true);
+    iec.edtrInfo.snapTicksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.headX);
+    iec.edtrInfo.ticksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.headX, false);
+    iec.edtrHtml.div_MouseX.innerHTML =
+      '\nclient: (' + iec.edtrInfo.clientX + ', ' + iec.edtrInfo.clientY + ')' +
+      '\n|screen: (' + iec.edtrInfo.screenX + ', ' + iec.edtrInfo.screenY + ')' +
+      '\n|editor-scrl: (' + iec.edtrInfo.editorScrollX + ', ' + iec.edtrInfo.editorScrollY + ')' +
+      '\n|page: (' + iec.edtrInfo.pageX + ', ' + iec.edtrInfo.pageY + ')' +
+      '\n|ticks-at-mouse: ' + iec.edtrInfo.ticksAtX.toFixed(1) +
+      '\n|x Bar: ' + iec.edtrInfo.mouseBarPos +
+      '\n|x-head: ' + iec.edtrInfo.headX.toFixed(2) +
+      '\n|scrolled-x-head: ' + iec.edtrInfo.scrolledHeadX.toFixed(2) +
+      '\n|snap-ticks-head: ' + iec.edtrInfo.snapTicksAtHead +
+      '\n|ticks-head: ' + iec.edtrInfo.ticksAtHead;
+  }
   requestAnimationFrame(render);
 }
 
@@ -947,7 +991,7 @@ function addPartAtMouse(iec: InputEditorComponent) {
     tmp_events.push(sequencer.createMidiEvent(tmp_ticks, InputEditorComponent.NOTE_OFF, tmp_pitch, 0));
     tmp_ticks += tmp_noteLength;
   }
-  tmp_ticks = InputEditorComponent.inpEdComp.keyEditor.getTicksAt(InputEditorComponent.inpEdComp.keyEditor.getPlayheadX(true));
+  tmp_ticks = iec.edtrInfo.ticksAtHead;
 
   tmp_part.addEvents(tmp_events);
   if (!InputEditorComponent.inpEdComp.track) {
@@ -968,12 +1012,27 @@ function addPartAtMouse(iec: InputEditorComponent) {
 /**
  * EXPERIMENTAL
  */
-function createNewNoteInPartAtMouse(tmp_part, iec) {
-  let tmp_pitch = InputEditorComponent.inpEdComp.keyEditor.getPitchAt(InputEditorComponent.inpEdComp.edtrInfo.screenY - InputEditorComponent.inpEdComp.edtrHtml.div_Score.offsetTop).number;
+function createNewMIDINote(start: number, end: number, pitch: number): MIDINote {
+  let tmp_velocity = 127;
+  let tmp_noteOn = sequencer.createMidiEvent(start, InputEditorComponent.NOTE_ON, pitch, tmp_velocity);
+  let tmp_noteOff = sequencer.createMidiEvent(end, InputEditorComponent.NOTE_OFF, pitch, 0);
+  let tmp_midiNote = sequencer.createMidiNote(tmp_noteOn, tmp_noteOff);
+  return tmp_midiNote;
+}
+function createNewNoteEvents(start: number, end: number, pitch: number): [MIDIEvent, MIDIEvent] {
+  let tmp_velocity = 127;
+  let tmp_events = [];
+  let tmp_noteOn = sequencer.createMidiEvent(start, InputEditorComponent.NOTE_ON, pitch, tmp_velocity);
+  let tmp_noteOff = sequencer.createMidiEvent(end, InputEditorComponent.NOTE_OFF, pitch, 0);
+  tmp_events.push(tmp_noteOn, tmp_noteOff);
+  return [tmp_noteOn, tmp_noteOff];
+}
+function createNewNoteAtMouse(tmp_part, iec: InputEditorComponent) {
+  let tmp_pitch = iec.edtrInfo.mousePitchPos;
   let tmp_velocity = 127;
   let tmp_events = [];
   let tmp_noteLength = iec.song.ppq/*  * 2 */;
-  let tmp_ticks = InputEditorComponent.inpEdComp.keyEditor.getTicksAt(InputEditorComponent.inpEdComp.edtrInfo.screenX);
+  let tmp_ticks = iec.edtrInfo.ticksAtX;
   let tmp_noteOn;
   let tmp_noteOff;
   let tmp_note;
@@ -1033,6 +1092,8 @@ export class EditorInfo {
   clientY: number;
   screenX: number;
   screenY: number;
+  headX: number;
+  scrolledHeadX: number;
   mouseBarPos;
   mousePitchPos;
 
@@ -1041,6 +1102,8 @@ export class EditorInfo {
   editorScrollX;
   editorScrollY;
   ticksAtX: number;
+  snapTicksAtHead: number;
+  ticksAtHead: number;
   instruments: Instrument[];
   currNote = null;
   currPart = null;
