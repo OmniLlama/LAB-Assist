@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MIDIEvent, Note, MIDINote } from 'heartbeat-sequencer';
-import { InputEditorComponent } from '../input-editor/input-editor.component';
-import { InputDisplayComponent } from '../input-display/input-display.component';
+import { InputEditorComponent, updateElementBBox, getEdgeDivs, subdivBBox } from '../input-editor/input-editor.component';
+import { InputDisplayComponent, ButtonNotationType } from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
 import { MIDI, Widget } from 'jzz';
 import { CurrencyPipe } from '@angular/common';
@@ -69,12 +69,13 @@ export class InputConverterComponent implements OnInit {
     let icc = InputConverterComponent.inpConvComp;
     if (idc.getControllers().length != 0 && icc.testController == null) {
       icc.testController = getPad();
-      window.removeEventListener("mousemove", (e) => icc.getController(e));
+      // window.removeEventListener("mousemove", (e) => icc.getController(e));
       window.addEventListener("mousemove", (e) => icc.checkController(e));
       icc.playControllerConnectedJingle();
       icc.inpStarts = new Array<number>(getPad().buttons.length);
       icc.inpEnds = new Array<number>(getPad().buttons.length);
       icc.btnsHeld = new Array<boolean>(icc.testController.buttons.length);
+      icc.heldNotes = new Array<[MIDINote, number]>(icc.testController.buttons.length);
       if (icc.testController != null && icc.testController != undefined) {
         rAF(icc.updateController);
       }
@@ -95,9 +96,9 @@ export class InputConverterComponent implements OnInit {
       icc.trackingNotes = true;
     }
     else if (!iec.song.playing && icc.trackingNotes) {
-      icc.trackedNotes.forEach(note => {
-        iec.createNote(iec, note[0], note[1], note[2]);
-      });
+      // icc.trackedNotes.forEach(note => {
+      //   iec.createNote(iec, note[0], note[1], note[2]);
+      // });
       icc.trackedNotes = null;
       iec.song.update();
       icc.trackingNotes = false;
@@ -108,10 +109,12 @@ export class InputConverterComponent implements OnInit {
       //if PRESSED this frame
       if (b.pressed && !icc.btnsHeld[ind]) {
         icc.btnsHeld[ind] = true;
-        icc.midiInPort.noteOn(0, pitch, 127);
+        icc.midiOutPort.noteOn(0, pitch, 127);
         //if RECORDING
         if (icc.trackingNotes) {
           icc.inpStarts[ind] = iec.edtrInfo.ticksAtHead;
+          let thing = iec.createNote(iec, icc.inpStarts[ind], icc.inpStarts[ind] + 128, getButtonPitch(ind));
+          icc.heldNotes[ind] = [thing[0].midiNote, iec.edtrInfo.ticksAtHead];
           console.log('hit button while playing');
         }
         //if RELEASED this frame
@@ -119,15 +122,56 @@ export class InputConverterComponent implements OnInit {
         //if RECORDING
         if (icc.trackingNotes) {
           icc.inpEnds[ind] = iec.edtrInfo.ticksAtHead;
-          icc.midiInPort.noteOff(0, pitch, 127);
+          icc.midiOutPort.noteOff(0, pitch, 127);
           icc.trackedNotes.push([icc.inpStarts[ind], icc.inpEnds[ind], getButtonPitch(ind)]);
         }
         icc.btnsHeld[ind] = false;
       }
-      if (icc.btnsHeld[ind]) {
-
+      // EXPERIMENTALISISISMZ
+      if (icc.trackingNotes) {
+        if (icc.btnsHeld[ind]) {
+          icc.heldNotes[ind][0].part.moveEvent(icc.heldNotes[ind][0].noteOff,
+            (iec.edtrInfo.ticksAtHead - icc.heldNotes[ind][1]));
+          icc.heldNotes[ind][1] = iec.edtrInfo.ticksAtHead;
+          iec.song.update();
+          if (icc.heldNotes[ind][0].id != undefined) {
+            let noteAndEdges = getEdgeDivs(icc.heldNotes[ind][0]);
+            if (noteAndEdges != null) {
+              updateElementBBox(noteAndEdges[1], subdivBBox(icc.heldNotes[ind][0].bbox, 0.1, 0, 1, 0));
+              updateElementBBox(noteAndEdges[2], subdivBBox(icc.heldNotes[ind][0].bbox, 0.2, 0.8, 1, 0));
+            }
+          }
+        }
+        else if (!icc.btnsHeld[ind] && icc.heldNotes[ind] != null) {
+          icc.heldNotes[ind] = null;
+        }
       }
     });
+    var buttons = document.getElementsByClassName("editor-input-icon");
+    for (var i = 0; i <= 7; i++) {
+      var b = buttons[i] as HTMLDivElement;
+      var val = getPad().buttons[i];
+      var pressed = val.value > .8;
+      if (typeof (val) == "object") {
+        pressed = val.pressed;
+        // val = val.value;
+      }
+      var pct = Math.round(val.value * 100) + "%";
+      b.style.backgroundSize = pct + " " + pct;
+      let imageString = 'a';
+      let buttonString = 'a';
+      if (pressed) {
+        // If pressed, switches to the pressed version of the button's image
+        buttonString = nameButton(i);
+        imageString = `<img id="icon-img" src="assets/images/pressed_${buttonString}.png">`;
+        b.innerHTML = imageString;
+      } else {
+        // If released/not pressed, switches to the regular version of the button's image
+        buttonString = nameButton(i);
+        imageString = `<img id="icon-img" src="assets/images/${buttonString}.png" >`;
+        b.innerHTML = imageString;
+      }
+    }
     JZZ().refresh();
     rAF(icc.updateController);
   }
@@ -139,13 +183,15 @@ export class InputConverterComponent implements OnInit {
   }
   playStartJingle() {
     let mtop = InputConverterComponent.inpConvComp.midiOutPort;
-    let mtip = InputConverterComponent.inpConvComp.midiInPort;
-    mtip.note(0, 'C5', 127, 100).wait(100)
+    // let mtip = InputConverterComponent.inpConvComp.midiInPort;
+    mtop
+      .note(0, 'C5', 127, 100).wait(100)
       .note(0, 'D5', 127, 100).wait(100)
       .note(0, 'G5', 127, 100);
   }
   playControllerConnectedJingle() {
-    InputConverterComponent.inpConvComp.midiOutPort
+    let mtop = InputConverterComponent.inpConvComp.midiOutPort;
+    mtop
       .note(0, 'C3', 127, 100).wait(100)
       .note(0, 'D3', 127, 100).wait(100)
       .note(0, 'G3', 127, 100);
@@ -222,6 +268,68 @@ function onMIDIOutSuccess() {
 function MIDIStateChanged(data?): any {
   console.warn('MIDI State has changed!');
   return null;
+}
+export function nameButton(i) {
+  switch (InputDisplayComponent.inpDispCmp.butNotTy) {
+    case ButtonNotationType.StreetFighter:
+      switch (i) {
+        case 0: return "a";
+        case 1: return "b";
+        case 2: return "x";
+        case 3: return "y";
+        case 4: return "l1";
+        case 5: return "r1";
+        case 6: return "l2";
+        case 7: return "r2";
+        default: return null;
+      }
+
+    case ButtonNotationType.GuiltyGear:
+      {
+        switch (i) {
+          case 0: return "P";
+          case 1: return "D";
+          case 2: return "K";
+          case 3: return "S";
+          case 4: return "HS";
+          case 5: return "SP";
+          default: return i;
+        }
+      }
+    case ButtonNotationType.SoulCalibur:
+      {
+        switch (i) {
+          case 0: return "G";
+          case 1: return "K";
+          case 2: return "A";
+          case 3: return "B";
+          default: return i;
+        }
+      }
+    case ButtonNotationType.Tekken:
+      {
+        switch (i) {
+          case 0: return "LK";
+          case 1: return "RK";
+          case 2: return "LP";
+          case 3: return "RP";
+          default: return i;
+        }
+      }
+    case ButtonNotationType.SNK:
+      {
+        switch (i) {
+          case 0: return "B";
+          case 1: return "D";
+          case 2: return "A";
+          case 3: return "C";
+          default: return i;
+        }
+      }
+    default:
+      return i;
+  }
+  return i;
 }
 export class InputConverter {
   notes: Note[];

@@ -232,7 +232,7 @@ function createAxisMeter(ind) {
  * Names the button with the proper designation based on button notation selection
  * @param {*} i - the button id number
  */
-function nameButton(i) {
+export function nameButton(i) {
   switch (InputDisplayComponent.inpDispCmp.butNotTy) {
     case ButtonNotationType.StreetFighter:
       switch (i) {

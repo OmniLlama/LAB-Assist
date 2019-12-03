@@ -27,7 +27,7 @@ export class InputEditorComponent implements OnInit {
   audCntxt: AudioContext;
 
   pitchStart = 12;
-  pitchEnd = 32;
+  pitchEnd = 48;
   pitchHeight = 16;
   timeSigNom = 3;
   timeSigDenom = 4;
@@ -457,12 +457,7 @@ export class InputEditorComponent implements OnInit {
     //song.setPlayhead('ticks', keyEditor.xToTicks(e.pageX));
   }
   //#endregion
-  /**
-   * END InputEditorComponent Class -------|||||-----------------
-   *
-   *
-   *
-   */
+
   createNote(iec: InputEditorComponent, start: number, end: number, pitch: number): [MIDIEvent, MIDIEvent] {
     if (iec.currPart != null && iec.currPart != undefined) {
     }
@@ -470,6 +465,7 @@ export class InputEditorComponent implements OnInit {
       iec.currPart = sequencer.createPart('GeneratedPart');
       // this.currPart.addEvents(createNewNote(this.currPart, iec, start, end, pitch));
       iec.track.addPartAt(iec.currPart, ['ticks', start]);
+      iec.track.update();
     }
     let noteEvts = createNewNoteEvents(start, end, pitch);
     iec.currPart.addEvents(noteEvts);
@@ -477,6 +473,21 @@ export class InputEditorComponent implements OnInit {
     iec.track.update();
     iec.song.update();
     return noteEvts;
+  }
+
+  /**
+ * END InputEditorComponent Class -------|||||-----------------
+ *
+ *
+ *
+ */
+}
+export function getEdgeDivs(note: MIDINote): [HTMLDivElement, HTMLDivElement, HTMLDivElement] {
+  let tmp_noteDiv = document.getElementById(note.id) as HTMLDivElement;
+  if (tmp_noteDiv != null)
+    return [tmp_noteDiv, tmp_noteDiv.children[0] as HTMLDivElement, tmp_noteDiv.children[1] as HTMLDivElement]
+  else {
+    return null;
   }
 }
 let heldEdge;
@@ -583,6 +594,7 @@ function initInputEvents() {
     iec.edtrInfo.scrolledHeadX = iec.keyEditor.getPlayheadX(true);
     iec.edtrInfo.snapTicksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.headX);
     iec.edtrInfo.ticksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.headX, false);
+    iec.edtrInfo.scrollTicksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.scrolledHeadX, false);
     iec.edtrInfo.ticksAtX = iec.keyEditor.getTicksAt(
       iec.edtrInfo.clientX - iec.edtrInfo.editorFrameOffsetX, false);
     iec.edtrHtml.div_MouseX.innerHTML =
@@ -803,7 +815,7 @@ function drawPart(ref_part: Part, iec) {
   iec.edtrHtml.div_Parts.appendChild(tmp_div_Part);
 }
 //Fits element within its bounding box
-function updateElementBBox(element, bbox: BBox) {
+export function updateElementBBox(element, bbox: BBox) {
   element.style.left = bbox.x + 'px';
   element.style.top = bbox.y + 'px';
   element.style.width = bbox.width + 'px';
@@ -897,6 +909,7 @@ function render() {
     iec.edtrInfo.scrolledHeadX = iec.keyEditor.getPlayheadX(true);
     iec.edtrInfo.snapTicksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.headX);
     iec.edtrInfo.ticksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.headX, false);
+    iec.edtrInfo.scrollTicksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.scrolledHeadX, false);
     iec.edtrHtml.div_MouseX.innerHTML =
       '\nclient: (' + iec.edtrInfo.clientX + ', ' + iec.edtrInfo.clientY + ')' +
       '\n|screen: (' + iec.edtrInfo.screenX + ', ' + iec.edtrInfo.screenY + ')' +
@@ -1061,7 +1074,7 @@ function flattenTracks(ref_song) {
     }
   );
 }
-function subdivBBox(ref_bbox, ref_xRatio: number, ref_xOffsetRatio: number, ref_yRatio: number, ref_yOffsetRatio: number): BBox {
+export function subdivBBox(ref_bbox, ref_xRatio: number, ref_xOffsetRatio: number, ref_yRatio: number, ref_yOffsetRatio: number): BBox {
   let tmp_bbox = new BBox(null,
     (ref_bbox.width * ref_xOffsetRatio),
     (ref_bbox.height * ref_yOffsetRatio),
@@ -1083,6 +1096,7 @@ function subdivBBoxByPixels(ref_bbox, ref_xRatio, ref_xOffsetRatio: number, ref_
   else if (tmp_bbox.width > ref_maxWidth) { tmp_bbox.width = ref_maxWidth; }
   return tmp_bbox;
 }
+
 export class EditorInfo {
   // screenX: number;
   // screenY: number;
@@ -1103,12 +1117,13 @@ export class EditorInfo {
   editorScrollY;
   ticksAtX: number;
   snapTicksAtHead: number;
+  scrollTicksAtHead: number;
   ticksAtHead: number;
   instruments: Instrument[];
   currNote = null;
   currPart = null;
-  pitchStart = 0;
-  pitchEnd = 80;
+  // pitchStart = 0;
+  // pitchEnd = 80;
   allNotes: Note[];
   allParts: Part[];
   flattenTracksToSingleTrack = true;
