@@ -13,15 +13,16 @@ export enum ButtonNotationType {
   StreetFighter = 'sf',
   SNK = 'snk',
   Netherrealm = 'nrs',
-  Tekken = 'tek',
+  Tekken = 'tkn',
   SoulCalibur = 'sc',
-  GuiltyGear = 'gg'
+  GuiltyGear = 'gg',
+  Playstation = 'ps',
+  Xbox = 'xb'
 }
 @Component({
   selector: 'app-input-display',
   templateUrl: './input-display.component.html',
   styleUrls: ['./input-display.component.sass'],
-
 })
 export class InputDisplayComponent implements OnInit {
   static inpDispCmp: InputDisplayComponent;
@@ -39,17 +40,13 @@ export class InputDisplayComponent implements OnInit {
     InputDisplayComponent.inpDispCmp = this;
     controllers = new Array<Gamepad>();
   }
-  getControllers() {
-    return controllers;
-  }
+  getControllers() { return controllers; }
 }
 
 var haveEvents = 'GamepadEvent' in window;
 var haveWebkitEvents = 'WebKitGamepadEvent' in window;
 export var controllers: Array<Gamepad>;
-var rAF =
-  window.requestAnimationFrame;
-
+var rAF = window.requestAnimationFrame;
 
 var padHTMLShells = [];
 function connecthandler(e) {
@@ -114,6 +111,7 @@ function updateStatus() {
     // for (var i = 0; i < controller.buttons.length; i++) {
     for (var i = 0; i <= 7; i++) {
       var b = buttons[i] as HTMLDivElement;
+      if (b == undefined) { break; }
       var val = controller.buttons[i];
       var pressed = val.value > .8;
       if (typeof (val) == "object") {
@@ -177,7 +175,6 @@ function updateStatus() {
     }
     if (Math.abs(controller.axes[0]) >= .75) {
     }
-    // }
   });
 
   rAF(updateStatus);
@@ -228,6 +225,13 @@ function createAxisMeter(ind) {
   // return e;
   return e;
 }
+var xbBtns = ['a', 'b', 'x', 'y', 'l1', 'r1', 'l2', 'r2'];
+var psBtns = ['X', 'O', '[]', '^', 'l1', 'r1', 'l2', 'r2'];
+var sfBtns = ['lk', 'mk', 'lp', 'mp', 'l1', 'hp', 'l2', 'hk'];
+var ggBtns = ['P', 'D', 'K', 'S', 'HS', 'l1', 'l2', 'SP'];
+var tknBtns = ['LK', 'RK', 'LP', 'RP'];
+var scBtns = ['G', 'K', 'A', 'B'];
+var snkBtns = ['B', 'D', 'A', 'C'];
 /**
  * Names the button with the proper designation based on button notation selection
  * @param {*} i - the button id number
@@ -235,62 +239,16 @@ function createAxisMeter(ind) {
 export function nameButton(i) {
   switch (InputDisplayComponent.inpDispCmp.butNotTy) {
     case ButtonNotationType.StreetFighter:
-      switch (i) {
-        case 0: return "a";
-        case 1: return "b";
-        case 2: return "x";
-        case 3: return "y";
-        case 4: return "l1";
-        case 5: return "r1";
-        case 6: return "l2";
-        case 7: return "r2";
-        default: return null;
-      }
-
+      return (xbBtns[i] != undefined ? xbBtns[i] : i);
+    // return (sfBtns[i] != undefined ? sfBtns[i] : i);
     case ButtonNotationType.GuiltyGear:
-      {
-        switch (i) {
-          case 0: return "P";
-          case 1: return "D";
-          case 2: return "K";
-          case 3: return "S";
-          case 4: return "HS";
-          case 5: return "SP";
-          default: return i;
-        }
-      }
+      return (ggBtns[i] != undefined ? ggBtns[i] : i);
     case ButtonNotationType.SoulCalibur:
-      {
-        switch (i) {
-          case 0: return "G";
-          case 1: return "K";
-          case 2: return "A";
-          case 3: return "B";
-          default: return i;
-        }
-      }
+      return (scBtns[i] != undefined ? scBtns[i] : i);
     case ButtonNotationType.Tekken:
-      {
-        switch (i) {
-          case 0: return "LK";
-          case 1: return "RK";
-          case 2: return "LP";
-          case 3: return "RP";
-          default: return i;
-        }
-      }
+      return (tknBtns[i] != undefined ? tknBtns[i] : i);
     case ButtonNotationType.SNK:
-      {
-        switch (i) {
-          case 0: return "B";
-          case 1: return "D";
-          case 2: return "A";
-          case 3: return "C";
-          default: return i;
-        }
-      }
-    default:
-      return i;
+      return (snkBtns[i] != undefined ? snkBtns[i] : i);
   }
   return i;
 }

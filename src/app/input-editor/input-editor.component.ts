@@ -130,9 +130,8 @@ export class InputEditorComponent implements OnInit {
 
   initSong(): Song {
     /**
-  * Uncomment one to test different tracks, will add listing function soon
-  */
-
+     *  Uncomment one to test different tracks, will add listing function soon
+     */
     const tmp_midiFileName =
       'Blank Test';
     // 'Fantasie Impromptu';
@@ -269,9 +268,9 @@ export class InputEditorComponent implements OnInit {
     let tmp_part = iec.allParts[e.target.id];
     if (e.ctrlKey) {
       iec.keyEditor.removePart(tmp_part);
-      this.unselectPart(tmp_part);
+      iec.unselectPart(tmp_part);
       iec.currPart = null;
-      if (iec.currNote !== null) { this.unselectNote(iec.currNote); }
+      if (iec.currNote !== null) { iec.unselectNote(iec.currNote); }
       iec.currNote = null;
     } else {
       // iec.keyEditor.startMovePart(tmp_part, iec.edtrInfo.screenX, iec.edtrInfo.screenY);
@@ -449,7 +448,6 @@ export class InputEditorComponent implements OnInit {
       iec.currNote = null;
       if (iec.currPart !== null) { this.unselectPart(iec.currPart); }
       iec.currPart = null;
-      // keyEditor.setPlayheadToX(e.pageX);
       iec.keyEditor.setPlayheadToX(e.clientX);
       return;
     }
@@ -458,7 +456,7 @@ export class InputEditorComponent implements OnInit {
   }
   //#endregion
 
-  createNote(iec: InputEditorComponent, start: number, end: number, pitch: number): [MIDIEvent, MIDIEvent] {
+  createNote(iec: InputEditorComponent, start: number, end: number, pitch: number, vel?: number): [MIDIEvent, MIDIEvent] {
     if (iec.currPart != null && iec.currPart != undefined) {
     }
     else {
@@ -467,7 +465,7 @@ export class InputEditorComponent implements OnInit {
       iec.track.addPartAt(iec.currPart, ['ticks', start]);
       iec.track.update();
     }
-    let noteEvts = createNewNoteEvents(start, end, pitch);
+    let noteEvts = createNewNoteEvents(start, end, pitch, vel);
     iec.currPart.addEvents(noteEvts);
     // this.currPart.addEvents(createNewNoteEvents(start, end, pitch));
     iec.track.update();
@@ -1032,8 +1030,8 @@ function createNewMIDINote(start: number, end: number, pitch: number): MIDINote 
   let tmp_midiNote = sequencer.createMidiNote(tmp_noteOn, tmp_noteOff);
   return tmp_midiNote;
 }
-function createNewNoteEvents(start: number, end: number, pitch: number): [MIDIEvent, MIDIEvent] {
-  let tmp_velocity = 127;
+function createNewNoteEvents(start: number, end: number, pitch: number, velocity?: number): [MIDIEvent, MIDIEvent] {
+  let tmp_velocity = (velocity == undefined ? 127 : velocity);
   let tmp_events = [];
   let tmp_noteOn = sequencer.createMidiEvent(start, InputEditorComponent.NOTE_ON, pitch, tmp_velocity);
   let tmp_noteOff = sequencer.createMidiEvent(end, InputEditorComponent.NOTE_OFF, pitch, 0);
@@ -1061,7 +1059,6 @@ function createNewNoteAtMouse(tmp_part, iec: InputEditorComponent) {
     'velocity: ' + tmp_velocity + '\n' +
     'length: ' + tmp_noteLength + '\n'
   );
-
   return tmp_events;
 }
 
