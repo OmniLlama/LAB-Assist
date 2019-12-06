@@ -32,20 +32,18 @@ export class InputDisplayComponent implements OnInit {
   butNotTypes = ButtonNotationType;
   mntKeys = Object.keys(MovementNotationType);
   bntKeys = Object.keys(ButtonNotationType);
-  // controllers:Gamepad[];
-  // gpTest: gamepadTest;
   constructor() { }
 
   ngOnInit() {
     InputDisplayComponent.inpDispCmp = this;
-    controllers = new Array<Gamepad>();
+    gamepads = new Array<Gamepad>();
   }
-  getControllers() { return controllers; }
+  getGamepads() { return gamepads; }
 }
 
 var haveEvents = 'GamepadEvent' in window;
 var haveWebkitEvents = 'WebKitGamepadEvent' in window;
-export var controllers: Array<Gamepad>;
+export var gamepads: Array<Gamepad>;
 var rAF = window.requestAnimationFrame;
 
 var padHTMLShells = [];
@@ -53,7 +51,7 @@ function connecthandler(e) {
   addgamepad(e.gamepad);
 }
 function addgamepad(gamepad) {
-  controllers[gamepad.index] = gamepad;
+  gamepads[gamepad.index] = gamepad;
   var div_info = document.createElement("div");
   var div_cntrllr = document.createElement("div");
   div_cntrllr.className = "controller";
@@ -93,24 +91,24 @@ function disconnecthandler(e) {
 function removegamepad(gamepad) {
   var d = document.getElementById("controller" + gamepad.index);
   document.body.removeChild(d);
-  delete controllers[gamepad.index];
+  delete gamepads[gamepad.index];
 }
 
 function updateStatus() {
   scangamepads();
   /**
    * Controller Status Loop */
-  controllers.forEach((j) => {
+  gamepads.forEach((j) => {
     // for (let h = 0; h < controllers.length; h++) {
     // var controller = controllers[j.id];
     var controller = j;
     var d = document.getElementById("controller" + j.index);
     /**
      * Button Status Loop */
-    var buttons = d.getElementsByClassName("button");
+    var divs_Btns = d.getElementsByClassName("button");
     // for (var i = 0; i < controller.buttons.length; i++) {
     for (var i = 0; i <= 7; i++) {
-      var b = buttons[i] as HTMLDivElement;
+      var b = divs_Btns[i] as HTMLDivElement;
       if (b == undefined) { break; }
       var val = controller.buttons[i];
       var pressed = val.value > .8;
@@ -184,10 +182,10 @@ function scangamepads() {
   var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
   for (var i = 0; i < gamepads.length; i++) {
     if (gamepads[i]) {
-      if (!(gamepads[i].index in controllers)) {
+      if (!(gamepads[i].index in gamepads)) {
         addgamepad(gamepads[i]);
       } else {
-        controllers[gamepads[i].index] = gamepads[i];
+        gamepads[gamepads[i].index] = gamepads[i];
       }
     }
   }

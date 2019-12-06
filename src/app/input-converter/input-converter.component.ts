@@ -3,11 +3,8 @@ import { MIDIEvent, Note, MIDINote } from 'heartbeat-sequencer';
 import { InputEditorComponent, updateElementBBox, getEdgeDivs, subdivBBox } from '../input-editor/input-editor.component';
 import { InputDisplayComponent, ButtonNotationType } from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
-// import * as WMT from 'web-midi-test';
 declare let sequencer: any;
 
-// import MT = require('midi-test');
-// import easymidi = require('easymidi');
 @Component({
   selector: 'app-input-converter',
   templateUrl: './input-converter.component.html',
@@ -64,7 +61,7 @@ export class InputConverterComponent implements OnInit {
   getController() {
     let idc = InputDisplayComponent.inpDispCmp;
     let icc = InputConverterComponent.inpConvComp;
-    if (idc.getControllers().length != 0 && icc.testController == null) {
+    if (idc.getGamepads().length != 0 && icc.testController == null) {
       icc.testController = getPad();
       // window.removeEventListener("mousemove", (e) => icc.getController(e));
       icc.playControllerConnectedJingle();
@@ -104,6 +101,9 @@ export class InputConverterComponent implements OnInit {
       icc.trackingNotes = false;
     }
     icc.testController = getPad();
+    /**
+     * Update Controller Axes
+     */
     icc.testController.axes.forEach((a, ind) => {
       let pitchNum;
       if (a.valueOf() > icc.deadZone) {
@@ -113,7 +113,8 @@ export class InputConverterComponent implements OnInit {
           icc.dirsHeld[(ind * 2)] = false;
           if (icc.trackingNotes) {
             icc.dirInpStarts[(ind * 2) + 1] = iec.edtrInfo.ticksAtHead;
-            let thing = iec.createNote(iec, icc.dirInpStarts[(ind * 2) + 1], icc.dirInpStarts[(ind * 2) + 1] + 128, pitchNum, a.valueOf() * 127);
+            let thing = iec.createNote(iec, icc.dirInpStarts[(ind * 2) + 1], icc.dirInpStarts[(ind * 2) + 1] + 128,
+              pitchNum, a.valueOf() * 127);
             icc.dirHeldNotes[(ind * 2) + 1] = [thing[0].midiNote, iec.edtrInfo.ticksAtHead];
           }
         }
@@ -164,6 +165,9 @@ export class InputConverterComponent implements OnInit {
         }
       }
     });
+    /**
+     * Update Controller Buttons
+     */
     var buttons = document.getElementsByClassName("editor-input-icon");
     icc.testController.buttons.forEach((b, ind) => {
       let pitch = getTestToneForButton(ind);
@@ -257,7 +261,7 @@ export class InputConverterComponent implements OnInit {
   }
 }
 export function getPad() {
-  return InputDisplayComponent.inpDispCmp.getControllers()[0];
+  return InputDisplayComponent.inpDispCmp.getGamepads()[0];
 }
 function getTestToneForButton(ind) {
   switch (ind) {
