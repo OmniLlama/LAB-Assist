@@ -32,18 +32,20 @@ export class InputDisplayComponent implements OnInit {
   butNotTypes = ButtonNotationType;
   mntKeys = Object.keys(MovementNotationType);
   bntKeys = Object.keys(ButtonNotationType);
+  // controllers:Gamepad[];
+  // gpTest: gamepadTest;
   constructor() { }
 
   ngOnInit() {
     InputDisplayComponent.inpDispCmp = this;
-    gamepads = new Array<Gamepad>();
+    controllers = new Array<Gamepad>();
   }
-  getGamepads() { return gamepads; }
+  getControllers() { return controllers; }
 }
 
 var haveEvents = 'GamepadEvent' in window;
 var haveWebkitEvents = 'WebKitGamepadEvent' in window;
-export var gamepads: Array<Gamepad>;
+export var controllers: Array<Gamepad>;
 var rAF = window.requestAnimationFrame;
 
 var padHTMLShells = [];
@@ -51,7 +53,7 @@ function connecthandler(e) {
   addgamepad(e.gamepad);
 }
 function addgamepad(gamepad) {
-  gamepads[gamepad.index] = gamepad;
+  controllers[gamepad.index] = gamepad;
   var div_info = document.createElement("div");
   var div_cntrllr = document.createElement("div");
   div_cntrllr.className = "controller";
@@ -65,7 +67,7 @@ function addgamepad(gamepad) {
 
 
 
-  
+
 
   var div_arrows = document.createElement("div")
   div_arrows.className = "grid3x3"
@@ -137,28 +139,24 @@ function disconnecthandler(e) {
 function removegamepad(gamepad) {
   var d = document.getElementById("controller" + gamepad.index);
   document.body.removeChild(d);
-  delete gamepads[gamepad.index];
+  delete controllers[gamepad.index];
 }
 
 function updateStatus() {
   scangamepads();
   /**
    * Controller Status Loop */
-  gamepads.forEach((j) => {
+  controllers.forEach((j) => {
     // for (let h = 0; h < controllers.length; h++) {
     // var controller = controllers[j.id];
     var controller = j;
     var d = document.getElementById("controller" + j.index);
     /**
      * Button Status Loop */
-<<<<<<< HEAD
-    var divs_Btns = d.getElementsByClassName("button");
-=======
     var buttons = d.getElementsByClassName("gamepad-buttons");
->>>>>>> Buttons
     // for (var i = 0; i < controller.buttons.length; i++) {
     for (var i = 0; i <= 7; i++) {
-      var b = divs_Btns[i] as HTMLDivElement;
+      var b = buttons[i] as HTMLDivElement;
       if (b == undefined) { break; }
       var val = controller.buttons[i];
       var pressed = val.value > .8;
@@ -215,7 +213,7 @@ function getJoystickDirections(controller, leftAxis, arrowsArray) {
     arrowsArray[8].innerHTML = `<img src="assets/images/pressed_down_right.png" width=80px height=80px>`
     let index = 8
     resetArrows(arrowsArray, index)
-  } 
+  }
 
   // Now handle all the regular directions, if the constraints for diagonal directions are not met
     else if ( controller.axes[0] < -0.75 && ( controller.axes[1] < 0.4 && controller.axes[1] > -.4 )) {
@@ -255,8 +253,8 @@ function getJoystickDirections(controller, leftAxis, arrowsArray) {
   //   rightAxis.innerHTML = `<img src="assets/images/pressed_up_right.png" width=80px height=80px>`
   // } else if ( controller.axes[2] > 0.4 && controller.axes[3] > 0.4 ) {
   //   rightAxis.innerHTML = `<img src="assets/images/pressed_down_right.png" width=80px height=80px>`
-  // } 
-  
+  // }
+
   //   else if ( controller.axes[2] < -0.75 && ( controller.axes[3] < 0.4 && controller.axes[3] > -.4 )) {
   //   rightAxis.innerHTML = `<img src="assets/images/pressed_left.png" width=80px height=80px>`
   // } else if (controller.axes[3] < -0.75 && ( controller.axes[2] < 0.4 && controller.axes[2] > -.4 ))  {
@@ -290,10 +288,10 @@ function scangamepads() {
   }
   for (var i = 0; i < gamepads.length; i++) {
     if (gamepads[i]) {
-      if (!(gamepads[i].index in gamepads)) {
+      if (!(gamepads[i].index in controllers)) {
         addgamepad(gamepads[i]);
       } else {
-        gamepads[gamepads[i].index] = gamepads[i];
+        controllers[gamepads[i].index] = gamepads[i];
       }
     }
   }
@@ -447,4 +445,3 @@ class GamepadObject {
     }
   }
 }
-
