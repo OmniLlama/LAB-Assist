@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MIDIEvent, Note, MIDINote } from 'heartbeat-sequencer';
 import { InputEditorComponent, updateElementBBox, getEdgeDivs, subdivBBox } from '../input-editor/input-editor.component';
-import { InputDisplayComponent, ButtonNotationType, GamepadObject, GamepadTypeString, GamepadType } from '../input-display/input-display.component';
+import { InputDisplayComponent, ButtonNotationType, GamepadObject, GamepadTypeString, GamepadType, controllers } from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
 declare let sequencer: any;
 
@@ -61,8 +61,8 @@ export class InputConverterComponent implements OnInit {
   getController() {
     let idc = InputDisplayComponent.inpDispCmp;
     let icc = InputConverterComponent.inpConvComp;
-    if (idc.controllers !== undefined && idc.controllers.length != 0 && icc.testController == null) {
-      let ctlr = idc.getControllers()[0];
+    if (controllers !== undefined && controllers.length != 0 && icc.testController == null) {
+      let ctlr = controllers[0];
       icc.testController = new GamepadObject(ctlr);
       let thing = GamepadType[icc.testController.type];
       console.log(thing);
@@ -266,7 +266,7 @@ export class InputConverterComponent implements OnInit {
   }
 }
 export function getPad() {
-  return InputDisplayComponent.inpDispCmp.controllers[0];
+  return controllers[0];
 }
 function getTestToneForButton(ind) {
   switch (ind) {

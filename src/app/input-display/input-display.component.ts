@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 export enum GamepadType {
-  Generic, XInput, Playstation, Qanba
+  Generic,
+  XInput,
+  Playstation,
+  Qanba
 }
 export enum GamepadTypeString {
   Generic = 'generic',
@@ -28,13 +31,15 @@ export enum ButtonNotationType {
   Xbox = 'xb'
 }
 export var controllers: Array<Gamepad>;
+export var gamepadObjects: Array<GamepadObject>;
 @Component({
   selector: 'app-input-display',
   templateUrl: './input-display.component.html',
   styleUrls: ['./input-display.component.sass'],
 })
 export class InputDisplayComponent implements OnInit {
-  controllers: Array<Gamepad>;
+  // controllers: Array<Gamepad>;
+  gamepadObjects: Array<GamepadObject>;
   static inpDispCmp: InputDisplayComponent;
   mvNotTy: MovementNotationType;
   mvNotTypes = MovementNotationType;
@@ -47,6 +52,7 @@ export class InputDisplayComponent implements OnInit {
   ngOnInit() {
     InputDisplayComponent.inpDispCmp = this;
     controllers = new Array<Gamepad>();
+    gamepadObjects = new Array<GamepadObject>();
   }
   getControllers() { return controllers; }
 }
@@ -54,6 +60,7 @@ export class InputDisplayComponent implements OnInit {
 var haveEvents = 'GamepadEvent' in window;
 var haveWebkitEvents = 'WebKitGamepadEvent' in window;
 var rAF = window.requestAnimationFrame;
+var btnDivs: Array<HTMLDivElement>;
 
 var padHTMLShells = [];
 function connecthandler(e) {
@@ -61,6 +68,8 @@ function connecthandler(e) {
 }
 function addgamepad(gamepad) {
   controllers[gamepad.index] = gamepad;
+  gamepadObjects[gamepad.index] = new GamepadObject(gamepad);
+  btnDivs = new Array<HTMLDivElement>();
   var div_info = document.createElement("div");
   var div_cntrllr = document.createElement("div");
   div_cntrllr.className = "controller";
@@ -73,7 +82,7 @@ function addgamepad(gamepad) {
   div_cntrllr.appendChild(div_info);
   var div_arrows = document.createElement("div")
   div_arrows.className = "grid3x3"
-  for (i = 0; i < 9; i++) {
+  for (let i = 0; i < 9; i++) {
     let singleArrow = document.createElement("div")
     singleArrow.className = "directionalArrows"
 
@@ -107,22 +116,28 @@ function addgamepad(gamepad) {
         break
     }
 
-    div_arrows.appendChild(singleArrow)
+    div_arrows.appendChild(singleArrow);
   }
-  div_cntrllr.appendChild(div_arrows)
+  div_cntrllr.appendChild(div_arrows);
 
 
 
   //Create Button Icons
   var div_btns = document.createElement("div"); div_btns.className = "grid4x2";
   // var div_btns = document.createElement("div"); div_btns.className = "gamepad-buttons";
-  for (var i = 0; i < gamepad.buttons.length; i++) { div_btns.appendChild(createButtonIcon(i)); }
+  // for (var i = 0; i < gamepad.buttons.length; i++) { div_btns.appendChild(createButtonIcon(i)); }
+  let btnOrder = gamepadObjects[gamepad.index].getArcadeLayoutButtonNumbers();
+  for (let btnNum of btnOrder) {
+    let div = createButtonIcon(btnNum);
+    div_btns.appendChild(div);
+    btnDivs.push(div);
+  }
   //Append Buttons to div
   div_cntrllr.appendChild(div_btns);
 
   // Create Axis Meters
   var div_axes = document.createElement("div"); div_axes.className = "axes";
-  for (i = 0; i < gamepad.axes.length / 4; i++) { div_axes.appendChild(createAxisMeter(i)); }
+  for (let i = 0; i < gamepad.axes.length / 4; i++) { div_axes.appendChild(createAxisMeter(i)); }
 
   //Append Meters to div
   div_cntrllr.appendChild(div_axes);
@@ -149,17 +164,19 @@ function updateStatus() {
   scangamepads();
   /**
    * Controller Status Loop */
-  controllers.forEach((j) => {
+  controllers.forEach((j, ind) => {
     // for (let h = 0; h < controllers.length; h++) {
     // var controller = controllers[j.id];
     var controller = j;
     var d = document.getElementById("controller" + j.index);
     /**
      * Button Status Loop */
-    var divs_Btns = d.getElementsByClassName("gamepad-buttons");
+    // var divs_Btns = d.getElementsByClassName("gamepad-buttons");
     // for (var i = 0; i < controller.buttons.length; i++) {
-    for (var i = 0; i <= 7; i++) {
-      var b = divs_Btns[i] as HTMLDivElement;
+    for (let i of gamepadObjects[ind].getArcadeLayoutButtonNumbers()) {
+      // for (var i = 0; i <= 7; i++) {
+      // var b = divs_Btns[i] as HTMLDivElement;
+      var b = btnDivs[i];
       if (b == undefined) { break; }
       var val = controller.buttons[i];
       var pressed = val.value > .8;
@@ -188,7 +205,7 @@ function updateStatus() {
     var axes = d.getElementsByClassName("axis");
     var leftAxis = axes[0]
     // var rightAxis = axes[1]
-    var arrowsArray = d.getElementsByClassName("directionalArrows")
+    var arrowsArray = d.getElementsByClassName('directionalArrows')
     getJoystickDirections(controller, leftAxis, arrowsArray)
   });
 
@@ -303,7 +320,7 @@ function createButtonIcon(ind) {
   if (button != null) {
     // This allows me to manipulate the element and leave the current CSS styling.
     // This just adds a span which contains an image of the buttons
-    let imageString = `<img src="assets/images/${button}.png" width=80px height=80px>`
+    let imageString = `<img src="assets/images/${button}.png" width=80px height=80px>`;
     e.innerHTML = imageString
   }
   //e.id = "b" + i;
@@ -414,6 +431,7 @@ class gamepadHTMLShell {
   }
 
 }
+
 export class GamepadObject {
   type: GamepadType;
   axes: number[];
@@ -426,12 +444,12 @@ export class GamepadObject {
   vibrationActuator: GamepadHapticActuator;
   constructor(gp, a?, b?, c?, i1?, i2?, m?, ts?, va?, ty?) {
     if (gp !== null && gp !== undefined) {
+      this.type = this.getType(gp.id);
       this.axes = gp.axes;
       this.buttons = gp.buttons;
       this.connected = gp.connected;
       this.id = gp.id;
       this.index = gp.index;
-      this.type = this.getType(gp.id);
       this.mapping = gp.mapping;
       this.timestamp = gp.timestamp;
       this.vibrationActuator = gp.vibrationActuator;
@@ -448,10 +466,23 @@ export class GamepadObject {
     }
   }
   getType(str: string): GamepadType {
+    str = str.toLowerCase();
     if (str.includes(GamepadTypeString.XInput)) { return GamepadType.XInput; }
     else if (str.includes(GamepadTypeString.Playstation)) { return GamepadType.Playstation; }
     else if (str.includes(GamepadTypeString.Qanba)) { return GamepadType.Qanba; }
     else { return GamepadType.Generic; }
+  }
+  getArcadeLayoutButtonNumbers(): number[] {
+    switch (this.type) {
+      case GamepadType.XInput:
+        // return [0, 0, 0, 0, 0, 0, 0, 0];
+        // return [5, 2, 6, 2, 3, 3, 4, 4];
+        // return [2, 3, 5, 4, 0, 1, 7, 6];
+        return [2, 3, 5, 4, 1, 0, 6, 7];
+      default:
+        // return [0, 1, 2, 3, 4, 5, 6, 7];
+        return [0, 0, 0, 0, 0, 0, 0, 0];
+    }
   }
 }
 

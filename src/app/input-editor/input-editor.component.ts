@@ -824,7 +824,7 @@ function resize() {
   let iec = InputEditorComponent.inpEdComp;
   // let tmp_div_icons = document.getElementById('editor-input-icons');
   // let tmp_icons_w = tmp_div_icons.clientWidth;
-  let tmp_icons_w = 32;
+  let tmp_icons_w = 64;
   let tmp_c = iec.edtrHtml.div_Controls.getBoundingClientRect().height;
   let tmp_w = window.innerWidth - tmp_icons_w;
   let tmp_h = iec.editorHeight;
