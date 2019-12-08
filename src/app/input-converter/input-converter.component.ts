@@ -338,7 +338,7 @@ function MIDIStateChanged(data?): any {
   console.warn('MIDI State has changed!');
   return null;
 }
-var xbBtns = ['a', 'b', 'x', 'y', 'l1', 'r1', 'l2', 'r2'];
+var xbBtns = ['a', 'b', 'x', 'y', 'lb', 'rb', 'lt', 'rt'];
 var psBtns = ['X', 'O', '[]', '^', 'l1', 'r1', 'l2', 'r2'];
 var sfBtns = ['lk', 'mk', 'lp', 'mp', 'l1', 'hp', 'l2', 'hk'];
 var ggBtns = ['P', 'D', 'K', 'S', 'HS', 'l1', 'l2', 'SP'];
