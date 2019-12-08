@@ -65,15 +65,61 @@ function addgamepad(gamepad) {
   div_info.appendChild(title);
   div_cntrllr.appendChild(div_info);
 
+
+
+  
+
+  var div_arrows = document.createElement("div")
+  div_arrows.className = "grid3x3"
+  for (i=0; i < 9; i++) {
+    let singleArrow = document.createElement("div")
+    singleArrow.className = "directionalArrows"
+
+    switch(i) {
+      case 0:
+        singleArrow.innerHTML = `<img src="assets/images/left.png" width=80px height=80px>`
+        break
+      case 1:
+        singleArrow.innerHTML = `<img src="assets/images/up.png" width=80px height=80px>`
+        break
+      case 2:
+        singleArrow.innerHTML = `<img src="assets/images/up.png" width=80px height=80px>`
+        break
+      case 3:
+        singleArrow.innerHTML = `<img src="assets/images/left.png" width=80px height=80px>`
+        break
+      case 4:
+        singleArrow.innerHTML = `<img src="assets/images/ls.png" width=80px height=80px>`
+        break
+      case 5:
+        singleArrow.innerHTML = `<img src="assets/images/right.png" width=80px height=80px>`
+        break
+      case 6:
+        singleArrow.innerHTML = `<img src="assets/images/down.png" width=80px height=80px>`
+        break
+      case 7:
+        singleArrow.innerHTML = `<img src="assets/images/down.png" width=80px height=80px>`
+        break
+      case 8:
+        singleArrow.innerHTML = `<img src="assets/images/right.png" width=80px height=80px>`
+        break
+    }
+
+    div_arrows.appendChild(singleArrow)
+  }
+  div_cntrllr.appendChild(div_arrows)
+
+
+
   //Create Button Icons
-  var div_btns = document.createElement("div"); div_btns.className = "gamepad-buttons";
+  var div_btns = document.createElement("div"); div_btns.className = "grid4x2";
   for (var i = 0; i < gamepad.buttons.length; i++) { div_btns.appendChild(createButtonIcon(i)); }
   //Append Buttons to div
   div_cntrllr.appendChild(div_btns);
 
   // Create Axis Meters
   var div_axes = document.createElement("div"); div_axes.className = "axes";
-  for (i = 0; i < gamepad.axes.length / 2; i++) { div_axes.appendChild(createAxisMeter(i)); }
+  for (i = 0; i < gamepad.axes.length / 4; i++) { div_axes.appendChild(createAxisMeter(i)); }
 
   //Append Meters to div
   div_cntrllr.appendChild(div_axes);
@@ -107,7 +153,7 @@ function updateStatus() {
     var d = document.getElementById("controller" + j.index);
     /**
      * Button Status Loop */
-    var buttons = d.getElementsByClassName("button");
+    var buttons = d.getElementsByClassName("gamepad-buttons");
     // for (var i = 0; i < controller.buttons.length; i++) {
     for (var i = 0; i <= 7; i++) {
       var b = buttons[i] as HTMLDivElement;
@@ -134,54 +180,112 @@ function updateStatus() {
         b.innerHTML = imageString;
       }
     }
+
     /**
-     * Axis Status Loop */
+     * Get Axis Status */
     var axes = d.getElementsByClassName("axis");
 
-
-    // for (var i = 0; i < controller.axes.length/2; i++) {
-    //   var a = axes[i];
-    //   // console.log(axes.length)
-    //   // a.innerHTML = i + ": " + controller.axes[i].toFixed(4);
-    //   // console.log(axes[i].innerHTML)
-    //   a.setAttribute("value", controller.axes[i]);
-    // }
-
     var leftAxis = axes[0]
-    var rightAxis = axes[1]
-
-    if (controller.axes[0] < -0.75 && (controller.axes[1] < 0.4 && controller.axes[1] > -.4)) {
-      leftAxis.innerHTML = `<img src="assets/images/pressed_left.png" width=80px height=80px>`
-    } else if (controller.axes[1] < -0.75 && (controller.axes[0] < 0.4 && controller.axes[0] > -.4)) {
-      leftAxis.innerHTML = `<img src="assets/images/pressed_up.png" width=80px height=80px>`
-    } else if (controller.axes[0] > 0.75 && (controller.axes[1] < 0.4 && controller.axes[1] > -.4)) {
-      leftAxis.innerHTML = `<img src="assets/images/pressed_right.png" width=80px height=80px>`
-    } else if (controller.axes[1] > 0.75 && (controller.axes[0] < 0.4 && controller.axes[0] > -.4)) {
-      leftAxis.innerHTML = `<img src="assets/images/pressed_down.png" width=80px height=80px>`
-    } else {
-      leftAxis.innerHTML = `<img src="assets/images/left.png" width=80px height=80px>`
-    }
-
-    if (controller.axes[2] < -0.75 && (controller.axes[3] < 0.4 && controller.axes[3] > -.4)) {
-      rightAxis.innerHTML = `<img src="assets/images/pressed_left.png" width=80px height=80px>`
-    } else if (controller.axes[3] < -0.75 && (controller.axes[2] < 0.4 && controller.axes[2] > -.4)) {
-      rightAxis.innerHTML = `<img src="assets/images/pressed_up.png" width=80px height=80px>`
-    } else if (controller.axes[2] > 0.75 && (controller.axes[3] < 0.4 && controller.axes[3] > -.4)) {
-      rightAxis.innerHTML = `<img src="assets/images/pressed_right.png" width=80px height=80px>`
-    } else if (controller.axes[3] > 0.75 && (controller.axes[2] < 0.4 && controller.axes[2] > -.4)) {
-      rightAxis.innerHTML = `<img src="assets/images/pressed_down.png" width=80px height=80px>`
-    } else {
-      rightAxis.innerHTML = `<img src="assets/images/right.png" width=80px height=80px>`
-    }
-    if (Math.abs(controller.axes[0]) >= .75) {
-    }
+    // var rightAxis = axes[1]
+    var arrowsArray = d.getElementsByClassName("directionalArrows")
+    getJoystickDirections(controller, leftAxis, arrowsArray)
   });
 
   rAF(updateStatus);
 }
 
+
+function getJoystickDirections(controller, leftAxis, arrowsArray) {
+  // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
+  if ( controller.axes[0] < -0.4 && controller.axes[1] < -0.4 ) {
+    arrowsArray[0].innerHTML = `<img src="assets/images/pressed_up_left.png" width=80px height=80px>`
+    let index = 0
+    resetArrows(arrowsArray, index)
+  } else if ( controller.axes[0] < -0.4 && controller.axes[1] > 0.4 ) {
+    arrowsArray[6].innerHTML = `<img src="assets/images/pressed_down_left.png" width=80px height=80px>`
+    let index = 6
+    resetArrows(arrowsArray, index)
+  } else if ( controller.axes[0] > 0.4 && controller.axes[1] < -0.4 ) {
+    arrowsArray[2].innerHTML = `<img src="assets/images/pressed_up_right.png" width=80px height=80px>`
+    let index = 2
+    resetArrows(arrowsArray, index)
+  } else if ( controller.axes[0] > 0.4 && controller.axes[1] > 0.4 ) {
+    arrowsArray[8].innerHTML = `<img src="assets/images/pressed_down_right.png" width=80px height=80px>`
+    let index = 8
+    resetArrows(arrowsArray, index)
+  } 
+
+  // Now handle all the regular directions, if the constraints for diagonal directions are not met
+    else if ( controller.axes[0] < -0.75 && ( controller.axes[1] < 0.4 && controller.axes[1] > -.4 )) {
+      arrowsArray[3].innerHTML = `<img src="assets/images/pressed_left.png" width=80px height=80px>`
+    let index = 3
+    resetArrows(arrowsArray, index)
+  } else if (controller.axes[1] < -0.75 && ( controller.axes[0] < 0.4 && controller.axes[0] > -.4 ))  {
+    arrowsArray[1].innerHTML = `<img src="assets/images/pressed_up.png" width=80px height=80px>`
+    let index = 1
+    resetArrows(arrowsArray, index)
+  }  else if (controller.axes[0] > 0.75 && ( controller.axes[1] < 0.4 && controller.axes[1] > -.4 ))  {
+    arrowsArray[5].innerHTML = `<img src="assets/images/pressed_right.png" width=80px height=80px>`
+    let index = 5
+    resetArrows(arrowsArray, index)
+  } else if (controller.axes[1] > 0.75 && ( controller.axes[0] < 0.4 && controller.axes[0] > -.4 ))  {
+    arrowsArray[7].innerHTML = `<img src="assets/images/pressed_down.png" width=80px height=80px>`
+    let index = 7
+    resetArrows(arrowsArray, index)
+  } else {
+    arrowsArray[0].innerHTML = `<img src="assets/images/up_left.png" width=80px height=80px>`
+    arrowsArray[1].innerHTML = `<img src="assets/images/up.png" width=80px height=80px>`
+    arrowsArray[2].innerHTML = `<img src="assets/images/up_right.png" width=80px height=80px>`
+    arrowsArray[3].innerHTML = `<img src="assets/images/left.png" width=80px height=80px>`
+    arrowsArray[4].innerHTML = `<img src="assets/images/ls.png" width=80px height=80px>`
+    arrowsArray[5].innerHTML = `<img src="assets/images/right.png" width=80px height=80px>`
+    arrowsArray[6].innerHTML = `<img src="assets/images/down_left.png" width=80px height=80px>`
+    arrowsArray[7].innerHTML = `<img src="assets/images/down.png" width=80px height=80px>`
+    arrowsArray[8].innerHTML = `<img src="assets/images/down_right.png" width=80px height=80px>`
+  }
+
+  // Same as above, but now for the Right Stick
+  // if ( controller.axes[2] < -0.4 && controller.axes[3] < -0.4 ) {
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_up_left.png" width=80px height=80px>`
+  // } else if ( controller.axes[2] < -0.4 && controller.axes[3] > 0.4 ) {
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_down_left.png" width=80px height=80px>`
+  // } else if ( controller.axes[2] > 0.4 && controller.axes[3] < -0.4 ) {
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_up_right.png" width=80px height=80px>`
+  // } else if ( controller.axes[2] > 0.4 && controller.axes[3] > 0.4 ) {
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_down_right.png" width=80px height=80px>`
+  // } 
+  
+  //   else if ( controller.axes[2] < -0.75 && ( controller.axes[3] < 0.4 && controller.axes[3] > -.4 )) {
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_left.png" width=80px height=80px>`
+  // } else if (controller.axes[3] < -0.75 && ( controller.axes[2] < 0.4 && controller.axes[2] > -.4 ))  {
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_up.png" width=80px height=80px>`
+  // }  else if (controller.axes[2] > 0.75 && ( controller.axes[3] < 0.4 && controller.axes[3] > -.4 ))  {
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_right.png" width=80px height=80px>`
+  // } else if (controller.axes[3] > 0.75 && ( controller.axes[2] < 0.4 && controller.axes[2] > -.4 ))  {
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_down.png" width=80px height=80px>`
+  // } else {
+  //   rightAxis.innerHTML = `<img src="assets/images/rs.png" width=80px height=80px>`
+  // }
+}
+
+
+function resetArrows(arrowsArray, index) {
+  for (let i = 0; i < arrowsArray.length; i++) {
+    if (i != index) {
+      arrowsArray[i].innerHTML = returnXboxArrows(i)
+    }
+  }
+}
+
+
+// In order to compile, I had to comment out the ternary statement.
+// webkitGetGamepads shows up as not being available on navigator when using Typescript for whatever reason :(
 function scangamepads() {
-  var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
+  //var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
+  var gamepads
+  if (navigator.getGamepads) {
+    gamepads = navigator.getGamepads()
+  }
   for (var i = 0; i < gamepads.length; i++) {
     if (gamepads[i]) {
       if (!(gamepads[i].index in controllers)) {
@@ -194,8 +298,8 @@ function scangamepads() {
 }
 function createButtonIcon(ind) {
   let button = nameButton(ind)
-  var e = document.createElement("span");
-  e.className = "button";
+  var e = document.createElement("div");
+  e.className = "gamepad-buttons";
   // This if allows me to post the button images to the page for the game. (If Street fighter doesn't need SELECT,
   // there won't be a broken image link for a SELECT button on the page)
   if (button != null) {
@@ -204,9 +308,6 @@ function createButtonIcon(ind) {
     let imageString = `<img src="assets/images/${button}.png" width=80px height=80px>`
     e.innerHTML = imageString
   }
-  //e.id = "b" + i;
-  //e.innerHTML = nameButton(ind);
-  // e.innerHTML = i;
   return e;
 }
 
@@ -220,18 +321,36 @@ function createAxisMeter(ind) {
   e.setAttribute("min", "-1");
   e.setAttribute("max", "1");
   e.setAttribute("value", "0");
-  let imageString = `<img src="assets/images/left.png" width=80px height=80px>`
-  e.innerHTML = imageString;
+  // let imageString = `<img src="assets/images/left.png" width=80px height=80px>`
+  // e.innerHTML = imageString;
   // return e;
   return e;
 }
-var xbBtns = ['a', 'b', 'x', 'y', 'l1', 'r1', 'l2', 'r2'];
+var xbBtns = ['a', 'b', 'x', 'y', 'lb', 'rb', 'lt', 'rt'];
 var psBtns = ['X', 'O', '[]', '^', 'l1', 'r1', 'l2', 'r2'];
 var sfBtns = ['lk', 'mk', 'lp', 'mp', 'l1', 'hp', 'l2', 'hk'];
 var ggBtns = ['P', 'D', 'K', 'S', 'HS', 'l1', 'l2', 'SP'];
 var tknBtns = ['LK', 'RK', 'LP', 'RP'];
 var scBtns = ['G', 'K', 'A', 'B'];
 var snkBtns = ['B', 'D', 'A', 'C'];
+
+
+function returnXboxArrows(i) {
+  switch (i) {
+    case 0: return `<img src="assets/images/up_left.png" width=80px height=80px>`
+    case 1: return `<img src="assets/images/up.png" width=80px height=80px>`
+    case 2: return `<img src="assets/images/up_right.png" width=80px height=80px>`
+    case 3: return `<img src="assets/images/left.png" width=80px height=80px>`
+    case 4: return `<img src="assets/images/ls.png" width=80px height=80px>`
+    case 5: return `<img src="assets/images/right.png" width=80px height=80px>`
+    case 6: return `<img src="assets/images/down_left.png" width=80px height=80px>`
+    case 7: return `<img src="assets/images/down.png" width=80px height=80px>`
+    case 8: return `<img src="assets/images/down_right.png" width=80px height=80px>`
+  }
+}
+
+
+
 /**
  * Names the button with the proper designation based on button notation selection
  * @param {*} i - the button id number
@@ -239,7 +358,7 @@ var snkBtns = ['B', 'D', 'A', 'C'];
 export function nameButton(i) {
   switch (InputDisplayComponent.inpDispCmp.butNotTy) {
     case ButtonNotationType.StreetFighter:
-      return (xbBtns[i] != undefined ? xbBtns[i] : i);
+      return (xbBtns[i] != undefined ? xbBtns[i] : null);
     // return (sfBtns[i] != undefined ? sfBtns[i] : i);
     case ButtonNotationType.GuiltyGear:
       return (ggBtns[i] != undefined ? ggBtns[i] : i);
