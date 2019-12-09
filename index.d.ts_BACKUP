@@ -167,7 +167,7 @@ export interface Part {
   //
   active: boolean
   mute: boolean
-
+  notes: Note[];
 }
 
 export type Track = {
@@ -319,6 +319,7 @@ export type KeyEditor = {
   currentPage: number
   numPages: number
   gripX: number
+  gripY: number
   pitchHeight: number
   highestNote: number
   lowestNote: number

@@ -455,6 +455,9 @@ if (haveEvents) {
 window.onload = function () {
   // console.log("onload in gamepadtest reached!");
 }
+/**
+ * not used much, but still necessary collection of elements for each controller
+ */
 class gamepadHTMLShell {
   padTitle: HTMLHeadElement;
   padAxes: HTMLDivElement[];
@@ -465,7 +468,9 @@ class gamepadHTMLShell {
     this.padButtons = buttons;
   }
 }
-
+/**
+ * layer class to traditional gamepad API, handles many of the adaptations and customizations needed for our highly modular design
+ */
 export class GamepadObject {
   type: GamepadType;
   pad: Gamepad;
@@ -501,6 +506,10 @@ export class GamepadObject {
       this.vibrationActuator = va;
     }
   }
+  /**
+   * parses the manufacturer and other info to determine the type of layout needed
+   * @param str
+   */
   getType(str: string): GamepadType {
     str = str.toLowerCase();
     if (str.includes(GamepadTypeString.XInput)) { return GamepadType.XInput; }
@@ -508,6 +517,9 @@ export class GamepadObject {
     else if (str.includes(GamepadTypeString.Qanba)) { return GamepadType.Qanba; }
     else { return GamepadType.Generic; }
   }
+  /**
+   * returns the order that the main buttons should be presented, depending upon the manufacturer and standard
+   */
   getArcadeLayoutButtonNumbers(): number[] {
     switch (this.type) {
       case GamepadType.XInput:
@@ -515,9 +527,12 @@ export class GamepadObject {
         return [0, 1, 2, 3, 4, 5, 6, 7];
       default:
         return [0, 1, 2, 3, 4, 5, 6, 7];
-        // return [0, 0, 0, 0, 0, 0, 0, 0];
+      // return [0, 0, 0, 0, 0, 0, 0, 0];
     }
   }
+  /**
+ * returns the order that the d-pads buttons should be presented, depending upon the manufacturer and standard
+ */
   getDPadButtonNumbers(): number[] {
     switch (this.type) {
       case GamepadType.XInput:

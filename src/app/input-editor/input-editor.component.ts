@@ -73,6 +73,10 @@ export class InputEditorComponent implements OnInit {
     this.song.update();
     // sequencer.getMidiInputs();
   }
+  /**
+   * Initialize Critical Components
+   * @param iec
+   */
   init(iec: InputEditorComponent): void {
     this.enableGUI(false);
     let tmp_icons_w = 128;
@@ -122,18 +126,11 @@ export class InputEditorComponent implements OnInit {
     draw(iec);
     render();
   }
-
+  /**
+   * Initializes Song and its properties in the editor
+   */
   initSong(): Song {
-    /**
-     *  Uncomment one to test different tracks, will add listing function soon
-     */
-    const tmp_midiFileName =
-      'Blank Test';
-    // 'Fantasie Impromptu';
-    // 'Queen - Bohemian Rhapsody';
-    // 'minute_waltz';
-    // 'Thing';
-    // 'Fail';
+    const tmp_midiFileName = 'Blank Test';
     let song: Song;
     let tmp_midiFiles = sequencer.getMidiFiles();
     let tmp_midiFile = tmp_midiFiles[3];
@@ -174,12 +171,19 @@ export class InputEditorComponent implements OnInit {
     song.setTimeSignature(3, 4, true);
     return song;
   }
+  /**
+   * OLD - Add midi files for testing
+   */
   addAssetsToSequencer() {
     sequencer.addMidiFile({ url: '../../assets/midi/test.mid' }, null);
     sequencer.addMidiFile({ url: '../../assets/midi/minute_waltz.mid' }, null);
     sequencer.addMidiFile({ url: '../../assets/midi/chpn_op66.mid' }, null);
     sequencer.addMidiFile({ url: '../../assets/midi/Queen - Bohemian Rhapsody.mid' }, null);
   }
+  /**
+   * turns on GUI elements once all are properly initalized
+   * @param flag - whether to turn on the GUI
+   */
   enableGUI(flag) {
     let tmp_elements = document.querySelectorAll('input, select');
     let tmp_element;
@@ -189,6 +193,10 @@ export class InputEditorComponent implements OnInit {
       tmp_element.disabled = !flag;
     }
   }
+  /**
+   * UTILITY - needed for sequencer compatability
+   * @param song
+   */
   flattenTracks(song: Song) {
     song.tracks.forEach(
       (track) => {
@@ -198,7 +206,11 @@ export class InputEditorComponent implements OnInit {
       }
     );
   }
-
+  /**
+   * Set Element value to val
+   * @param elmt HTML Element
+   * @param val value
+   */
   setElementValue(elmt, val: string) { elmt.value = val; }
   setSliderValues(elmt, val: string, min: number, max: number, step: number) {
     elmt.min = min;
@@ -207,6 +219,11 @@ export class InputEditorComponent implements OnInit {
     elmt.value = val;
   }
   //#region [rgba(200, 0, 0, 0.05)] Selection Visuals Methods
+  /**
+   * Set properties in note required for active state
+   * @param note
+   * @param div_Note
+   */
   setNoteActiveState(note: Note, div_Note) {
     div_Note = document.getElementById(note.id);
     if (div_Note !== null && note.part.mute === false && note.mute !== true) {
@@ -214,19 +231,31 @@ export class InputEditorComponent implements OnInit {
         if (note.active === false) { div_Note.className = 'note'; }
     }
   }
-
+  /**
+   * set properties in note required for selected state
+   * @param note
+   */
   selectNote(note: Note) {
     let div_Note = document.getElementById(note.id);
     if (div_Note !== null && note.part.mute === false && note.mute !== true) {
       div_Note.className = 'note note-selected';
     }
   }
+  /**
+ * set properties in note required for unselected state
+ * @param note
+ */
   unselectNote(note: Note) {
     let div_Note = document.getElementById(note.id);
     if (note.part.mute === false && note.mute !== true && div_Note !== null) {
       div_Note.className = 'note';
     }
   }
+  /**
+   * set properties in part required for active state
+   * @param part
+   * @param div_Part
+   */
   setPartActiveState(part: Part, div_Part: HTMLDivElement) {
     div_Part = document.getElementById(part.id) as HTMLDivElement;
     if (div_Part !== null && part.mute !== true) {
@@ -237,12 +266,20 @@ export class InputEditorComponent implements OnInit {
       }
     }
   }
+  /**
+   *  set properties in part required for selected state
+   * @param part
+   */
   selectPart(part: Part) {
     let div_Part = document.getElementById(part.id);
     if (part.mute === false) {
       div_Part.className = 'part part-selected';
     }
   }
+  /**
+   *  set properties in part required for unselected state
+   * @param part
+   */
   unselectPart(part: Part) {
     let div_Part = document.getElementById(part.id);
     if (part.mute === false) {
@@ -258,6 +295,10 @@ export class InputEditorComponent implements OnInit {
   /*
     Part
     */
+  /**
+   *Event: left mouse click down on part
+   * @param e
+   */
   evt_Part_lMouDown(e) {
     let iec = InputEditorComponent.inpEdComp as InputEditorComponent;
     let tmp_part = iec.allParts[e.target.id];
@@ -273,7 +314,10 @@ export class InputEditorComponent implements OnInit {
       document.addEventListener('mouseup', iec.evt_Part_lMouUp, false);
     }
   }
-
+  /**
+   * Event: left mouse click up on part
+   * @param e
+   */
   evt_Part_lMouUp(e) {
     let iec = InputEditorComponent.inpEdComp;
     iec.keyEditor.stopMovePart();
@@ -287,7 +331,15 @@ export class InputEditorComponent implements OnInit {
   /*
     Note Stuff
     */
+  /**
+   * Event: mouse hover over note
+   * @param e
+   */
   evt_Note_MouOver(e) { (e.target as HTMLDivElement).style.cursor = 'move'; }
+  /**
+ * Event: left mouse click down on note
+ * @param e
+ */
   evt_Note_lMouDown(e) {
     let iec = InputEditorComponent.inpEdComp;
     if (!holdingEdge) {
@@ -304,10 +356,14 @@ export class InputEditorComponent implements OnInit {
       }
     }
   }
+  /**
+   * Event: left mouse click up on note
+   * @param e
+   */
   evt_Note_lMouUp(e: MouseEvent) {
     let iec = InputEditorComponent.inpEdComp;
     iec.keyEditor.stopMoveNote();
-    let elmt = (e.target as HTMLElement);
+    let elmt = iec.html.divs_AllNotes[iec.currNote.id];
     let tmp_note = iec.allNotes[elmt.id];
     let pitch = createNewMIDINote(0, 0, iec.info.mousePitchPos);
     elmt.setAttribute('pitch', pitch.name);
@@ -316,9 +372,20 @@ export class InputEditorComponent implements OnInit {
   /*
     Note Edge Stuff
    */
+  /**
+   * Event: mouse over left note edge
+   * @param e
+   */
   evt_NoteEdge_Left_MouOver(e: MouseEvent) { (e.target as HTMLDivElement).style.cursor = 'w-resize'; }
+  /**
+   * Event: mouse over right note edge
+   * @param e
+   */
   evt_NoteEdge_Right_MouOver(e: MouseEvent) { (e.target as HTMLDivElement).style.cursor = 'e-resize'; }
-
+  /**
+   * Event: mouse left click on left note edge
+   * @param e
+   */
   evt_NoteEdge_Left_lMouDown(e: MouseEvent) {
     holdingEdge = true;
     (e.target as HTMLDivElement).style.cursor = 'w-resize';
@@ -330,6 +397,10 @@ export class InputEditorComponent implements OnInit {
     document.addEventListener('mousemove', InputEditorComponent.inpEdComp.evt_NoteEdge_Left_MouMove, false);
     document.addEventListener('mouseup', InputEditorComponent.inpEdComp.evt_NoteEdge_Left_lMouUp);
   }
+  /**
+   * Event: mouse left click on right note edge
+   * @param e
+   */
   evt_NoteEdge_Right_lMouDown(e: MouseEvent) {
     holdingEdge = true;
     (e.target as HTMLDivElement).style.cursor = 'e-resize';
@@ -341,6 +412,10 @@ export class InputEditorComponent implements OnInit {
     document.addEventListener('mousemove', InputEditorComponent.inpEdComp.evt_NoteEdge_Right_MouMove, false);
     document.addEventListener('mouseup', InputEditorComponent.inpEdComp.evt_NoteEdge_Right_lMouUp);
   }
+  /**
+   * Event: mouse move over left note edge
+   * @param e
+   */
   evt_NoteEdge_Left_MouMove(e: MouseEvent) {
     let iec = InputEditorComponent.inpEdComp;
     let tmp_ticks = iec.info.snapTicksAtX;
@@ -360,6 +435,10 @@ export class InputEditorComponent implements OnInit {
     else {
     }
   }
+  /**
+   * Event: mouse move over right note edge
+   * @param e
+   */
   evt_NoteEdge_Right_MouMove(e: MouseEvent) {
     let iec = InputEditorComponent.inpEdComp;
     let tmp_ticks = iec.info.snapTicksAtX;
@@ -377,6 +456,10 @@ export class InputEditorComponent implements OnInit {
 
     }
   }
+  /**
+   * Event: left mouse click up on left note edge
+   * @param e
+   */
   evt_NoteEdge_Left_lMouUp(e: MouseEvent) {
     holdingEdge = false;
     changingNote = null;
@@ -386,6 +469,10 @@ export class InputEditorComponent implements OnInit {
     InputEditorComponent.inpEdComp.song.update();
     (e.target as HTMLDivElement).style.cursor = 'default';
   }
+  /**
+   * Event: left mouse click up on right note edge
+   * @param e
+   */
   evt_NoteEdge_Right_lMouUp(e: MouseEvent) {
     holdingEdge = false;
     changingNote = null;
@@ -401,6 +488,10 @@ export class InputEditorComponent implements OnInit {
 
   evt_Grid_lMouUp(e: MouseEvent) { }
 
+  /**
+   * Event: left mouse double click on editor grid
+   * @param e
+   */
   evt_Grid_lMouDbl(e: MouseEvent) {
     let iec = InputEditorComponent.inpEdComp;
     let elmt = (e.target as HTMLElement);
@@ -441,6 +532,10 @@ export class InputEditorComponent implements OnInit {
     }
 
   }
+  /**
+   * Event: left mouse click down on general editor space
+   * @param e
+   */
   evt_Generic_lMouDown(e: MouseEvent) {
     let iec = InputEditorComponent.inpEdComp;
     let elmt = (e.target as HTMLElement);
@@ -472,7 +567,14 @@ export class InputEditorComponent implements OnInit {
     //song.setPlayhead('ticks', keyEditor.xToTicks(e.pageX));
   }
   //#endregion
-
+  /**
+   * Creates and returns the two events that compose a MIDINote in the sequencer,
+   * @param iec - static singleton
+   * @param start - ticks to begin note
+   * @param end - ticks to end note
+   * @param pitch - pitch to assign note
+   * @param vel - velocity to assign note
+   */
   createNote(iec: InputEditorComponent, start: number, end: number, pitch: number, vel?: number): [MIDIEvent, MIDIEvent] {
     if (iec.currPart != null && iec.currPart != undefined) {
     }
@@ -492,11 +594,12 @@ export class InputEditorComponent implements OnInit {
 
   /**
  * END InputEditorComponent Class -------|||||-----------------
- *
- *
- *
  */
 }
+/**
+ * Returns the two edge HtmlDivElements of a given note
+ * @param note
+ */
 export function getEdgeDivs(note: MIDINote): [HTMLDivElement, HTMLDivElement, HTMLDivElement] {
   let tmp_noteDiv = document.getElementById(note.id) as HTMLDivElement;
   if (tmp_noteDiv != null)
@@ -509,7 +612,10 @@ let heldEdge;
 let changingNote;
 let holdingEdge = false;
 
-
+/**
+ * Initialization of basic window events
+ * @param iec
+ */
 function initWindowEvents(iec: InputEditorComponent) {
   /**
    * Check for working Audio Context, and if not, create one and resume it when user mouses over window
@@ -536,7 +642,9 @@ function initContextEvents() {
     InputEditorComponent.inpEdComp.html.div_currNote.innerHTML = 'Sel Note: ' + (InputEditorComponent.inpEdComp.currNote !== null ? InputEditorComponent.inpEdComp.currNote.id : 'none');
   });
 }
-
+/**
+ * init of basic input events
+ */
 function initInputEvents() {
   let iec = InputEditorComponent.inpEdComp;
   /**
@@ -683,9 +791,20 @@ function initInputEvents() {
     if (e.key === 'ArrowLeft') { iec.keyEditor.setPlayheadToX(Math.max(iec.keyEditor.getPlayheadX(true) - 16, 0)); }
   });
 }
-
+/**
+ * set generic element's value to val
+ * @param ref_elmt
+ * @param val
+ */
 function setElementValue(ref_elmt, val) { ref_elmt.value = val; }
-
+/**
+ * set slider element's various values
+ * @param ref_elmt
+ * @param val
+ * @param min
+ * @param max
+ * @param step
+ */
 function setSliderValues(ref_elmt, val, min, max, step) {
   ref_elmt.min = min;
   ref_elmt.max = max;
@@ -693,6 +812,10 @@ function setSliderValues(ref_elmt, val, min, max, step) {
   ref_elmt.value = val;
 }
 //#region [rgba(120, 120, 0 ,0.15)] Draw Functions
+/**
+ * Editor Main Draw Function
+ * @param iec
+ */
 function draw(iec: InputEditorComponent) {
   //Initialize all Grid HTML elements to blank
   iec.allNotes = new Array<Note>();
@@ -718,7 +841,10 @@ function draw(iec: InputEditorComponent) {
   while (iec.keyEditor.noteIterator.hasNext()) { drawNote(iec.keyEditor.noteIterator.next(), iec); }
   while (iec.keyEditor.partIterator.hasNext()) { drawPart(iec.keyEditor.partIterator.next(), iec); }
 }
-
+/**
+ * horizontal line iterator
+ * @param ref_data
+ */
 function drawHorizontalLine(ref_data) {
   let div_HLine = document.createElement('div'),
     pitchHeight = InputEditorComponent.inpEdComp.keyEditor.pitchHeight;
@@ -737,7 +863,10 @@ function drawHorizontalLine(ref_data) {
   InputEditorComponent.inpEdComp.html.div_PitchLines.appendChild(div_HLine);
 
 }
-
+/**
+ * vertical line iterator
+ * @param ref_data
+ */
 function drawVerticalLine(ref_data) {
   let tmp_type = ref_data.type,
     div_VLine = document.createElement('div');
@@ -765,7 +894,11 @@ function drawVerticalLine(ref_data) {
       break;
   }
 }
-
+/**
+ * draw a given note in sequencer
+ * @param ref_note
+ * @param iec
+ */
 function drawNote(ref_note: Note, iec: InputEditorComponent) {
   const bbox = ref_note.bbox;
   const edgeBBoxes = createEdgeBBoxes(ref_note.bbox, 8);
@@ -814,7 +947,11 @@ function drawNote(ref_note: Note, iec: InputEditorComponent) {
   div_Note.append(div_Note_info);
   iec.html.div_Notes.appendChild(div_Note);
 }
-
+/**
+ * draw a given part in the sequencer
+ * @param ref_part
+ * @param iec
+ */
 function drawPart(ref_part: Part, iec) {
   let tmp_bbox = ref_part.bbox,
     tmp_div_Part = document.createElement('div');
@@ -832,14 +969,20 @@ function drawPart(ref_part: Part, iec) {
   tmp_div_Part.addEventListener('mousedown', InputEditorComponent.inpEdComp.evt_Part_lMouDown, false);
   iec.html.div_Parts.appendChild(tmp_div_Part);
 }
-//Fits element within its bounding box
+/**
+ * Fits element within its bounding box
+ * @param element
+ * @param bbox
+ */
 export function updateElementBBox(element, bbox: BBox) {
   element.style.left = bbox.x + 'px';
   element.style.top = bbox.y + 'px';
   element.style.width = bbox.width + 'px';
   element.style.height = bbox.height + 'px';
 }
-
+/**
+ * resizes editor whenever the window's size or shape is changed
+ */
 function resize() {
   let iec = InputEditorComponent.inpEdComp;
   // let tmp_div_icons = document.getElementById('editor-input-icons');
@@ -857,7 +1000,9 @@ function resize() {
   iec.html.div_Editor.style.left = tmp_icons_w + 'px';
   iec.html.div_Editor.style.height = tmp_h + 'px';
 }
-
+/**
+ * General Editor Render Loop
+ */
 function render() {
   let iec = InputEditorComponent.inpEdComp;
   let snapshot = iec.keyEditor.getSnapshot('key-editor');
@@ -952,6 +1097,12 @@ function render() {
 
 
 //#region [ rgba(200, 200, 200, 0.1) ] Random Generation Functions
+/**
+ * returns a random value between the min and the max
+ * @param num_min
+ * @param num_max
+ * @param bool_round
+ */
 function getRandom(num_min, num_max, bool_round) {
   let tmp_r = Math.random() * (num_max - num_min) + num_min;
   if (bool_round === true) {
@@ -960,7 +1111,10 @@ function getRandom(num_min, num_max, bool_round) {
     return tmp_r;
   }
 }
-
+/**
+ * DEBUG - makes a random part for debug purposes
+ * @param iec
+ */
 function addRandomPartAtPlayhead(iec: InputEditorComponent) {
   let i;
   let tmp_ticks = 0; //startPositions[getRandom(0, 4, true)],
@@ -994,7 +1148,10 @@ function addRandomPartAtPlayhead(iec: InputEditorComponent) {
   InputEditorComponent.inpEdComp.track.addPartAt(tmp_part, ['ticks', tmp_ticks]);
   iec.song.update();
 }
-
+/**
+ * inits a part with two notes at the pitch and ticks of the mouse's coordinates
+ * @param iec
+ */
 function addPartAtMouse(iec: InputEditorComponent) {
   iec.keyEditor.setPlayheadToX(iec.info.clientX - iec.info.editorFrameOffsetX);
   let i;
@@ -1035,7 +1192,12 @@ function addPartAtMouse(iec: InputEditorComponent) {
 
 
 
-
+/**
+ * returns a new midinote with the given properties
+ * @param start
+ * @param end
+ * @param pitch
+ */
 function createNewMIDINote(start: number, end: number, pitch: number): MIDINote {
   let tmp_velocity = 127;
   let tmp_noteOn = sequencer.createMidiEvent(start, InputEditorComponent.NOTE_ON, pitch, tmp_velocity);
@@ -1043,6 +1205,13 @@ function createNewMIDINote(start: number, end: number, pitch: number): MIDINote 
   let tmp_midiNote = sequencer.createMidiNote(tmp_noteOn, tmp_noteOff);
   return tmp_midiNote;
 }
+/**
+ * alternate to createNewMIDINote
+ * @param start
+ * @param end
+ * @param pitch
+ * @param velocity
+ */
 function createNewNoteEvents(start: number, end: number, pitch: number, velocity?: number): [MIDIEvent, MIDIEvent] {
   let tmp_velocity = (velocity == undefined ? 127 : velocity);
   let tmp_events = [];
@@ -1051,6 +1220,11 @@ function createNewNoteEvents(start: number, end: number, pitch: number, velocity
   tmp_events.push(tmp_noteOn, tmp_noteOff);
   return [tmp_noteOn, tmp_noteOff];
 }
+/**
+ * Adds a note at the mouse's coordinates to the selected part
+ * @param tmp_part
+ * @param iec
+ */
 function createNewNoteAtMouse(tmp_part, iec: InputEditorComponent) {
   let tmp_pitch = iec.info.mousePitchPos;
   let tmp_velocity = 127;
@@ -1075,7 +1249,8 @@ function createNewNoteAtMouse(tmp_part, iec: InputEditorComponent) {
   return tmp_events;
 }
 /**
- * Compacts all song tracks onto single track, set to monitor, and set instrument to piano
+ *  Compacts all song tracks onto single track, set to monitor, and set instrument to piano
+ * @param ref_song
  */
 function flattenTracks(ref_song) {
   ref_song.tracks.forEach(
@@ -1096,16 +1271,9 @@ export function createEdgeBBoxes(bbox, xPx: number): [BBox, BBox] {
   let tmp_bbox_r = new BBox(null, bbox.width, 0, xPx, bbox.height);
   return [tmp_bbox_l, tmp_bbox_r];
 }
-// export function subdivBBox(ref_bbox, ref_xRatio: number, ref_xOffsetRatio: number, ref_yRatio: number, ref_yOffsetRatio: number): BBox {
-//   let tmp_bbox = new BBox(null,
-//     (ref_bbox.width * ref_xOffsetRatio),
-//     (ref_bbox.height * ref_yOffsetRatio),
-//     ref_bbox.width * ref_xRatio,
-//     ref_bbox.height * ref_yRatio);
-//   if (tmp_bbox.width < 1) { tmp_bbox.width = 1; }
-//   return tmp_bbox;
-// }
-
+/**
+ * holds many useful values needed to help make heartbeat-sequencer compatible with our solution
+ */
 export class EditorInfo {
   pageX: number;
   pageY: number;
@@ -1138,6 +1306,9 @@ export class EditorInfo {
   editorHeight = 480;
   edHTMLShell = new EditorHTMLShell();
 }
+/**
+ * contains all the separate elements in the editor for quick and frequently necessary reference
+ */
 export class EditorHTMLShell {
   btn_Play: HTMLButtonElement;
   btn_Stop: HTMLButtonElement;
@@ -1224,7 +1395,9 @@ export class EditorHTMLShell {
     return this;
   }
 }
-
+/**
+ * abstraction class used to help keep relative locations of elements standardized and consistent
+ */
 class BBox {
   x: number;
   y: number;

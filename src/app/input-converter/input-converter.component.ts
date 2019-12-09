@@ -441,6 +441,10 @@ if (JZZ.requestMIDIAccess) {
 } else {
   console.warn("No MIDI support in your browser");
 }
+/**
+ * MIDI success procedures
+ * @param mAcc
+ */
 function onMIDISuccess(mAcc) {
   midiAccess = mAcc;
   inputs = midiAccess.inputs;
@@ -448,7 +452,10 @@ function onMIDISuccess(mAcc) {
   midiAccess.onstatechange += JZZ().onChange;
 }
 function onMIDIFailure(data) { }
-
+/**
+ * returns the button name, based on the components selected notation type
+ * @param i button number
+ */
 export function nameButton(i) {
   switch (InputDisplayComponent.inpDispCmp.butNotTy) {
     case ButtonNotationType.StreetFighter:
