@@ -2,7 +2,7 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.6.
 
-## NOTE: If files missing / unable to build
+## NOTE: If files missing / unable to build + NOTE TO GRADER
 
 run npm update
 
