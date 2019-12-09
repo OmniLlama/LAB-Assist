@@ -44,11 +44,11 @@ export class InputEditorComponent implements OnInit {
 
   bppStart = 8;  //default: 16
 
-  console = window.console;
+  console: Console = window.console;
   alert = window.alert;
   idc = InputDisplayComponent.inpDispCmp;
   icc = InputConverterComponent.inpConvComp;
-  requestAnimationFrame = window.requestAnimationFrame;
+  rAF = window.requestAnimationFrame;
   output = document.getElementById('console');
   constructor() {
   }
@@ -88,9 +88,6 @@ export class InputEditorComponent implements OnInit {
     iec.instruments = sequencer.getInstruments();
 
     if (iec.flattenTracksToSingleTrack) { flattenTracks(iec.song); }
-    /**
-     * This is where KeyEditor is Made!!!
-     */
     let keyEditor = sequencer.createKeyEditor(this.song, {
       // keyListener: true,
       viewportHeight: tmp_h,
