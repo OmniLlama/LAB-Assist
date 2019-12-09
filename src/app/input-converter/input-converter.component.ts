@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MIDIEvent, Note, MIDINote } from 'heartbeat-sequencer';
-import { InputEditorComponent, updateElementBBox, getEdgeDivs, subdivBBox } from '../input-editor/input-editor.component';
-import { InputDisplayComponent, ButtonNotationType, GamepadObject, GamepadTypeString, GamepadType, controllers } from '../input-display/input-display.component';
+import { InputEditorComponent, updateElementBBox, getEdgeDivs, createEdgeBBoxes } from '../input-editor/input-editor.component';
+import { InputDisplayComponent, ButtonNotationType, GamepadObject, GamepadTypeString, GamepadType, controllers, xbBtns, ggBtns, scBtns, tknBtns, snkBtns } from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
 declare let sequencer: any;
 
@@ -32,6 +32,11 @@ export class InputConverterComponent implements OnInit {
   dirInpStarts: Array<number>;
   dirInpEnds: Array<number>;
 
+  dpadHeld: Array<boolean>;
+  dpadHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
+  dpadInpStarts: Array<number>;
+  dpadInpEnds: Array<number>;
+
   btnsHeld: Array<boolean>;
   btnHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
   btnInpStarts: Array<number>;
@@ -58,6 +63,9 @@ export class InputConverterComponent implements OnInit {
     JZZ().refresh();
     rAF(this.getController);
   }
+  /**
+   * Waits for, then receives the first controller that is added to the display component
+   */
   getController() {
     let idc = InputDisplayComponent.inpDispCmp;
     let icc = InputConverterComponent.inpConvComp;
@@ -76,6 +84,11 @@ export class InputConverterComponent implements OnInit {
       icc.dirInpEnds = new Array<number>((getPad().axes.length * 2));
       icc.dirHeldNotes = new Array<[MIDINote, number]>((getPad().axes.length * 2));
 
+      icc.dpadHeld = new Array<boolean>(4);
+      icc.dpadInpStarts = new Array<number>(4);
+      icc.dpadInpEnds = new Array<number>(4);
+      icc.dpadHeldNotes = new Array<[MIDINote, number]>(4);
+
       icc.btnsHeld = new Array<boolean>(getPad().buttons.length);
       icc.btnInpStarts = new Array<number>(getPad().buttons.length);
       icc.btnInpEnds = new Array<number>(getPad().buttons.length);
@@ -88,10 +101,13 @@ export class InputConverterComponent implements OnInit {
       rAF(icc.getController);
     }
   }
-  // inpPitch: string;
   deadZone = .5;
+  /**
+   * Updates all controller values
+   */
   updateController() {
     let icc = InputConverterComponent.inpConvComp;
+    let idc = InputDisplayComponent.inpDispCmp;
     let iec = InputEditorComponent.inpEdComp;
     if (iec.song.playing && !icc.trackingNotes) {
       icc.trackedNotes = new Array<[number, number, number]>();
@@ -105,76 +121,170 @@ export class InputConverterComponent implements OnInit {
       iec.song.update();
       icc.trackingNotes = false;
     }
-    // icc.testController = getPad();
     /**
      * Update Controller Axes
      */
-    icc.testController.axes.forEach((a, ind) => {
+    getPad().axes.forEach((a, ind) => {
+      let i1 = (ind * 2);
+      let i2 = (ind * 2) + 1;
       let pitchNum;
       if (a.valueOf() > icc.deadZone) {
         pitchNum = getDirectionPitchFromAxis(ind, a.valueOf());
-        if (!icc.dirsHeld[(ind * 2) + 1]) {
-          icc.dirsHeld[(ind * 2) + 1] = true;
-          icc.dirsHeld[(ind * 2)] = false;
+        if (!icc.dirsHeld[i2]) {
+          icc.dirsHeld[i2] = true;
+          icc.dirsHeld[i1] = false;
           if (icc.trackingNotes) {
-            icc.dirInpStarts[(ind * 2) + 1] = iec.edtrInfo.ticksAtHead;
-            let thing = iec.createNote(iec, icc.dirInpStarts[(ind * 2) + 1], icc.dirInpStarts[(ind * 2) + 1] + 128,
+            icc.dirInpStarts[i2] = iec.info.ticksAtHead;
+            let thing = iec.createNote(iec,
+              icc.dirInpStarts[i2],
+              icc.dirInpStarts[i2] + 128,
               pitchNum, a.valueOf() * 127);
-            icc.dirHeldNotes[(ind * 2) + 1] = [thing[0].midiNote, iec.edtrInfo.ticksAtHead];
+            icc.dirHeldNotes[i2] = [thing[0].midiNote, iec.info.ticksAtHead];
           }
         }
       } else if (a.valueOf() < -icc.deadZone) {
         pitchNum = getDirectionPitchFromAxis(ind, a.valueOf());
-        if (!icc.dirsHeld[(ind * 2)]) {
-          icc.dirsHeld[(ind * 2)] = true;
-          icc.dirsHeld[(ind * 2) + 1] = false;
+        if (!icc.dirsHeld[i1]) {
+          icc.dirsHeld[i1] = true;
+          icc.dirsHeld[i2] = false;
           if (icc.trackingNotes) {
-            icc.dirInpStarts[(ind * 2)] = iec.edtrInfo.ticksAtHead;
-            let thing = iec.createNote(iec, icc.dirInpStarts[(ind * 2)], icc.dirInpStarts[(ind * 2)] + 128, pitchNum, -a.valueOf() * 127);
-            icc.dirHeldNotes[(ind * 2)] = [thing[0].midiNote, iec.edtrInfo.ticksAtHead];
+            icc.dirInpStarts[i1] = iec.info.ticksAtHead;
+            let thing = iec.createNote(iec,
+              icc.dirInpStarts[i1],
+              icc.dirInpStarts[i1] + 128,
+              pitchNum, -a.valueOf() * 127);
+            icc.dirHeldNotes[i1] = [thing[0].midiNote, iec.info.ticksAtHead];
           }
         }
       } else {
-        icc.dirsHeld[(ind * 2)] = false;
-        icc.dirsHeld[(ind * 2) + 1] = false;
+        icc.dirsHeld[i1] = false;
+        icc.dirsHeld[i2] = false;
       }
       if (icc.trackingNotes) {
-        if (icc.dirsHeld[(ind * 2) + 1]) {
-          icc.dirHeldNotes[(ind * 2) + 1][0].part.moveEvent(icc.dirHeldNotes[(ind * 2) + 1][0].noteOff,
-            (iec.edtrInfo.ticksAtHead - icc.dirHeldNotes[(ind * 2) + 1][1]));
-          icc.dirHeldNotes[(ind * 2) + 1][1] = iec.edtrInfo.ticksAtHead;
+        if (icc.dirsHeld[i2]) {
+          icc.dirHeldNotes[i2][0].part.moveEvent(icc.dirHeldNotes[i2][0].noteOff,
+            (iec.info.ticksAtHead - icc.dirHeldNotes[i2][1]));
+          icc.dirHeldNotes[i2][1] = iec.info.ticksAtHead;
           iec.song.update();
-          if (icc.dirHeldNotes[(ind * 2) + 1][0].id != undefined) {
-            let noteAndEdges = getEdgeDivs(icc.dirHeldNotes[(ind * 2) + 1][0]);
-            if (noteAndEdges != null) {
-              updateElementBBox(noteAndEdges[1], subdivBBox(icc.dirHeldNotes[(ind * 2) + 1][0].bbox, 0.1, 0, 1, 0));
-              updateElementBBox(noteAndEdges[2], subdivBBox(icc.dirHeldNotes[(ind * 2) + 1][0].bbox, 0.2, 0.8, 1, 0));
-            }
-          }
-        } else if (icc.dirsHeld[(ind * 2)]) {
-          icc.dirHeldNotes[(ind * 2)][0].part.moveEvent(icc.dirHeldNotes[(ind * 2)][0].noteOff,
-            (iec.edtrInfo.ticksAtHead - icc.dirHeldNotes[(ind * 2)][1]));
-          icc.dirHeldNotes[(ind * 2)][1] = iec.edtrInfo.ticksAtHead;
+          // if (icc.dirHeldNotes[i2][0].id != undefined) {
+          //   let noteAndEdges = getEdgeDivs(icc.dirHeldNotes[i2][0]);
+          //   if (noteAndEdges != null) {
+          //     let edgeBBoxes = createEdgeBBoxes(icc.dirHeldNotes[i1][0].bbox, 8);
+          //     updateElementBBox(noteAndEdges[1], edgeBBoxes[0]);
+          //     updateElementBBox(noteAndEdges[2], edgeBBoxes[1]);
+          //   }
+          // }
+        } else if (icc.dirsHeld[i1]) {
+          icc.dirHeldNotes[i1][0].part.moveEvent(icc.dirHeldNotes[i1][0].noteOff,
+            (iec.info.ticksAtHead - icc.dirHeldNotes[i1][1]));
+          icc.dirHeldNotes[i1][1] = iec.info.ticksAtHead;
           iec.song.update();
-          if (icc.dirHeldNotes[(ind * 2)][0].id != undefined) {
-            let noteAndEdges = getEdgeDivs(icc.dirHeldNotes[(ind * 2)][0]);
-            if (noteAndEdges != null) {
-              updateElementBBox(noteAndEdges[1], subdivBBox(icc.dirHeldNotes[(ind * 2)][0].bbox, 0.1, 0, 1, 0));
-              updateElementBBox(noteAndEdges[2], subdivBBox(icc.dirHeldNotes[(ind * 2)][0].bbox, 0.2, 0.8, 1, 0));
-            }
-          }
-        } else if (!icc.dirsHeld[(ind * 2) + 1] && icc.dirHeldNotes[(ind * 2) + 1] != null) {
-          icc.dirHeldNotes[(ind * 2) + 1] = null;
-        } else if (!icc.dirsHeld[(ind * 2)] && icc.dirHeldNotes[(ind * 2)] != null) {
-          icc.dirHeldNotes[(ind * 2)] = null;
+          // if (icc.dirHeldNotes[i1][0].id != undefined) {
+          //   let noteAndEdges = getEdgeDivs(icc.dirHeldNotes[i1][0]);
+          //   if (noteAndEdges != null) {
+          //     let edgeBBoxes = createEdgeBBoxes(icc.dirHeldNotes[i1][0].bbox, 8);
+          //     updateElementBBox(noteAndEdges[1], edgeBBoxes[0]);
+          //     updateElementBBox(noteAndEdges[2], edgeBBoxes[1]);
+          //   }
+          // }
+        } else if (!icc.dirsHeld[i2] && icc.dirHeldNotes[i2] != null) {
+          icc.dirHeldNotes[i2] = null;
+        } else if (!icc.dirsHeld[i1] && icc.dirHeldNotes[i1] != null) {
+          icc.dirHeldNotes[i1] = null;
         }
       }
     });
     /**
+     * Update Controller Digital Pad
+     */
+    let dPadBtns: GamepadButton[] = new Array<GamepadButton>();
+    let dpadIconDivs = document.getElementsByClassName("editor-input-icon-direction");
+    for (let i of icc.testController.getDPadButtonNumbers()) { dPadBtns.push(getPad().buttons[i]); }
+    dPadBtns.forEach((b, ind) => {
+      let pitch = getDirectionPitchFromDPad(ind);
+      if (b.pressed && !icc.dpadHeld[ind]) {
+        icc.dpadHeld[ind] = true;
+        icc.midiOutPort.noteOn(0, pitch, 127);
+        //if RECORDING
+        if (icc.trackingNotes) {
+          icc.dpadInpStarts[ind] = iec.info.ticksAtHead;
+          let thing = iec.createNote(iec, icc.dpadInpStarts[ind], icc.dpadInpStarts[ind] + 128, pitch);
+          icc.dpadHeldNotes[ind] = [thing[0].midiNote, iec.info.ticksAtHead];
+          console.log('hit button while playing');
+        }
+        //if RELEASED this frame
+      } else if (!b.pressed && icc.dpadHeld[ind]) {
+        //if RECORDING
+        if (icc.trackingNotes) {
+          icc.dpadInpEnds[ind] = iec.info.ticksAtHead;
+          icc.midiOutPort.noteOff(0, pitch, 127);
+          icc.trackedNotes.push([icc.dpadInpStarts[ind], icc.dpadInpEnds[ind], pitch]);
+        }
+        icc.dpadHeld[ind] = false;
+      }
+      // EXPERIMENTALISISISMZ
+      if (icc.trackingNotes) {
+        if (icc.dpadHeld[ind]) {
+          icc.dpadHeldNotes[ind][0].part.moveEvent(icc.dpadHeldNotes[ind][0].noteOff,
+            (iec.info.ticksAtHead - icc.dpadHeldNotes[ind][1]));
+          icc.dpadHeldNotes[ind][1] = iec.info.ticksAtHead;
+          iec.song.update();
+          // if (icc.dpadHeldNotes[ind][0].id != undefined) {
+          //   let noteAndEdges = getEdgeDivs(icc.dpadHeldNotes[ind][0]);
+          //   if (noteAndEdges != null) {
+          //     let edgeBBoxes = createEdgeBBoxes(icc.dpadHeldNotes[ind][0].bbox, 8);
+          //     updateElementBBox(noteAndEdges[1], edgeBBoxes[0]);
+          //     updateElementBBox(noteAndEdges[2], edgeBBoxes[1]);
+          //   }
+          // }
+        }
+        else if (!icc.dpadHeld[ind] && icc.dpadHeldNotes[ind] != null) {
+          icc.dpadHeldNotes[ind] = null;
+        }
+      }
+      var btn = dpadIconDivs[ind] as HTMLDivElement;
+      if (btn != undefined) {
+        var pressed = b.value > .8;
+        if (typeof (b) == "object") {
+          pressed = b.pressed;
+        }
+        var pct = Math.round(b.value * 100) + "%";
+        btn.style.backgroundSize = pct + " " + pct;
+        let imageString = 'a';
+        let buttonString;
+        switch (ind) {
+          case 0:
+            buttonString = 'up';
+            break;
+          case 1:
+            buttonString = 'down';
+            break;
+          case 2:
+            buttonString = 'left';
+            break;
+          case 3:
+            buttonString = 'right';
+            break;
+        }
+        if (pressed) {
+          // If pressed, switches to the pressed version of the button's image
+          imageString = `<img id="icon-img" src="assets/images/pressed_${buttonString}.png">`;
+          btn.innerHTML = imageString;
+        } else {
+          // If released/not pressed, switches to the regular version of the button's image
+          imageString = `<img id="icon-img" src="assets/images/${buttonString}.png" >`;
+          btn.innerHTML = imageString;
+        }
+      }
+    });
+
+    /**
      * Update Controller Buttons
      */
-    var buttons = document.getElementsByClassName("editor-input-icon");
-    icc.testController.buttons.forEach((b, ind) => {
+    let btnIconDivs = document.getElementsByClassName("editor-input-icon");
+    let btns = new Array<GamepadButton>();
+    for (let i of icc.testController.getArcadeLayoutButtonNumbers()) { btns.push(getPad().buttons[i]); }
+    btns.forEach((b, ind) => {
       let pitch = getTestToneForButton(ind);
       //if PRESSED this frame
       if (b.pressed && !icc.btnsHeld[ind]) {
@@ -182,16 +292,15 @@ export class InputConverterComponent implements OnInit {
         icc.midiOutPort.noteOn(0, pitch, 127);
         //if RECORDING
         if (icc.trackingNotes) {
-          icc.btnInpStarts[ind] = iec.edtrInfo.ticksAtHead;
+          icc.btnInpStarts[ind] = iec.info.ticksAtHead;
           let thing = iec.createNote(iec, icc.btnInpStarts[ind], icc.btnInpStarts[ind] + 128, getButtonPitch(ind));
-          icc.btnHeldNotes[ind] = [thing[0].midiNote, iec.edtrInfo.ticksAtHead];
-          console.log('hit button while playing');
+          icc.btnHeldNotes[ind] = [thing[0].midiNote, iec.info.ticksAtHead];
         }
         //if RELEASED this frame
       } else if (!b.pressed && icc.btnsHeld[ind]) {
         //if RECORDING
         if (icc.trackingNotes) {
-          icc.btnInpEnds[ind] = iec.edtrInfo.ticksAtHead;
+          icc.btnInpEnds[ind] = iec.info.ticksAtHead;
           icc.midiOutPort.noteOff(0, pitch, 127);
           icc.trackedNotes.push([icc.btnInpStarts[ind], icc.btnInpEnds[ind], getButtonPitch(ind)]);
         }
@@ -201,22 +310,23 @@ export class InputConverterComponent implements OnInit {
       if (icc.trackingNotes) {
         if (icc.btnsHeld[ind]) {
           icc.btnHeldNotes[ind][0].part.moveEvent(icc.btnHeldNotes[ind][0].noteOff,
-            (iec.edtrInfo.ticksAtHead - icc.btnHeldNotes[ind][1]));
-          icc.btnHeldNotes[ind][1] = iec.edtrInfo.ticksAtHead;
+            (iec.info.ticksAtHead - icc.btnHeldNotes[ind][1]));
+          icc.btnHeldNotes[ind][1] = iec.info.ticksAtHead;
           iec.song.update();
-          if (icc.btnHeldNotes[ind][0].id != undefined) {
-            let noteAndEdges = getEdgeDivs(icc.btnHeldNotes[ind][0]);
-            if (noteAndEdges != null) {
-              updateElementBBox(noteAndEdges[1], subdivBBox(icc.btnHeldNotes[ind][0].bbox, 0.1, 0, 1, 0));
-              updateElementBBox(noteAndEdges[2], subdivBBox(icc.btnHeldNotes[ind][0].bbox, 0.2, 0.8, 1, 0));
-            }
-          }
+          // if (icc.btnHeldNotes[ind][0].id != undefined) {
+          //   let noteAndEdges = getEdgeDivs(icc.btnHeldNotes[ind][0]);
+          //   if (noteAndEdges != null) {
+          //     let edgeBBoxes = createEdgeBBoxes(icc.btnHeldNotes[ind][0].bbox, 8);
+          //     updateElementBBox(noteAndEdges[1], edgeBBoxes[0]);
+          //     updateElementBBox(noteAndEdges[2], edgeBBoxes[1]);
+          //   }
+          // }
         }
         else if (!icc.btnsHeld[ind] && icc.btnHeldNotes[ind] != null) {
           icc.btnHeldNotes[ind] = null;
         }
       }
-      var btn = buttons[ind] as HTMLDivElement;
+      var btn = btnIconDivs[ind] as HTMLDivElement;
       if (btn != undefined) {
         var pressed = b.value > .8;
         if (typeof (b) == "object") {
@@ -337,39 +447,25 @@ function onMIDISuccess(mAcc) {
   outputs = midiAccess.outputs;
   midiAccess.onstatechange += JZZ().onChange;
 }
-function onMIDIFailure(data) {
-}
+function onMIDIFailure(data) { }
 function MIDIStateChanged(data?): any {
   console.warn('MIDI State has changed!');
   return null;
 }
-var xbBtns = ['a', 'b', 'x', 'y', 'lb', 'rb', 'lt', 'rt'];
-var psBtns = ['X', 'O', '[]', '^', 'l1', 'r1', 'l2', 'r2'];
-var sfBtns = ['lk', 'mk', 'lp', 'mp', 'l1', 'hp', 'l2', 'hk'];
-var ggBtns = ['P', 'D', 'K', 'S', 'HS', 'l1', 'l2', 'SP'];
-var tknBtns = ['LK', 'RK', 'LP', 'RP'];
-var scBtns = ['G', 'K', 'A', 'B'];
-var snkBtns = ['B', 'D', 'A', 'C'];
 
 export function nameButton(i) {
   switch (InputDisplayComponent.inpDispCmp.butNotTy) {
     case ButtonNotationType.StreetFighter:
-      return (xbBtns[i] != undefined ? xbBtns[i] : i);
+      return (xbBtns[i] !== undefined ? xbBtns[i] : i);
     // return (sfBtns[i] != undefined ? sfBtns[i] : i);
     case ButtonNotationType.GuiltyGear:
-      return (ggBtns[i] != undefined ? ggBtns[i] : i);
+      return (ggBtns[i] !== undefined ? ggBtns[i] : i);
     case ButtonNotationType.SoulCalibur:
-      return (scBtns[i] != undefined ? scBtns[i] : i);
+      return (scBtns[i] !== undefined ? scBtns[i] : i);
     case ButtonNotationType.Tekken:
-      return (tknBtns[i] != undefined ? tknBtns[i] : i);
+      return (tknBtns[i] !== undefined ? tknBtns[i] : i);
     case ButtonNotationType.SNK:
-      return (snkBtns[i] != undefined ? snkBtns[i] : i);
+      return (snkBtns[i] !== undefined ? snkBtns[i] : i);
   }
   return i;
-}
-export class InputConverter {
-  notes: Note[];
-  constructor() {
-
-  }
 }

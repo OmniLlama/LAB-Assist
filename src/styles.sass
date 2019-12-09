@@ -1,3 +1,4 @@
+
 html
   background-color: #e4e4e460
 #editor-input-icons
@@ -89,29 +90,6 @@ html
   position: relative
   // overflow: hidden
 
-// #bar-lines, #tick-lines, #sixteenth-lines
-//   height: 100%
-//   position: absolute
-//   z-index: 1
-//   font: 10px bold
-//   // font-size: 10px
-//   // font-weight: bold
-//   color: #e9e9e9
-// #pitch-lines
-//   width: 100%
-//   position: absolute
-//   z-index: 1
-//   font: 8px bold
-//   color: #e9e9e9
-
-// #notes
-//   position: absolute
-//   z-index: 2
-
-// #parts
-//   position: absolute
-//   z-index: 1
-
 .pitch-line
   background-image: url('assets/editor/img/pitch-line.png')
   position: absolute
@@ -147,30 +125,83 @@ html
   background-position: left
   height: 100%
 
+$clr-note-bg: #3d61af
+$clr-note-border: #7b92c2
+
+$clr-note-active-bg: #51df80b6
+$clr-note-active-border: #d1d1d154
+
+$clr-note-selected-bg: #922276d2
+$clr-note-selected-border: #c058d44d
+
+$clr-part-bg: #7ca5a838
+$clr-part-border: #aadadd71
+
+$clr-part-active-bg: #9dd88259
+$clr-part-active-border: #98f86bb6
+
+$clr-part-selected-bg: #d15cff28
+$clr-part-selected-border: #a863aa8f
+
+$clr-gs1:#8069e7ce
+$clr-g1: #680b1fce
+$clr-fs1: #3a1996ce
+$clr-f1: #e44a85ce
+$clr-e1: #2dc46c9f
+$clr-ds1: #d80606e1
+$clr-d1: #2a53dbd2
+$clr-cs1: #ffed49b6
+$clr-c1: #830202e1
+$clr-b0: #f72828a6
+$clr-as0: #3f00ebad
+$clr-a0: #0f116ebb
+
+.note[pitch='G#1']
+  background-color: $clr-gs1
+.note[pitch='G1']
+  background-color: $clr-g1
+.note[pitch='F#1']
+  background-color: $clr-fs1
+.note[pitch='F1']
+  background-color: $clr-f1
+.note[pitch='E1']
+  background-color: $clr-e1
+.note[pitch='D#1']
+  background-color: $clr-ds1
+.note[pitch='D1']
+  background-color: $clr-d1
+.note[pitch='C#1']
+  background-color: $clr-cs1
+.note[pitch='C1']
+  background-color: $clr-c1
+.note[pitch='B0']
+  background-color: $clr-b0
+.note[pitch='A#0']
+  background-color: $clr-as0
+.note[pitch='A0']
+  background-color: $clr-a0
+
 .note
   position: absolute
-  background-color: #3434ff
-  border: none
   font: .6em arial bolder
   z-index: 10
-  border: 1px solid #00ff00
+  background-color: $clr-note-bg
+  border: 1px solid $clr-note-border
+
 .note-info
   // text-align: center
   // padding: 32px
   // position: relative
 .note-selected
   position: absolute
-  background-color: #ff0095
-  border: 0
-
   z-index: 11
-  border: 1px solid #ecafff
+  background-color: $clr-note-selected-bg
+  border: 2px solid $clr-note-selected-border
 
 .note-active
-  background-color: #00ff00
-  border: 0
   z-index: 10
-  border: 1px solid #0000ff
+  background-color: $clr-note-active-bg
+  border: 3px solid $clr-note-active-border
 
 .note-muted
   background-color: #555
@@ -178,27 +209,25 @@ html
   border: 1px solid #000
 
 .note-edge
-  background-color: #ffffff7e
+  // background-color: #0706067e
   position: absolute
 
 .part
   position: absolute
-  background-color: rgba(55,55,55,0.5)
-  background-color: rgba(17, 42, 48, 0.5)
   z-index: 9
-  border: 1px solid #f00
+  background-color: $clr-part-bg
+  border: 1px solid $clr-part-border
 
 .part-selected
   position: absolute
-  background-color: rgba(209, 92, 255, 0.5)
   z-index: 9
-  border: 1px solid #b700ff
+  background-color: $clr-part-selected-bg
+  border: 1px solid $clr-part-selected-border
 
 .part-active
-  background-color: rgba(255, 0, 0, 0.5)
-
   z-index: 9
-  border: 1px solid #f00
+  background-color: $clr-part-active-bg
+  border: 1px solid $clr-part-active-border
 
 .part-muted
   background-color: rgba(55, 55, 55, 0.5)

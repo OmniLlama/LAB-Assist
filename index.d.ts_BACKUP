@@ -141,6 +141,7 @@ export interface MIDINote extends MIDIEvent {
   noteOff: MIDIEvent
   durationTicks: number
   note: Note
+  name: string
   bbox
   mute: (flag: boolean) => void
 }
@@ -330,6 +331,11 @@ export type KeyEditor = {
   addEventListener: (event: string, typeOrCallback: any, callback?: (arg?: any) => void) => void
   selectedNote: Note
   getEventRect: (event: MIDIEvent) => any
+  //Added stuff
+  //
+  noteIterator
+  partIterator
+  width
 }
 
 export type SnapShot = {

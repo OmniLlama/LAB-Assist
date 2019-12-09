@@ -2,7 +2,6 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { Note, Part, MIDINote, Track, getMidiFiles, createSong, Instrument, Song, KeyEditor, createTrack, MIDIEvent } from "heartbeat-sequencer";
 import { InputConverterComponent } from '../input-converter/input-converter.component';
 import { InputDisplayComponent } from '../input-display/input-display.component';
-// import * as sequencer from 'heartbeat-sequencer';
 declare let sequencer: any;
 
 
@@ -18,17 +17,17 @@ export class InputEditorComponent implements OnInit {
   static inpEdComp: InputEditorComponent;
   testMethod = 1;
   midiOutput;
-  edtrHtml: EditorHTMLShell;
-  edtrInfo: EditorInfo;
+  html: EditorHTMLShell;
+  info: EditorInfo;
   midiFile;
   keyEditor: KeyEditor;
   div_MidiFileList: HTMLDivElement;
   midiFileList;
   audCntxt: AudioContext;
 
-  pitchStart = 12;
-  pitchEnd = 48;
-  pitchHeight = 16;
+  pitchStart = 21;
+  pitchEnd = 32;
+  pitchHeight = 28;
   timeSigNom = 3;
   timeSigDenom = 4;
   editorHeight = ((this.pitchEnd - this.pitchStart + 2) * this.pitchHeight);
@@ -37,8 +36,8 @@ export class InputEditorComponent implements OnInit {
   instruments: Instrument[];
   song: Song;
 
-  allNotes = {}; // stores references to all midi notes;
-  allParts = {}; // stores references to all midi parts;
+  allNotes: Array<Note> = new Array<Note>(); // stores references to all midi notes;
+  allParts: Array<Part> = new Array<Part>(); // stores references to all midi parts;
   currNote: Note = null;
   currPart: Part = null;
   flattenTracksToSingleTrack = true;
@@ -55,8 +54,8 @@ export class InputEditorComponent implements OnInit {
   }
   ngOnInit() {
     InputEditorComponent.inpEdComp = this;
-    this.edtrInfo = new EditorInfo();
-    this.edtrHtml = new EditorHTMLShell();
+    this.info = new EditorInfo();
+    this.html = new EditorHTMLShell();
     this.init(this);
   }
   ngAfterViewInit(): void {
@@ -74,7 +73,7 @@ export class InputEditorComponent implements OnInit {
     this.song.update();
     // sequencer.getMidiInputs();
   }
-  init(iec: InputEditorComponent) {
+  init(iec: InputEditorComponent): void {
     this.enableGUI(false);
     let tmp_icons_w = 128;
     let tmp_w = window.innerWidth - tmp_icons_w;
@@ -86,16 +85,13 @@ export class InputEditorComponent implements OnInit {
     iec.instruments = sequencer.getInstruments();
     // song.tracks.forEach(function(track) {track.setMidiInput()})
 
-    /**
-     * Compacts all song tracks onto single track, set to monitor, and set instrument to piano
-     */
+
     if (iec.flattenTracksToSingleTrack) { flattenTracks(iec.song); }
     /**
-     *
      * This is where KeyEditor is Made!!!
      */
     let keyEditor = sequencer.createKeyEditor(this.song, {
-      keyListener: true,
+      // keyListener: true,
       viewportHeight: tmp_h,
       viewportWidth: tmp_w,
       pitchHeight: this.pitchHeight,
@@ -106,11 +102,11 @@ export class InputEditorComponent implements OnInit {
     InputEditorComponent.inpEdComp.keyEditor = keyEditor;
     resize();
     //set editor element values to editor defaults
-    setElementValue(iec.edtrHtml.txt_KeyRangeStart, keyEditor.lowestNote);
-    setElementValue(iec.edtrHtml.txt_KeyRangeEnd, keyEditor.highestNote);
+    setElementValue(iec.html.txt_KeyRangeStart, keyEditor.lowestNote);
+    setElementValue(iec.html.txt_KeyRangeEnd, keyEditor.highestNote);
     let tmp_bpm = this.song.bpm.toString();
-    iec.edtrHtml.txt_BPM.value = tmp_bpm;
-    setSliderValues(iec.edtrHtml.sldr_barsPerPage, keyEditor.barsPerPage, 1, 32, 1);
+    iec.html.txt_BPM.value = tmp_bpm;
+    setSliderValues(iec.html.sldr_barsPerPage, keyEditor.barsPerPage, 1, 32, 1);
 
     initContextEvents();
     initInputEvents();
@@ -118,14 +114,13 @@ export class InputEditorComponent implements OnInit {
 
     this.enableGUI(true);
 
-    iec.edtrHtml.slct_Snap.selectedIndex = 4;
+    iec.html.slct_Snap.selectedIndex = 4;
     tmp_event = document.createEvent('HTMLEvents');
     tmp_event.initEvent('change', false, false);
-    iec.edtrHtml.slct_Snap.dispatchEvent(tmp_event);
+    iec.html.slct_Snap.dispatchEvent(tmp_event);
 
     draw(iec);
     render();
-
   }
 
   initSong(): Song {
@@ -194,8 +189,8 @@ export class InputEditorComponent implements OnInit {
       tmp_element.disabled = !flag;
     }
   }
-  flattenTracks(ref_song: Song) {
-    ref_song.tracks.forEach(
+  flattenTracks(song: Song) {
+    song.tracks.forEach(
       (track) => {
         track.setInstrument('piano');
         track.monitor = true;
@@ -204,55 +199,55 @@ export class InputEditorComponent implements OnInit {
     );
   }
 
-  setElementValue(ref_elmt, val: string) { ref_elmt.value = val; }
-  setSliderValues(ref_elmt, val: string, min: number, max: number, step: number) {
-    ref_elmt.min = min;
-    ref_elmt.max = max;
-    ref_elmt.step = step;
-    ref_elmt.value = val;
+  setElementValue(elmt, val: string) { elmt.value = val; }
+  setSliderValues(elmt, val: string, min: number, max: number, step: number) {
+    elmt.min = min;
+    elmt.max = max;
+    elmt.step = step;
+    elmt.value = val;
   }
   //#region [rgba(200, 0, 0, 0.05)] Selection Visuals Methods
-  setNoteActiveState(ref_note: Note, ref_div_Note) {
-    ref_div_Note = document.getElementById(ref_note.id);
-    if (ref_div_Note !== null && ref_note.part.mute === false && ref_note.mute !== true) {
-      if (ref_note.active) { ref_div_Note.className = 'note note-active'; } else
-        if (ref_note.active === false) { ref_div_Note.className = 'note'; }
+  setNoteActiveState(note: Note, div_Note) {
+    div_Note = document.getElementById(note.id);
+    if (div_Note !== null && note.part.mute === false && note.mute !== true) {
+      if (note.active) { div_Note.className = 'note note-active'; } else
+        if (note.active === false) { div_Note.className = 'note'; }
     }
   }
 
-  selectNote(ref_note: Note) {
-    let tmp_div_Note = document.getElementById(ref_note.id);
-    if (tmp_div_Note !== null && ref_note.part.mute === false && ref_note.mute !== true) {
-      tmp_div_Note.className = 'note note-selected';
+  selectNote(note: Note) {
+    let div_Note = document.getElementById(note.id);
+    if (div_Note !== null && note.part.mute === false && note.mute !== true) {
+      div_Note.className = 'note note-selected';
     }
   }
-  unselectNote(ref_note: Note) {
-    let tmp_div_Note = document.getElementById(ref_note.id);
-    if (ref_note.part.mute === false && ref_note.mute !== true && tmp_div_Note !== null) {
-      tmp_div_Note.className = 'note';
+  unselectNote(note: Note) {
+    let div_Note = document.getElementById(note.id);
+    if (note.part.mute === false && note.mute !== true && div_Note !== null) {
+      div_Note.className = 'note';
     }
   }
-  setPartActiveState(ref_part: Part, ref_div_Part: HTMLDivElement) {
-    ref_div_Part = document.getElementById(ref_part.id) as HTMLDivElement;
-    if (ref_div_Part !== null && ref_part.mute !== true) {
-      if (ref_part.active) {
-        ref_div_Part.className = 'part part-active';
-      } else if (ref_part.active === false) {
-        ref_div_Part.className = 'part';
+  setPartActiveState(part: Part, div_Part: HTMLDivElement) {
+    div_Part = document.getElementById(part.id) as HTMLDivElement;
+    if (div_Part !== null && part.mute !== true) {
+      if (part.active) {
+        div_Part.className = 'part part-active';
+      } else if (part.active === false) {
+        div_Part.className = 'part';
       }
     }
   }
-  selectPart(ref_part: Part) {
-    let tmp_div_Part = document.getElementById(ref_part.id);
-    if (ref_part.mute === false) {
-      tmp_div_Part.className = 'part part-selected';
+  selectPart(part: Part) {
+    let div_Part = document.getElementById(part.id);
+    if (part.mute === false) {
+      div_Part.className = 'part part-selected';
     }
   }
-  unselectPart(ref_part: Part) {
-    let tmp_div_Part = document.getElementById(ref_part.id);
-    if (ref_part.mute === false) {
-      if (tmp_div_Part !== null) {
-        tmp_div_Part.className = 'part';
+  unselectPart(part: Part) {
+    let div_Part = document.getElementById(part.id);
+    if (part.mute === false) {
+      if (div_Part !== null) {
+        div_Part.className = 'part';
       }
     }
   }
@@ -274,34 +269,49 @@ export class InputEditorComponent implements OnInit {
       iec.currNote = null;
     } else {
       // iec.keyEditor.startMovePart(tmp_part, iec.edtrInfo.screenX, iec.edtrInfo.screenY);
-      iec.keyEditor.startMovePart(tmp_part, iec.edtrInfo.clientX + InputEditorComponent.inpEdComp.edtrHtml.div_Editor.scrollLeft, iec.edtrInfo.pageY);
+      iec.keyEditor.startMovePart(tmp_part, iec.info.clientX + InputEditorComponent.inpEdComp.html.div_Editor.scrollLeft, iec.info.pageY);
       document.addEventListener('mouseup', iec.evt_Part_lMouUp, false);
     }
   }
 
   evt_Part_lMouUp(e) {
-    InputEditorComponent.inpEdComp.keyEditor.stopMovePart();
+    let iec = InputEditorComponent.inpEdComp;
+    iec.keyEditor.stopMovePart();
+    let thing = iec.allParts[iec.currPart.id] as Part;
+    thing.notes.forEach((n) => {
+      let noteDiv = iec.html.divs_AllNotes[n.id];
+      noteDiv.setAttribute('pitch', numToPitch(n.number));
+    })
     document.removeEventListener('mouseup', InputEditorComponent.inpEdComp.evt_Part_lMouUp);
   }
   /*
     Note Stuff
     */
+  evt_Note_MouOver(e) { (e.target as HTMLDivElement).style.cursor = 'move'; }
   evt_Note_lMouDown(e) {
+    let iec = InputEditorComponent.inpEdComp;
     if (!holdingEdge) {
       let tmp_note = InputEditorComponent.inpEdComp.allNotes[e.target.id];
       if (e.ctrlKey) {
         InputEditorComponent.inpEdComp.keyEditor.removeNote(tmp_note);
         InputEditorComponent.inpEdComp.currNote = null;
       } else {
-        InputEditorComponent.inpEdComp.keyEditor.startMoveNote(tmp_note, e.clientX + InputEditorComponent.inpEdComp.edtrHtml.div_Editor.scrollLeft, e.clientY);
+        InputEditorComponent.inpEdComp.keyEditor.startMoveNote(tmp_note,
+          e.clientX + iec.html.div_Editor.scrollLeft,
+          e.clientY + (iec.pitchHeight));
+
         document.addEventListener('mouseup', InputEditorComponent.inpEdComp.evt_Note_lMouUp, false);
       }
     }
   }
-
-  evt_Note_lMouUp(e) {
-    InputEditorComponent.inpEdComp.keyEditor.stopMoveNote();
-    document.removeEventListener('mouseup', InputEditorComponent.inpEdComp.evt_Note_lMouUp);
+  evt_Note_lMouUp(e: MouseEvent) {
+    let iec = InputEditorComponent.inpEdComp;
+    iec.keyEditor.stopMoveNote();
+    let elmt = (e.target as HTMLElement);
+    let tmp_note = iec.allNotes[elmt.id];
+    let pitch = createNewMIDINote(0, 0, iec.info.mousePitchPos);
+    elmt.setAttribute('pitch', pitch.name);
+    document.removeEventListener('mouseup', iec.evt_Note_lMouUp);
   }
   /*
     Note Edge Stuff
@@ -313,7 +323,7 @@ export class InputEditorComponent implements OnInit {
     holdingEdge = true;
     (e.target as HTMLDivElement).style.cursor = 'w-resize';
     let tmp_note = InputEditorComponent.inpEdComp.allNotes[(e.target as HTMLDivElement).id];
-    InputEditorComponent.inpEdComp.keyEditor.gripX = e.clientX;
+    // InputEditorComponent.inpEdComp.keyEditor.gripX = e.clientX;
     if (tmp_note == undefined) { tmp_note = changingNote; }
     if (changingNote == null) { changingNote = tmp_note; }
     if (heldEdge == null) { heldEdge = e.target; }
@@ -324,7 +334,7 @@ export class InputEditorComponent implements OnInit {
     holdingEdge = true;
     (e.target as HTMLDivElement).style.cursor = 'e-resize';
     let tmp_note = InputEditorComponent.inpEdComp.allNotes[(e.target as HTMLDivElement).id];
-    InputEditorComponent.inpEdComp.keyEditor.gripX = e.clientX;
+    // InputEditorComponent.inpEdComp.keyEditor.gripX = e.clientX;
     if (tmp_note == undefined) { tmp_note = changingNote; }
     if (changingNote == null) { changingNote = tmp_note; }
     if (heldEdge == null) { heldEdge = e.target; }
@@ -333,8 +343,9 @@ export class InputEditorComponent implements OnInit {
   }
   evt_NoteEdge_Left_MouMove(e: MouseEvent) {
     let iec = InputEditorComponent.inpEdComp;
-    let tmp_ticks = iec.edtrInfo.ticksAtX;
+    let tmp_ticks = iec.info.snapTicksAtX;
     let tmp_rightEdge = heldEdge.parentElement.childNodes[1];
+    (e.target as HTMLDivElement).style.cursor = 'w-resize';
 
     if (changingNote !== null) {
       changingNote.part.moveEvent(changingNote.noteOn, tmp_ticks - changingNote.noteOn.ticks);
@@ -342,36 +353,40 @@ export class InputEditorComponent implements OnInit {
       changingNote.part.moveEvent(changingNote.noteOff, -(tmp_ticks - changingNote.noteOn.ticks));
 
       InputEditorComponent.inpEdComp.song.update();
-      updateElementBBox(heldEdge, subdivBBox(changingNote.bbox, 0.1, 0, 1, 0));
-      updateElementBBox(tmp_rightEdge, subdivBBox(changingNote.bbox, 0.2, 0.8, 1, 0));
+      let edgeBBoxes = createEdgeBBoxes(changingNote.bbox, 8);
+      updateElementBBox(heldEdge, edgeBBoxes[0]);
+      updateElementBBox(tmp_rightEdge, edgeBBoxes[1]);
     }
     else {
     }
   }
-  evt_NoteEdge_Right_MouMove(e) {
+  evt_NoteEdge_Right_MouMove(e: MouseEvent) {
     let iec = InputEditorComponent.inpEdComp;
-    let tmp_ticks = iec.edtrInfo.ticksAtX;
+    let tmp_ticks = iec.info.snapTicksAtX;
     let tmp_leftEdge = heldEdge.parentElement.childNodes[0];
+    (e.target as HTMLDivElement).style.cursor = 'e-resize';
     if (changingNote !== null) {
       changingNote.part.moveEvent(changingNote.noteOff, tmp_ticks - changingNote.noteOff.ticks);
 
       InputEditorComponent.inpEdComp.song.update();
-      updateElementBBox(heldEdge, subdivBBox(changingNote.bbox, 0.2, 0.8, 1, 0));
-      updateElementBBox(tmp_leftEdge, subdivBBox(changingNote.bbox, 0.1, 0, 1, 0));
+      let edgeBBoxes = createEdgeBBoxes(changingNote.bbox, 8);
+      updateElementBBox(tmp_leftEdge, edgeBBoxes[0]);
+      updateElementBBox(heldEdge, edgeBBoxes[1]);
     }
     else {
 
     }
   }
-  evt_NoteEdge_Left_lMouUp(e) {
+  evt_NoteEdge_Left_lMouUp(e: MouseEvent) {
     holdingEdge = false;
     changingNote = null;
     heldEdge = null;
     document.removeEventListener('mousemove', InputEditorComponent.inpEdComp.evt_NoteEdge_Left_MouMove, false);
     document.removeEventListener('mouseup', InputEditorComponent.inpEdComp.evt_NoteEdge_Left_lMouUp);
     InputEditorComponent.inpEdComp.song.update();
+    (e.target as HTMLDivElement).style.cursor = 'default';
   }
-  evt_NoteEdge_Right_lMouUp(e) {
+  evt_NoteEdge_Right_lMouUp(e: MouseEvent) {
     holdingEdge = false;
     changingNote = null;
     heldEdge = null;
@@ -382,18 +397,19 @@ export class InputEditorComponent implements OnInit {
   /*
     Grid Stuff
   */
-  evt_Grid_lMouDown(e) { }
+  evt_Grid_lMouDown(e: MouseEvent) { }
 
-  evt_Grid_lMouUp(e) { }
+  evt_Grid_lMouUp(e: MouseEvent) { }
 
-  evt_Grid_lMouDbl(e) {
+  evt_Grid_lMouDbl(e: MouseEvent) {
     let iec = InputEditorComponent.inpEdComp;
-    let tmp_className = e.target.className;
+    let elmt = (e.target as HTMLElement);
+    let tmp_className = elmt.className;
     /**
      * if double clicking a note
      * */
     if (tmp_className.indexOf('note') !== -1) {
-      iec.currNote = iec.allNotes[e.target.id];
+      iec.currNote = iec.allNotes[elmt.id];
       iec.currPart = iec.currNote.part;
       return;
     }
@@ -401,7 +417,7 @@ export class InputEditorComponent implements OnInit {
      * if double clicking a blank section of a part
      * */
     else if (tmp_className.indexOf('part') !== -1) {
-      iec.currPart = iec.allParts[e.target.id];
+      iec.currPart = iec.allParts[elmt.id];
       iec.currPart.addEvents(createNewNoteAtMouse(iec.currPart, iec));
       iec.song.update();
       return;
@@ -425,12 +441,13 @@ export class InputEditorComponent implements OnInit {
     }
 
   }
-  evt_Generic_lMouDown(e) {
+  evt_Generic_lMouDown(e: MouseEvent) {
     let iec = InputEditorComponent.inpEdComp;
-    let tmp_className = e.target.className;
+    let elmt = (e.target as HTMLElement);
+    let tmp_className = elmt.className;
     if (tmp_className.indexOf('note') !== -1) {
       if (iec.currNote !== null) { this.unselectNote(iec.currNote); }
-      iec.currNote = iec.allNotes[e.target.id];
+      iec.currNote = iec.allNotes[elmt.id];
       if (iec.currNote !== null) { this.selectNote(iec.currNote); }
       iec.currPart = iec.currNote.part;
       if (iec.currPart !== null) { this.selectPart(iec.currPart); }
@@ -438,7 +455,7 @@ export class InputEditorComponent implements OnInit {
     } else if (tmp_className.indexOf('part') !== -1) {
       // keyEditor.setPlayheadToX(e.pageX);
       if (iec.currPart !== null) { this.unselectPart(iec.currPart); }
-      iec.currPart = iec.allParts[e.target.id];
+      iec.currPart = iec.allParts[elmt.id];
       if (iec.currPart !== null) { this.selectPart(iec.currPart); }
       if (iec.currNote !== null) { this.unselectNote(iec.currNote); }
       iec.currNote = null;
@@ -448,7 +465,7 @@ export class InputEditorComponent implements OnInit {
       iec.currNote = null;
       if (iec.currPart !== null) { this.unselectPart(iec.currPart); }
       iec.currPart = null;
-      iec.keyEditor.setPlayheadToX(e.clientX);
+      iec.keyEditor.setPlayheadToX(e.clientX - iec.info.editorFrameOffsetX);
       return;
     }
     // you could also use:
@@ -510,13 +527,13 @@ function initWindowEvents(iec: InputEditorComponent) {
 }
 
 function initContextEvents() {
-  InputEditorComponent.inpEdComp.song.addEventListener('play', () => { setElementValue(InputEditorComponent.inpEdComp.edtrHtml.btn_Play, 'pause'); });
-  InputEditorComponent.inpEdComp.song.addEventListener('pause', () => { setElementValue(InputEditorComponent.inpEdComp.edtrHtml.btn_Play, 'play'); });
-  InputEditorComponent.inpEdComp.song.addEventListener('stop', () => { setElementValue(InputEditorComponent.inpEdComp.edtrHtml.btn_Play, 'play'); });
+  InputEditorComponent.inpEdComp.song.addEventListener('play', () => { setElementValue(InputEditorComponent.inpEdComp.html.btn_Play, 'pause'); });
+  InputEditorComponent.inpEdComp.song.addEventListener('pause', () => { setElementValue(InputEditorComponent.inpEdComp.html.btn_Play, 'play'); });
+  InputEditorComponent.inpEdComp.song.addEventListener('stop', () => { setElementValue(InputEditorComponent.inpEdComp.html.btn_Play, 'play'); });
 
-  InputEditorComponent.inpEdComp.edtrHtml.div_Editor.addEventListener('mousedown', () => {
-    InputEditorComponent.inpEdComp.edtrHtml.div_currPart.innerHTML = 'Sel Part: ' + (InputEditorComponent.inpEdComp.currPart !== null ? InputEditorComponent.inpEdComp.currPart.id : 'none');
-    InputEditorComponent.inpEdComp.edtrHtml.div_currNote.innerHTML = 'Sel Note: ' + (InputEditorComponent.inpEdComp.currNote !== null ? InputEditorComponent.inpEdComp.currNote.id : 'none');
+  InputEditorComponent.inpEdComp.html.div_Editor.addEventListener('mousedown', () => {
+    InputEditorComponent.inpEdComp.html.div_currPart.innerHTML = 'Sel Part: ' + (InputEditorComponent.inpEdComp.currPart !== null ? InputEditorComponent.inpEdComp.currPart.id : 'none');
+    InputEditorComponent.inpEdComp.html.div_currNote.innerHTML = 'Sel Note: ' + (InputEditorComponent.inpEdComp.currNote !== null ? InputEditorComponent.inpEdComp.currNote.id : 'none');
   });
 }
 
@@ -525,12 +542,12 @@ function initInputEvents() {
   /**
    * Text
    */
-  iec.edtrHtml.txt_KeyRangeStart.addEventListener('change', (e) => {
-    iec.song.setPitchRange(iec.edtrHtml.txt_KeyRangeStart.value, iec.keyEditor.highestNote);
+  iec.html.txt_KeyRangeStart.addEventListener('change', (e) => {
+    iec.song.setPitchRange(iec.html.txt_KeyRangeStart.value, iec.keyEditor.highestNote);
     iec.song.update();
   });
-  iec.edtrHtml.txt_KeyRangeEnd.addEventListener('change', (e) => {
-    iec.song.setPitchRange(iec.keyEditor.lowestNote, iec.edtrHtml.txt_KeyRangeEnd.value);
+  iec.html.txt_KeyRangeEnd.addEventListener('change', (e) => {
+    iec.song.setPitchRange(iec.keyEditor.lowestNote, iec.html.txt_KeyRangeEnd.value);
     iec.song.update();
   });
   // listen for scale and draw events, a scale event is fired when you change the number of bars per page
@@ -539,20 +556,20 @@ function initInputEvents() {
 
   // listen for scroll events, the score automatically follows the song positon during playback: as soon as
   // the playhead moves off the right side of the screen, a scroll event is fired
-  iec.keyEditor.addEventListener('scroll', (data) => { iec.edtrHtml.div_Editor.scrollLeft = data.x; });
+  iec.keyEditor.addEventListener('scroll', (data) => { iec.html.div_Editor.scrollLeft = data.x; });
   /**
    * EXPERIMENTAL - Add notes and parts when double clicked in certain contexts
    */
-  iec.edtrHtml.div_Score.addEventListener('dblclick', (e) => { InputEditorComponent.inpEdComp.evt_Grid_lMouDbl(e); });
+  iec.html.div_Score.addEventListener('dblclick', (e) => { InputEditorComponent.inpEdComp.evt_Grid_lMouDbl(e); });
   // you can set the playhead at any position by clicking on the score
   /**
    * OR - if element clicked on is a part or note, it sets the current note / part to that element
    */
-  iec.edtrHtml.div_Score.addEventListener('mousedown', (e) => { InputEditorComponent.inpEdComp.evt_Generic_lMouDown(e); });
+  iec.html.div_Score.addEventListener('mousedown', (e) => { InputEditorComponent.inpEdComp.evt_Generic_lMouDown(e); });
   /**
    * AUDIO CONTEXT CHECKER EVENT
    */
-  iec.edtrHtml.div_Editor.addEventListener('click', (e) => {
+  iec.html.div_Editor.addEventListener('click', (e) => {
     // if (!audCntxt) {
     //   audCntxt = new AudioContext();
     //   audCntxt.resume();
@@ -564,60 +581,60 @@ function initInputEvents() {
   });
   // if you scroll the score by hand you must inform the key editor. necessary for calculating
   // the song position by x coordinate and the pitch by y coordinate
-  iec.edtrHtml.div_Editor.addEventListener('scroll', () => {
-    iec.keyEditor.updateScroll(iec.edtrHtml.div_Editor.scrollLeft, iec.edtrHtml.div_Editor.scrollTop);
+  iec.html.div_Editor.addEventListener('scroll', () => {
+    iec.keyEditor.updateScroll(iec.html.div_Editor.scrollLeft, iec.html.div_Editor.scrollTop);
   }, false);
   /**
    * Score Mouse Movement Tracker
    */
-  // iec.edtrHtml.div_Score.addEventListener('mousemove', (e) => {
+  // iec.html.div_Score.addEventListener('mousemove', (e) => {
   window.addEventListener('mousemove', (e) => {
     e.preventDefault();
     let tmp_part = iec.keyEditor.selectedPart;
     let tmp_note = iec.keyEditor.selectedNote;
 
     // show the song position and pitch of the current mouse position; handy for debugging
-    iec.edtrInfo.screenX = e.screenX;
-    iec.edtrInfo.screenY = e.screenY;
-    iec.edtrInfo.pageX = e.pageX;
-    iec.edtrInfo.pageY = e.pageY;
-    iec.edtrInfo.clientX = e.clientX;
-    iec.edtrInfo.clientY = e.clientY;
-    iec.edtrInfo.mouseBarPos = iec.keyEditor.getPositionAt(iec.edtrInfo.pageX).barsAsString;
-    iec.edtrInfo.editorScrollX = iec.edtrHtml.div_Editor.scrollLeft;
-    iec.edtrInfo.editorScrollY = iec.edtrHtml.div_Editor.scrollTop;
-    iec.edtrInfo.editorFrameOffsetY = iec.edtrHtml.div_Editor.offsetTop;
-    iec.edtrInfo.editorFrameOffsetX = iec.edtrHtml.div_Editor.offsetLeft;
-    iec.edtrInfo.headX = iec.keyEditor.getPlayheadX();
-    iec.edtrInfo.scrolledHeadX = iec.keyEditor.getPlayheadX(true);
-    iec.edtrInfo.snapTicksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.headX);
-    iec.edtrInfo.ticksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.headX, false);
-    iec.edtrInfo.scrollTicksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.scrolledHeadX, false);
-    iec.edtrInfo.ticksAtX = iec.keyEditor.getTicksAt(
-      iec.edtrInfo.clientX - iec.edtrInfo.editorFrameOffsetX, false);
-    iec.edtrHtml.div_MouseX.innerHTML =
-      '\nclient: (' + iec.edtrInfo.clientX + ', ' + iec.edtrInfo.clientY + ')' +
-      '\n|screen: (' + iec.edtrInfo.screenX + ', ' + iec.edtrInfo.screenY + ')' +
-      '\n|editor-scrl: (' + iec.edtrInfo.editorScrollX + ', ' + iec.edtrInfo.editorScrollY + ')' +
-      '\n|page: (' + iec.edtrInfo.pageX + ', ' + iec.edtrInfo.pageY + ')' +
-      '\n|ticks-at-mouse: ' + iec.edtrInfo.ticksAtX.toFixed(1) +
-      '\n|x Bar: ' + iec.edtrInfo.mouseBarPos +
-      '\n|x-head: ' + iec.edtrInfo.headX.toFixed(2) +
-      '\n|scrolled-x-head: ' + iec.edtrInfo.scrolledHeadX.toFixed(2) +
-      '\n|snap-ticks-head: ' + iec.edtrInfo.snapTicksAtHead +
-      '\n|ticks-head: ' + iec.edtrInfo.ticksAtHead;
+    iec.info.screenX = e.screenX;
+    iec.info.screenY = e.screenY;
+    iec.info.pageX = e.pageX;
+    iec.info.pageY = e.pageY;
+    iec.info.clientX = e.clientX;
+    iec.info.clientY = e.clientY;
+    iec.info.mouseBarPos = iec.keyEditor.getPositionAt(iec.info.pageX).barsAsString;
+    iec.info.editorScrollX = iec.html.div_Editor.scrollLeft;
+    iec.info.editorScrollY = iec.html.div_Editor.scrollTop;
+    iec.info.editorFrameOffsetY = iec.html.div_Editor.offsetTop;
+    iec.info.editorFrameOffsetX = iec.html.div_Editor.offsetLeft;
+    iec.info.headX = iec.keyEditor.getPlayheadX();
+    iec.info.scrolledHeadX = iec.keyEditor.getPlayheadX(true);
+    iec.info.snapTicksAtHead = iec.keyEditor.getTicksAt(iec.info.headX);
+    iec.info.ticksAtHead = iec.keyEditor.getTicksAt(iec.info.headX, false);
+    iec.info.scrollTicksAtHead = iec.keyEditor.getTicksAt(iec.info.scrolledHeadX, false);
+    iec.info.ticksAtX = iec.keyEditor.getTicksAt(
+      iec.info.clientX - iec.info.editorFrameOffsetX, false);
+    iec.info.snapTicksAtX = iec.keyEditor.getTicksAt(
+      iec.info.clientX - iec.info.editorFrameOffsetX, true);
+    iec.html.div_MouseX.innerHTML =
+      `\nclient: (${iec.info.clientX}, ${iec.info.clientY}')` +
+      `\n|screen: (${iec.info.screenX}, ${iec.info.screenY})` +
+      '\n|editor-scrl: (' + iec.info.editorScrollX + ', ' + iec.info.editorScrollY + ')' +
+      '\n|page: (' + iec.info.pageX + ', ' + iec.info.pageY + ')' +
+      '\n|ticks-at-mouse: ' + iec.info.ticksAtX.toFixed(1) +
+      '\n|x Bar: ' + iec.info.mouseBarPos +
+      '\n|x-head: ' + iec.info.headX.toFixed(2) +
+      '\n|scrolled-x-head: ' + iec.info.scrolledHeadX.toFixed(2) +
+      '\n|snap-ticks-head: ' + iec.info.snapTicksAtHead.toFixed(0) +
+      '\n|ticks-head: ' + iec.info.ticksAtHead.toFixed(0);
     ;
-    iec.edtrInfo.mousePitchPos = iec.keyEditor.getPitchAt(iec.edtrInfo.pageY - iec.edtrHtml.div_Editor.offsetTop).number;
-    iec.edtrHtml.div_MouseY.innerHTML = 'y Pitch: ' + iec.edtrInfo.mousePitchPos +
-      '\nframe-offset-y: ' + iec.edtrInfo.editorFrameOffsetY;
+    iec.info.mousePitchPos = iec.keyEditor.getPitchAt(iec.info.pageY - iec.html.div_Editor.offsetTop).number;
+    iec.html.div_MouseY.innerHTML = 'y Pitch: ' + iec.info.mousePitchPos +
+      '\nframe-offset-y: ' + iec.info.editorFrameOffsetY;
     // move part or note if selected
     if (tmp_part !== undefined) {
-      // iec.keyEditor.movePart(tmp_x, tmp_y - iec.edtrHtml.div_Score.offsetTop);
-      iec.keyEditor.movePart(iec.edtrInfo.pageX, iec.edtrInfo.pageY - iec.edtrHtml.div_Editor.offsetTop);
+      iec.keyEditor.movePart(iec.info.pageX, iec.info.pageY);
     }
     if (tmp_note !== undefined) {
-      // iec.keyEditor.moveNote(tmp_x, tmp_y - iec.edtrHtml.div_Score.offsetTop);
-      iec.keyEditor.moveNote(iec.edtrInfo.pageX, iec.edtrInfo.pageY - iec.edtrHtml.div_Editor.offsetTop);
+      iec.keyEditor.moveNote(iec.info.pageX, iec.info.pageY - iec.info.editorFrameOffsetY);
     }
   },
     false
@@ -625,31 +642,31 @@ function initInputEvents() {
   /**
    * Grid
    */
-  iec.edtrHtml.slct_Snap.addEventListener('change', () => {
+  iec.html.slct_Snap.addEventListener('change', () => {
     iec.keyEditor.setSnapX(Number.parseInt(
-      iec.edtrHtml.slct_Snap.options[iec.edtrHtml.slct_Snap.selectedIndex].value));
+      iec.html.slct_Snap.options[iec.html.slct_Snap.selectedIndex].value));
   }, false);
   /**
    * Buttons
    */
-  iec.edtrHtml.btn_Play.addEventListener('click', () => { iec.song.pause(); });
-  iec.edtrHtml.btn_Record.addEventListener('click', () => { iec.song.startRecording(); });
-  iec.edtrHtml.btn_Loop.addEventListener('click', () => { iec.song.loop = !iec.song.loop; });
+  iec.html.btn_Play.addEventListener('click', () => { iec.song.pause(); });
+  iec.html.btn_Record.addEventListener('click', () => { iec.song.startRecording(); });
+  iec.html.btn_Loop.addEventListener('click', () => { iec.song.loop = !iec.song.loop; });
 
-  iec.edtrHtml.btn_Stop.addEventListener('click', () => { iec.song.stop(); });
-  iec.edtrHtml.btn_Next.addEventListener('click', () => { iec.keyEditor.scroll('>'); });
-  iec.edtrHtml.btn_Prev.addEventListener('click', () => { iec.keyEditor.scroll('<'); });
-  iec.edtrHtml.btn_First.addEventListener('click', () => { iec.keyEditor.scroll('<<'); });
-  iec.edtrHtml.btn_Last.addEventListener('click', () => { iec.keyEditor.scroll('>>'); });
-  iec.edtrHtml.btn_AddPart.addEventListener('click', () => { addRandomPartAtPlayhead(iec); });
+  iec.html.btn_Stop.addEventListener('click', () => { iec.song.stop(); });
+  iec.html.btn_Next.addEventListener('click', () => { iec.keyEditor.scroll('>'); });
+  iec.html.btn_Prev.addEventListener('click', () => { iec.keyEditor.scroll('<'); });
+  iec.html.btn_First.addEventListener('click', () => { iec.keyEditor.scroll('<<'); });
+  iec.html.btn_Last.addEventListener('click', () => { iec.keyEditor.scroll('>>'); });
+  iec.html.btn_AddPart.addEventListener('click', () => { addRandomPartAtPlayhead(iec); });
   /**
    * Sliders
    */
-  iec.edtrHtml.sldr_barsPerPage.addEventListener(
+  iec.html.sldr_barsPerPage.addEventListener(
     'change',
     function (e) {
       var tmp_bpp = parseFloat((e.target as HTMLInputElement).value);
-      iec.edtrHtml.lbl_sldr_barsPerPage.innerHTML = '#bars ' + tmp_bpp;
+      iec.html.lbl_sldr_barsPerPage.innerHTML = '#bars ' + tmp_bpp;
       iec.keyEditor.setBarsPerPage(tmp_bpp);
     },
     false
@@ -676,25 +693,25 @@ function setSliderValues(ref_elmt, val, min, max, step) {
   ref_elmt.value = val;
 }
 //#region [rgba(120, 120, 0 ,0.15)] Draw Functions
-function draw(iec) {
+function draw(iec: InputEditorComponent) {
   //Initialize all Grid HTML elements to blank
-  iec.allNotes = {};
-  iec.allParts = {};
-  iec.edtrHtml.divs_AllNotes = {};
-  iec.edtrHtml.divs_AllParts = {};
-  iec.edtrHtml.div_Parts.innerHTML = '';
-  iec.edtrHtml.div_Notes.innerHTML = '';
-  iec.edtrHtml.div_PitchLines.innerHTML = '';
-  iec.edtrHtml.div_BarLines.innerHTML = '';
-  iec.edtrHtml.div_BeatLines.innerHTML = '';
-  iec.edtrHtml.div_SixteenthLines.innerHTML = '';
+  iec.allNotes = new Array<Note>();
+  iec.allParts = new Array<Part>();
+  iec.html.divs_AllNotes = new Array<HTMLDivElement>();
+  iec.html.divs_AllParts = new Array<HTMLDivElement>();
+  iec.html.div_Parts.innerHTML = '';
+  iec.html.div_Notes.innerHTML = '';
+  iec.html.div_PitchLines.innerHTML = '';
+  iec.html.div_BarLines.innerHTML = '';
+  iec.html.div_BeatLines.innerHTML = '';
+  iec.html.div_SixteenthLines.innerHTML = '';
 
   iec.keyEditor.horizontalLine.reset();
   iec.keyEditor.verticalLine.reset();
   iec.keyEditor.noteIterator.reset();
   iec.keyEditor.partIterator.reset();
 
-  iec.edtrHtml.div_Score.style.width = iec.keyEditor.width + 'px';
+  iec.html.div_Score.style.width = iec.keyEditor.width + 'px';
   let i = 0;
   while (iec.keyEditor.horizontalLine.hasNext('chromatic')) { drawHorizontalLine(iec.keyEditor.horizontalLine.next('chromatic')); }
   while (iec.keyEditor.verticalLine.hasNext('sixteenth')) { drawVerticalLine(iec.keyEditor.verticalLine.next('sixteenth')); }
@@ -703,96 +720,99 @@ function draw(iec) {
 }
 
 function drawHorizontalLine(ref_data) {
-  let tmp_div_HLine = document.createElement('div'),
+  let div_HLine = document.createElement('div'),
     pitchHeight = InputEditorComponent.inpEdComp.keyEditor.pitchHeight;
 
   if (ref_data.note.blackKey === true) {
-    tmp_div_HLine.className = 'pitch-line black-key';
+    div_HLine.className = 'pitch-line black-key';
   } else {
-    tmp_div_HLine.className = 'pitch-line';
+    div_HLine.className = 'pitch-line';
   }
-  tmp_div_HLine.id = ref_data.note.fullName;
-  tmp_div_HLine.innerHTML = ref_data.note.fullName;
-  tmp_div_HLine.style.height = pitchHeight + 'px';
-  tmp_div_HLine.style.top = ref_data.y + 'px';
+  div_HLine.id = ref_data.note.fullName;
+  div_HLine.innerHTML = ref_data.note.fullName;
+  div_HLine.style.height = pitchHeight + 'px';
+  div_HLine.style.top = ref_data.y + 'px';
   // tmp_div_HLine.y = ref_data.y;
   // if (iec !== null)
-  InputEditorComponent.inpEdComp.edtrHtml.div_PitchLines.appendChild(tmp_div_HLine);
+  InputEditorComponent.inpEdComp.html.div_PitchLines.appendChild(div_HLine);
 
 }
 
 function drawVerticalLine(ref_data) {
   let tmp_type = ref_data.type,
-    tmp_div_VLine = document.createElement('div');
+    div_VLine = document.createElement('div');
 
-  tmp_div_VLine.id = ref_data.position.barsAsString;
-  tmp_div_VLine.className = ref_data.type + '-line';
-  tmp_div_VLine.style.left = ref_data.x + 'px';
-  tmp_div_VLine.style.width = '5px'; // if you make the width too small, the background image of sometimes disappears
+  div_VLine.id = ref_data.position.barsAsString;
+  div_VLine.className = ref_data.type + '-line';
+  div_VLine.style.left = ref_data.x + 'px';
+  div_VLine.style.width = '5px'; // if you make the width too small, the background image of sometimes disappears
   // tmp_div_VLine.x = ref_data.x;
 
   switch (tmp_type) {
     case 'bar':
-      tmp_div_VLine.innerHTML = ref_data.position.barsAsString;
+      div_VLine.innerHTML = ref_data.position.barsAsString;
       // if (iec !== null)
-      tmp_div_VLine.style.height = InputEditorComponent.inpEdComp.edtrHtml.div_Score.scrollHeight.toString() + 'px';
-      InputEditorComponent.inpEdComp.edtrHtml.div_BarLines.appendChild(tmp_div_VLine);
+      div_VLine.style.height = InputEditorComponent.inpEdComp.html.div_Score.scrollHeight.toString() + 'px';
+      InputEditorComponent.inpEdComp.html.div_BarLines.appendChild(div_VLine);
       break;
     case 'beat':
       // if (iec !== null)
-      InputEditorComponent.inpEdComp.edtrHtml.div_BeatLines.appendChild(tmp_div_VLine);
+      InputEditorComponent.inpEdComp.html.div_BeatLines.appendChild(div_VLine);
       break;
     case 'sixteenth':
       // if (iec !== null)
-      InputEditorComponent.inpEdComp.edtrHtml.div_SixteenthLines.appendChild(tmp_div_VLine);
+      InputEditorComponent.inpEdComp.html.div_SixteenthLines.appendChild(div_VLine);
       break;
   }
 }
 
 function drawNote(ref_note: Note, iec: InputEditorComponent) {
-  let tmp_bbox = ref_note.bbox;
-  const tmp_bbox_left = subdivBBox(ref_note.bbox, 0.1, 0, 1, 0);
-  let tmp_bbox_right = subdivBBox(ref_note.bbox, 0.2, 0.8, 1, 0);
-  let tmp_div_Note = document.createElement('div');
-  let tmp_div_Note_leftEdge = document.createElement('div');
-  let tmp_div_Note_rightEdge = document.createElement('div');
-  let tmp_div_Note_info = document.createElement('div');
+  const bbox = ref_note.bbox;
+  const edgeBBoxes = createEdgeBBoxes(ref_note.bbox, 8);
+  const div_Note = document.createElement('div');
+  const img_Note_leftEdge = document.createElement('img');
+  const img_Note_rightEdge = document.createElement('img');
+  const div_Note_info = document.createElement('div');
 
-  tmp_div_Note.id = ref_note.id;
-  tmp_div_Note.className = 'note';
-  let tmpThing = iec.song.notes;
-  let tmp_vel = -1;
-  tmpThing.forEach((e: MIDINote) => {
-    if (e.id == ref_note.id) {
-      tmp_vel = e.velocity;
-    }
-  });
+  div_Note.id = ref_note.id;
+  div_Note.setAttribute('pitch', ref_note.name);
+  div_Note.className = 'note';
+  // let tmpThing = iec.song.notes;
+  // let tmp_vel = -1;
+  // tmpThing.forEach((e: MIDINote) => {
+  //   if (e.id == ref_note.id) {
+  //     tmp_vel = e.velocity;
+  //   }
+  // });
   // tmp_div_Note_info.id = 'note-info';
   // tmp_div_Note_info.innerHTML = "   " + tmp_vel.toString();
 
-  tmp_div_Note_leftEdge.id = tmp_div_Note.id;
-  tmp_div_Note_leftEdge.className = 'note-edge';
+  img_Note_leftEdge.id = div_Note.id;
+  img_Note_leftEdge.className = 'note-edge';
+  img_Note_leftEdge.src = 'assets/images/Editor-Arrow-Left.png';
 
-  tmp_div_Note_rightEdge.id = tmp_div_Note.id;
-  tmp_div_Note_rightEdge.className = 'note-edge';
+  img_Note_rightEdge.id = div_Note.id;
+  img_Note_rightEdge.className = 'note-edge';
+  img_Note_rightEdge.src = 'assets/images/Editor-Arrow-Right.png';
 
-  updateElementBBox(tmp_div_Note, tmp_bbox);
-  updateElementBBox(tmp_div_Note_leftEdge, tmp_bbox_left);
-  updateElementBBox(tmp_div_Note_rightEdge, tmp_bbox_right);
+  updateElementBBox(div_Note, bbox);
+  updateElementBBox(img_Note_leftEdge, edgeBBoxes[0]);
+  updateElementBBox(img_Note_rightEdge, edgeBBoxes[1]);
 
   // store note and div
   InputEditorComponent.inpEdComp.allNotes[ref_note.id] = ref_note;
-  iec.edtrHtml.divs_AllNotes[ref_note.id] = tmp_div_Note;
-  tmp_div_Note.addEventListener('mousedown', InputEditorComponent.inpEdComp.evt_Note_lMouDown, false);
-  tmp_div_Note_leftEdge.addEventListener('mouseover', (e) => { InputEditorComponent.inpEdComp.evt_NoteEdge_Left_MouOver(e); });
-  tmp_div_Note_leftEdge.addEventListener('mousedown', (e) => { InputEditorComponent.inpEdComp.evt_NoteEdge_Left_lMouDown(e); });
-  tmp_div_Note_rightEdge.addEventListener('mouseover', (e) => { InputEditorComponent.inpEdComp.evt_NoteEdge_Right_MouOver(e); });
-  tmp_div_Note_rightEdge.addEventListener('mousedown', (e) => { InputEditorComponent.inpEdComp.evt_NoteEdge_Right_lMouDown(e); });
+  iec.html.divs_AllNotes[ref_note.id] = div_Note;
+  div_Note.addEventListener('mouseover', InputEditorComponent.inpEdComp.evt_Note_MouOver, false);
+  div_Note.addEventListener('mousedown', InputEditorComponent.inpEdComp.evt_Note_lMouDown, false);
+  img_Note_leftEdge.addEventListener('mouseover', (e) => { InputEditorComponent.inpEdComp.evt_NoteEdge_Left_MouOver(e); });
+  img_Note_leftEdge.addEventListener('mousedown', (e) => { InputEditorComponent.inpEdComp.evt_NoteEdge_Left_lMouDown(e); });
+  img_Note_rightEdge.addEventListener('mouseover', (e) => { InputEditorComponent.inpEdComp.evt_NoteEdge_Right_MouOver(e); });
+  img_Note_rightEdge.addEventListener('mousedown', (e) => { InputEditorComponent.inpEdComp.evt_NoteEdge_Right_lMouDown(e); });
 
-  tmp_div_Note.append(tmp_div_Note_leftEdge);
-  tmp_div_Note.append(tmp_div_Note_rightEdge);
-  tmp_div_Note.append(tmp_div_Note_info);
-  iec.edtrHtml.div_Notes.appendChild(tmp_div_Note);
+  div_Note.append(img_Note_leftEdge);
+  div_Note.append(img_Note_rightEdge);
+  div_Note.append(div_Note_info);
+  iec.html.div_Notes.appendChild(div_Note);
 }
 
 function drawPart(ref_part: Part, iec) {
@@ -808,9 +828,9 @@ function drawPart(ref_part: Part, iec) {
 
   // store part and div
   InputEditorComponent.inpEdComp.allParts[ref_part.id] = ref_part;
-  iec.edtrHtml.divs_AllParts[ref_part.id] = tmp_div_Part;
+  iec.html.divs_AllParts[ref_part.id] = tmp_div_Part;
   tmp_div_Part.addEventListener('mousedown', InputEditorComponent.inpEdComp.evt_Part_lMouDown, false);
-  iec.edtrHtml.div_Parts.appendChild(tmp_div_Part);
+  iec.html.div_Parts.appendChild(tmp_div_Part);
 }
 //Fits element within its bounding box
 export function updateElementBBox(element, bbox: BBox) {
@@ -825,7 +845,7 @@ function resize() {
   // let tmp_div_icons = document.getElementById('editor-input-icons');
   // let tmp_icons_w = tmp_div_icons.clientWidth;
   let tmp_icons_w = 64;
-  let tmp_c = iec.edtrHtml.div_Controls.getBoundingClientRect().height;
+  let tmp_c = iec.html.div_Controls.getBoundingClientRect().height;
   let tmp_w = window.innerWidth - tmp_icons_w;
   let tmp_h = iec.editorHeight;
 
@@ -833,65 +853,69 @@ function resize() {
   iec.keyEditor.setViewport(tmp_w, tmp_h);
   // tmp_div_icons.style.width = tmp_icons_w + 'px';
   // tmp_div_icons.style.height = tmp_h + 'px';
-  iec.edtrHtml.div_Editor.style.width = tmp_w + 'px';
-  iec.edtrHtml.div_Editor.style.left = tmp_icons_w + 'px';
-  iec.edtrHtml.div_Editor.style.height = tmp_h + 'px';
+  iec.html.div_Editor.style.width = tmp_w + 'px';
+  iec.html.div_Editor.style.left = tmp_icons_w + 'px';
+  iec.html.div_Editor.style.height = tmp_h + 'px';
 }
 
 function render() {
   let iec = InputEditorComponent.inpEdComp;
-  let tmp_snapshot = iec.keyEditor.getSnapshot('key-editor');
+  let snapshot = iec.keyEditor.getSnapshot('key-editor');
   let tmp_div_Note: HTMLDivElement;
   let tmp_div_Part: HTMLDivElement;
 
-  iec.edtrHtml.div_Playhead.style.left = iec.keyEditor.getPlayheadX() - 10 + 'px';
-  iec.edtrHtml.div_PageNumbers.innerHTML =
+  iec.html.div_Playhead.style.left = iec.keyEditor.getPlayheadX() - 10 + 'px';
+  iec.html.div_PageNumbers.innerHTML =
     'page ' + iec.keyEditor.currentPage + ' of ' + iec.keyEditor.numPages;
 
-  iec.edtrHtml.div_BarsBeats.innerHTML = iec.song.barsAsString;
+  iec.html.div_BarsBeats.innerHTML = iec.song.barsAsString;
   const position = iec.keyEditor.getPositionAt(iec.keyEditor.getPlayheadX());
   if (position) {
     const tmp_hrMinSecMillisec = new Date(position.ticks * iec.song.millisPerTick);
-    iec.edtrHtml.div_Seconds.innerHTML =
+    iec.html.div_Seconds.innerHTML =
       tmp_hrMinSecMillisec.getUTCHours() + ':'
       + tmp_hrMinSecMillisec.getUTCMinutes() + ':'
       + tmp_hrMinSecMillisec.getUTCSeconds() + '.'
       + tmp_hrMinSecMillisec.getUTCMilliseconds();
   }
 
-  tmp_snapshot.notes.removed.forEach((note) => {
-    iec.edtrHtml.divs_AllNotes[note.id].removeEventListener('mousedown', InputEditorComponent.inpEdComp.evt_Note_lMouDown);
-    iec.edtrHtml.div_Notes.removeChild(document.getElementById(note.id));
+  snapshot.notes.removed.forEach((note) => {
+    iec.html.divs_AllNotes[note.id].removeEventListener('mousedown', InputEditorComponent.inpEdComp.evt_Note_lMouDown);
+    iec.html.div_Notes.removeChild(document.getElementById(note.id));
   });
 
-  tmp_snapshot.notes.new.forEach((note) => { drawNote(note, iec); });
-  tmp_snapshot.notes.recorded.forEach((note) => { drawNote(note, iec); });
-  tmp_snapshot.notes.recording.forEach((note) => { updateElementBBox(iec.edtrHtml.divs_AllNotes[note.id], note.bbox); });
+  snapshot.notes.new.forEach((note) => { drawNote(note, iec); });
+  snapshot.notes.recorded.forEach((note) => { drawNote(note, iec); });
+  snapshot.notes.recording.forEach((note) => { updateElementBBox(iec.html.divs_AllNotes[note.id], note.bbox); });
   // events.changed, notes.changed, parts.changed contain elements that have been moved or transposed
-  tmp_snapshot.notes.changed.forEach((note) => { updateElementBBox(iec.edtrHtml.divs_AllNotes[note.id], note.bbox); });
-
-  // stateChanged arrays contain elements that have become active or inactive
-  tmp_snapshot.notes.stateChanged.forEach((note) => { InputEditorComponent.inpEdComp.setNoteActiveState(note, tmp_div_Note); });
-
-  tmp_snapshot.parts.removed.forEach((part) => {
-    iec.edtrHtml.divs_AllParts[part.id].removeEventListener('mousedown', InputEditorComponent.inpEdComp.evt_Part_lMouDown);
-    iec.edtrHtml.div_Parts.removeChild(document.getElementById(part.id));
+  snapshot.notes.changed.forEach((note) => {
+    let elmt = iec.html.divs_AllNotes[note.id] as HTMLElement;
+    elmt.setAttribute('pitch', note.name);
+    updateElementBBox(elmt, note.bbox);
   });
 
-  tmp_snapshot.parts.new.forEach((part) => { drawPart(part, iec); });
+  // stateChanged arrays contain elements that have become active or inactive
+  snapshot.notes.stateChanged.forEach((note) => { InputEditorComponent.inpEdComp.setNoteActiveState(note, tmp_div_Note); });
+
+  snapshot.parts.removed.forEach((part) => {
+    iec.html.divs_AllParts[part.id].removeEventListener('mousedown', InputEditorComponent.inpEdComp.evt_Part_lMouDown);
+    iec.html.div_Parts.removeChild(document.getElementById(part.id));
+  });
+
+  snapshot.parts.new.forEach((part) => { drawPart(part, iec); });
 
   // events.changed, notes.changed, parts.changed contain elements that have been moved or transposed
-  tmp_snapshot.parts.changed.forEach((part) => { updateElementBBox(iec.edtrHtml.divs_AllParts[part.id], part.bbox); });
+  snapshot.parts.changed.forEach((part) => { updateElementBBox(iec.html.divs_AllParts[part.id], part.bbox); });
 
   // stateChanged arrays contain elements that have become active or inactive
-  tmp_snapshot.parts.stateChanged.forEach((part) => { InputEditorComponent.inpEdComp.setPartActiveState(part, tmp_div_Part); });
+  snapshot.parts.stateChanged.forEach((part) => { InputEditorComponent.inpEdComp.setPartActiveState(part, tmp_div_Part); });
 
-  if (tmp_snapshot.hasNewBars) {
+  if (snapshot.hasNewBars) {
     // set the new width of the score
-    iec.edtrHtml.div_Score.style.width = tmp_snapshot.newWidth + 'px';
+    iec.html.div_Score.style.width = snapshot.newWidth + 'px';
 
     // clear the horizontal lines because the lines have to be drawn longer
-    iec.edtrHtml.div_PitchLines.innerHTML = '';
+    iec.html.div_PitchLines.innerHTML = '';
 
     // reset the index of the iterator because we're starting from 0 again
     iec.keyEditor.horizontalLine.reset();
@@ -903,36 +927,27 @@ function render() {
   }
   //update head values if playing
   if (iec.song.playing) {
-    iec.edtrInfo.headX = iec.keyEditor.getPlayheadX();
-    iec.edtrInfo.scrolledHeadX = iec.keyEditor.getPlayheadX(true);
-    iec.edtrInfo.snapTicksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.headX);
-    iec.edtrInfo.ticksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.headX, false);
-    iec.edtrInfo.scrollTicksAtHead = iec.keyEditor.getTicksAt(iec.edtrInfo.scrolledHeadX, false);
-    iec.edtrHtml.div_MouseX.innerHTML =
-      '\nclient: (' + iec.edtrInfo.clientX + ', ' + iec.edtrInfo.clientY + ')' +
-      '\n|screen: (' + iec.edtrInfo.screenX + ', ' + iec.edtrInfo.screenY + ')' +
-      '\n|editor-scrl: (' + iec.edtrInfo.editorScrollX + ', ' + iec.edtrInfo.editorScrollY + ')' +
-      '\n|page: (' + iec.edtrInfo.pageX + ', ' + iec.edtrInfo.pageY + ')' +
-      '\n|ticks-at-mouse: ' + iec.edtrInfo.ticksAtX.toFixed(1) +
-      '\n|x Bar: ' + iec.edtrInfo.mouseBarPos +
-      '\n|x-head: ' + iec.edtrInfo.headX.toFixed(2) +
-      '\n|scrolled-x-head: ' + iec.edtrInfo.scrolledHeadX.toFixed(2) +
-      '\n|snap-ticks-head: ' + iec.edtrInfo.snapTicksAtHead +
-      '\n|ticks-head: ' + iec.edtrInfo.ticksAtHead;
+    iec.info.headX = iec.keyEditor.getPlayheadX();
+    iec.info.scrolledHeadX = iec.keyEditor.getPlayheadX(true);
+    iec.info.snapTicksAtHead = iec.keyEditor.getTicksAt(iec.info.headX);
+    iec.info.ticksAtHead = iec.keyEditor.getTicksAt(iec.info.headX, false);
+    iec.info.scrollTicksAtHead = iec.keyEditor.getTicksAt(iec.info.scrolledHeadX, false);
+    iec.html.div_MouseX.innerHTML =
+      '\nclient: (' + iec.info.clientX + ', ' + iec.info.clientY + ')' +
+      '\n|screen: (' + iec.info.screenX + ', ' + iec.info.screenY + ')' +
+      '\n|editor-scrl: (' + iec.info.editorScrollX + ', ' + iec.info.editorScrollY + ')' +
+      '\n|page: (' + iec.info.pageX + ', ' + iec.info.pageY + ')' +
+      '\n|ticks-at-mouse: ' + iec.info.ticksAtX.toFixed(1) +
+      '\n|x Bar: ' + iec.info.mouseBarPos +
+      '\n|x-head: ' + iec.info.headX.toFixed(2) +
+      '\n|scrolled-x-head: ' + iec.info.scrolledHeadX.toFixed(2) +
+      '\n|snap-ticks-head: ' + iec.info.snapTicksAtHead +
+      '\n|ticks-head: ' + iec.info.ticksAtHead;
   }
   requestAnimationFrame(render);
 }
 
 //#endregion
-// function enableGUI(flag: boolean) {
-//   let tmp_elements = document.querySelectorAll('input, select');
-//   let tmp_element;
-//   let tmp_maxi = tmp_elements.length;
-//   for (let i = 0; i < tmp_maxi; i++) {
-//     tmp_element = tmp_elements[i];
-//     tmp_element.disabled = !flag;
-//   }
-// }
 
 
 
@@ -981,11 +996,11 @@ function addRandomPartAtPlayhead(iec: InputEditorComponent) {
 }
 
 function addPartAtMouse(iec: InputEditorComponent) {
-  iec.keyEditor.setPlayheadToX(iec.edtrInfo.clientX);
+  iec.keyEditor.setPlayheadToX(iec.info.clientX - iec.info.editorFrameOffsetX);
   let i;
   let tmp_ticks = 0;
   let tmp_numNotes = 2;
-  let tmp_basePitch = iec.edtrInfo.mousePitchPos;
+  let tmp_basePitch = iec.info.mousePitchPos;
   let tmp_part = sequencer.createPart();
   let tmp_events = [];
   let tmp_noteLength = iec.song.ppq * 2;
@@ -1002,7 +1017,7 @@ function addPartAtMouse(iec: InputEditorComponent) {
     tmp_events.push(sequencer.createMidiEvent(tmp_ticks, InputEditorComponent.NOTE_OFF, tmp_pitch, 0));
     tmp_ticks += tmp_noteLength;
   }
-  tmp_ticks = iec.edtrInfo.ticksAtHead;
+  tmp_ticks = iec.info.ticksAtHead;
 
   tmp_part.addEvents(tmp_events);
   if (!InputEditorComponent.inpEdComp.track) {
@@ -1020,9 +1035,7 @@ function addPartAtMouse(iec: InputEditorComponent) {
 
 
 
-/**
- * EXPERIMENTAL
- */
+
 function createNewMIDINote(start: number, end: number, pitch: number): MIDINote {
   let tmp_velocity = 127;
   let tmp_noteOn = sequencer.createMidiEvent(start, InputEditorComponent.NOTE_ON, pitch, tmp_velocity);
@@ -1039,11 +1052,11 @@ function createNewNoteEvents(start: number, end: number, pitch: number, velocity
   return [tmp_noteOn, tmp_noteOff];
 }
 function createNewNoteAtMouse(tmp_part, iec: InputEditorComponent) {
-  let tmp_pitch = iec.edtrInfo.mousePitchPos;
+  let tmp_pitch = iec.info.mousePitchPos;
   let tmp_velocity = 127;
   let tmp_events = [];
   let tmp_noteLength = iec.song.ppq/*  * 2 */;
-  let tmp_ticks = iec.edtrInfo.ticksAtX;
+  let tmp_ticks = iec.info.ticksAtX;
   let tmp_noteOn;
   let tmp_noteOff;
   let tmp_note;
@@ -1052,7 +1065,7 @@ function createNewNoteAtMouse(tmp_part, iec: InputEditorComponent) {
   tmp_ticks += tmp_noteLength;
   tmp_noteOff = sequencer.createMidiEvent(tmp_ticks, InputEditorComponent.NOTE_OFF, tmp_pitch, 0);
   tmp_events.push(tmp_noteOn, tmp_noteOff);
-  tmp_ticks = InputEditorComponent.inpEdComp.keyEditor.getTicksAt(InputEditorComponent.inpEdComp.edtrInfo.screenX);
+  tmp_ticks = InputEditorComponent.inpEdComp.keyEditor.getTicksAt(InputEditorComponent.inpEdComp.info.screenX);
   console.log('added new note: \n ' +
     'pitch: ' + tmp_pitch + '\n' +
     'at ticks: ' + tmp_ticks + '\n' +
@@ -1061,7 +1074,9 @@ function createNewNoteAtMouse(tmp_part, iec: InputEditorComponent) {
   );
   return tmp_events;
 }
-
+/**
+ * Compacts all song tracks onto single track, set to monitor, and set instrument to piano
+ */
 function flattenTracks(ref_song) {
   ref_song.tracks.forEach(
     function (track) {
@@ -1071,32 +1086,27 @@ function flattenTracks(ref_song) {
     }
   );
 }
-export function subdivBBox(ref_bbox, ref_xRatio: number, ref_xOffsetRatio: number, ref_yRatio: number, ref_yOffsetRatio: number): BBox {
-  let tmp_bbox = new BBox(null,
-    (ref_bbox.width * ref_xOffsetRatio),
-    (ref_bbox.height * ref_yOffsetRatio),
-    ref_bbox.width * ref_xRatio,
-    ref_bbox.height * ref_yRatio);
-  if (tmp_bbox.width < 1) { tmp_bbox.width = 1; }
-  return tmp_bbox;
+/**
+ * Creates bounding boxes for note
+ * @param bbox Bounding box of note
+ * @param xPx Width of bounding box in pixels
+ */
+export function createEdgeBBoxes(bbox, xPx: number): [BBox, BBox] {
+  let tmp_bbox_l = new BBox(null, 0 - xPx, 0, xPx, bbox.height);
+  let tmp_bbox_r = new BBox(null, bbox.width, 0, xPx, bbox.height);
+  return [tmp_bbox_l, tmp_bbox_r];
 }
-function subdivBBoxByPixels(ref_bbox, ref_xRatio, ref_xOffsetRatio: number, ref_yRatio: number, ref_yOffsetRatio: number, ref_minWidth: number, ref_maxWidth: number) {
-  let tmp_bbox = {
-    left: (ref_bbox.width * ref_xOffsetRatio),
-    top: (ref_bbox.height * ref_yOffsetRatio),
-    width: ref_bbox.width * ref_xRatio,
-    height: ref_bbox.height * ref_yRatio
-  }
-  // tmp_bbox.x = tmp_bbox.left;
-  // tmp_bbox.y = tmp_bbox.top;
-  if (tmp_bbox.width < ref_minWidth) { tmp_bbox.width = ref_minWidth; }
-  else if (tmp_bbox.width > ref_maxWidth) { tmp_bbox.width = ref_maxWidth; }
-  return tmp_bbox;
-}
+// export function subdivBBox(ref_bbox, ref_xRatio: number, ref_xOffsetRatio: number, ref_yRatio: number, ref_yOffsetRatio: number): BBox {
+//   let tmp_bbox = new BBox(null,
+//     (ref_bbox.width * ref_xOffsetRatio),
+//     (ref_bbox.height * ref_yOffsetRatio),
+//     ref_bbox.width * ref_xRatio,
+//     ref_bbox.height * ref_yRatio);
+//   if (tmp_bbox.width < 1) { tmp_bbox.width = 1; }
+//   return tmp_bbox;
+// }
 
 export class EditorInfo {
-  // screenX: number;
-  // screenY: number;
   pageX: number;
   pageY: number;
   clientX: number;
@@ -1112,6 +1122,7 @@ export class EditorInfo {
   editorFrameOffsetX;
   editorScrollX;
   editorScrollY;
+  snapTicksAtX: number;
   ticksAtX: number;
   snapTicksAtHead: number;
   scrollTicksAtHead: number;
@@ -1167,8 +1178,8 @@ export class EditorHTMLShell {
   div_Notes: HTMLDivElement;
   div_Parts: HTMLDivElement;
   div_Playhead: HTMLDivElement;
-  divs_AllNotes: HTMLDivElement[];
-  divs_AllParts: HTMLDivElement[];
+  divs_AllNotes: Array<HTMLDivElement>;
+  divs_AllParts: Array<HTMLDivElement>;
   slct_Snap: HTMLSelectElement;
 
 
@@ -1239,5 +1250,34 @@ class BBox {
       this.height = h;
     }
     return this;
+  }
+}
+export function numToPitch(i: number): string {
+  switch (i) {
+    case 43: return 'G2';
+    case 42: return 'F#2';
+    case 41: return 'F2';
+    case 40: return 'E2';
+    case 39: return 'D#2';
+    case 38: return 'D2';
+    case 37: return 'C#2';
+    case 36: return 'C2';
+    case 35: return 'B1';
+    case 34: return 'A#1';
+    case 33: return 'A1';
+    case 32: return 'G#1';
+    case 31: return 'G1';
+    case 30: return 'F#1';
+    case 29: return 'F1';
+    case 28: return 'E1';
+    case 27: return 'D#1';
+    case 26: return 'D1';
+    case 25: return 'C#1';
+    case 24: return 'C1';
+    case 23: return 'B0';
+    case 22: return 'A#0';
+    case 21: return 'A0';
+    case 12: return 'C-1';
+    case 0: return 'C-2';
   }
 }
