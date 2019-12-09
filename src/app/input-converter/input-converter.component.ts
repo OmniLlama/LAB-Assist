@@ -356,10 +356,17 @@ export class InputConverterComponent implements OnInit {
       .note(0, 'G3', 127, 100);
   }
 }
+/**
+ * returns first likely instance of a controller to act as main interface
+ */
 export function getPad() {
   return controllers[0] !== undefined ? controllers[0] : controllers[1];
 
 }
+/**
+ * Sends Midi playback tone depending on which of the eight default buttons was triggered
+ * @param ind
+ */
 function getTestToneForButton(ind) {
   switch (ind) {
     case 0: return 'C4';
@@ -374,7 +381,10 @@ function getTestToneForButton(ind) {
     default: return 'C#6';
   }
 }
-
+/**
+ * Sends pitch based on which d-pad input direction was sent
+ * @param ind
+ */
 function getDirectionPitchFromDPad(ind): number {
   switch (ind) {
     case 0: return 32;
@@ -383,6 +393,10 @@ function getDirectionPitchFromDPad(ind): number {
     case 3: return 29;
   }
 }
+/**
+ * Sends pitch based on which axis direction was sent
+ * @param ind
+ */
 function getDirectionPitchFromAxis(ind, val): number {
   switch (ind) {
     case 0:
@@ -399,6 +413,10 @@ function getDirectionPitchFromAxis(ind, val): number {
       else { return 34; }
   }
 }
+/**
+ * Sends pitch based on which button was sent
+ * @param ind
+ */
 function getButtonPitch(ind) {
   switch (ind) {
     case 0: return 28; //E1
