@@ -318,10 +318,7 @@ function resetArrows(arrowsArray, index) {
  * The scangamepads function scans for any gamepads that are connected.
  * If a gamepad is detected and is currently not in the controller array, it will be added to the array.
  */
-// In order to compile, I had to comment out the ternary statement.
-// webkitGetGamepads shows up as not being available on navigator when using Typescript for whatever reason :(
 function scangamepads() {
-  //var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
   var gamepads;
   if (navigator.getGamepads) {
     gamepads = navigator.getGamepads();

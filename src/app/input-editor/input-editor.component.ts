@@ -71,7 +71,6 @@ export class InputEditorComponent implements OnInit {
     this.track.setMidiInput('all');
     this.track.update();
     this.song.update();
-    // sequencer.getMidiInputs();
   }
   /**
    * Initialize Critical Components
@@ -87,8 +86,6 @@ export class InputEditorComponent implements OnInit {
     this.song = this.initSong();
 
     iec.instruments = sequencer.getInstruments();
-    // song.tracks.forEach(function(track) {track.setMidiInput()})
-
 
     if (iec.flattenTracksToSingleTrack) { flattenTracks(iec.song); }
     /**
@@ -497,16 +494,14 @@ export class InputEditorComponent implements OnInit {
     let elmt = (e.target as HTMLElement);
     let tmp_className = elmt.className;
     /**
-     * if double clicking a note
-     * */
+     * if double clicking a note */
     if (tmp_className.indexOf('note') !== -1) {
       iec.currNote = iec.allNotes[elmt.id];
       iec.currPart = iec.currNote.part;
       return;
     }
     /**
-     * if double clicking a blank section of a part
-     * */
+     * if double clicking a blank section of a part */
     else if (tmp_className.indexOf('part') !== -1) {
       iec.currPart = iec.allParts[elmt.id];
       iec.currPart.addEvents(createNewNoteAtMouse(iec.currPart, iec));
@@ -514,23 +509,20 @@ export class InputEditorComponent implements OnInit {
       return;
     }
     /**
-     * if double clicking grid but current part is selected
-     * */
+     * if double clicking grid but current part is selected */
     else if (iec.currPart) {
       // currPart.addEvents(addNewNoteAtMouse());
       iec.song.update();
       return;
     }
     /**
-     *if double clicking empty grid space
-     * */
+     * if double clicking empty grid space */
     else {
       iec.currNote = null;
       iec.currPart = null;
       addPartAtMouse(iec);
       return;
     }
-
   }
   /**
    * Event: left mouse click down on general editor space
@@ -631,7 +623,9 @@ function initWindowEvents(iec: InputEditorComponent) {
   });
   window.addEventListener('resize', (e) => { resize(); }, false);
 }
-
+/**
+ * Initializes the context sensitive editor controls
+ */
 function initContextEvents() {
   InputEditorComponent.inpEdComp.song.addEventListener('play', () => { setElementValue(InputEditorComponent.inpEdComp.html.btn_Play, 'pause'); });
   InputEditorComponent.inpEdComp.song.addEventListener('pause', () => { setElementValue(InputEditorComponent.inpEdComp.html.btn_Play, 'play'); });

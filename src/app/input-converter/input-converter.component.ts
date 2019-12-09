@@ -451,6 +451,10 @@ function onMIDISuccess(mAcc) {
   outputs = midiAccess.outputs;
   midiAccess.onstatechange += JZZ().onChange;
 }
+/**
+ * MIDI Failure procedures
+ * @param data
+ */
 function onMIDIFailure(data) { }
 /**
  * returns the button name, based on the components selected notation type
