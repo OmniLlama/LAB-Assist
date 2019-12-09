@@ -64,19 +64,18 @@ export class InputConverterComponent implements OnInit {
     rAF(this.getController);
   }
   /**
-   * Waits for, then receives the first controller that is added to the display component
+   * Waits for, then receives the first controller that is added to the display component,
+   * Initializes arrays that hold the various inputs and their respective notes
    */
   getController() {
     let idc = InputDisplayComponent.inpDispCmp;
     let icc = InputConverterComponent.inpConvComp;
     if (controllers !== undefined && controllers.length != 0 && icc.testController == null) {
-      let ctlr = controllers[0];
+      let ctlr = (controllers[0] !== undefined ? controllers[0] : controllers[1]);
       icc.testController = new GamepadObject(ctlr);
       let thing = GamepadType[icc.testController.type];
       console.log(thing);
 
-
-      // window.removeEventListener("mousemove", (e) => icc.getController(e));
       icc.playControllerConnectedJingle();
 
       icc.dirsHeld = new Array<boolean>(getPad().axes.length * 2);
@@ -103,7 +102,10 @@ export class InputConverterComponent implements OnInit {
   }
   deadZone = .5;
   /**
-   * Updates all controller values
+   * Updates all controller values,
+   * First, the Axes,
+   * Then, the D-Pad buttons
+   * then, the Eight main buttons
    */
   updateController() {
     let icc = InputConverterComponent.inpConvComp;
@@ -166,27 +168,11 @@ export class InputConverterComponent implements OnInit {
             (iec.info.ticksAtHead - icc.dirHeldNotes[i2][1]));
           icc.dirHeldNotes[i2][1] = iec.info.ticksAtHead;
           iec.song.update();
-          // if (icc.dirHeldNotes[i2][0].id != undefined) {
-          //   let noteAndEdges = getEdgeDivs(icc.dirHeldNotes[i2][0]);
-          //   if (noteAndEdges != null) {
-          //     let edgeBBoxes = createEdgeBBoxes(icc.dirHeldNotes[i1][0].bbox, 8);
-          //     updateElementBBox(noteAndEdges[1], edgeBBoxes[0]);
-          //     updateElementBBox(noteAndEdges[2], edgeBBoxes[1]);
-          //   }
-          // }
         } else if (icc.dirsHeld[i1]) {
           icc.dirHeldNotes[i1][0].part.moveEvent(icc.dirHeldNotes[i1][0].noteOff,
             (iec.info.ticksAtHead - icc.dirHeldNotes[i1][1]));
           icc.dirHeldNotes[i1][1] = iec.info.ticksAtHead;
           iec.song.update();
-          // if (icc.dirHeldNotes[i1][0].id != undefined) {
-          //   let noteAndEdges = getEdgeDivs(icc.dirHeldNotes[i1][0]);
-          //   if (noteAndEdges != null) {
-          //     let edgeBBoxes = createEdgeBBoxes(icc.dirHeldNotes[i1][0].bbox, 8);
-          //     updateElementBBox(noteAndEdges[1], edgeBBoxes[0]);
-          //     updateElementBBox(noteAndEdges[2], edgeBBoxes[1]);
-          //   }
-          // }
         } else if (!icc.dirsHeld[i2] && icc.dirHeldNotes[i2] != null) {
           icc.dirHeldNotes[i2] = null;
         } else if (!icc.dirsHeld[i1] && icc.dirHeldNotes[i1] != null) {
@@ -226,17 +212,9 @@ export class InputConverterComponent implements OnInit {
       if (icc.trackingNotes) {
         if (icc.dpadHeld[ind]) {
           icc.dpadHeldNotes[ind][0].part.moveEvent(icc.dpadHeldNotes[ind][0].noteOff,
-            (iec.info.ticksAtHead - icc.dpadHeldNotes[ind][1]));
+            (iec.info.scrollTicksAtHead - icc.dpadHeldNotes[ind][1]));
           icc.dpadHeldNotes[ind][1] = iec.info.ticksAtHead;
           iec.song.update();
-          // if (icc.dpadHeldNotes[ind][0].id != undefined) {
-          //   let noteAndEdges = getEdgeDivs(icc.dpadHeldNotes[ind][0]);
-          //   if (noteAndEdges != null) {
-          //     let edgeBBoxes = createEdgeBBoxes(icc.dpadHeldNotes[ind][0].bbox, 8);
-          //     updateElementBBox(noteAndEdges[1], edgeBBoxes[0]);
-          //     updateElementBBox(noteAndEdges[2], edgeBBoxes[1]);
-          //   }
-          // }
         }
         else if (!icc.dpadHeld[ind] && icc.dpadHeldNotes[ind] != null) {
           icc.dpadHeldNotes[ind] = null;
@@ -300,6 +278,7 @@ export class InputConverterComponent implements OnInit {
       } else if (!b.pressed && icc.btnsHeld[ind]) {
         //if RECORDING
         if (icc.trackingNotes) {
+          icc.btnInpStarts[ind] = iec.info.ticksAtHead;
           icc.btnInpEnds[ind] = iec.info.ticksAtHead;
           icc.midiOutPort.noteOff(0, pitch, 127);
           icc.trackedNotes.push([icc.btnInpStarts[ind], icc.btnInpEnds[ind], getButtonPitch(ind)]);
@@ -310,17 +289,9 @@ export class InputConverterComponent implements OnInit {
       if (icc.trackingNotes) {
         if (icc.btnsHeld[ind]) {
           icc.btnHeldNotes[ind][0].part.moveEvent(icc.btnHeldNotes[ind][0].noteOff,
-            (iec.info.ticksAtHead - icc.btnHeldNotes[ind][1]));
+            (iec.info.scrollTicksAtHead - icc.btnHeldNotes[ind][1]));
           icc.btnHeldNotes[ind][1] = iec.info.ticksAtHead;
           iec.song.update();
-          // if (icc.btnHeldNotes[ind][0].id != undefined) {
-          //   let noteAndEdges = getEdgeDivs(icc.btnHeldNotes[ind][0]);
-          //   if (noteAndEdges != null) {
-          //     let edgeBBoxes = createEdgeBBoxes(icc.btnHeldNotes[ind][0].bbox, 8);
-          //     updateElementBBox(noteAndEdges[1], edgeBBoxes[0]);
-          //     updateElementBBox(noteAndEdges[2], edgeBBoxes[1]);
-          //   }
-          // }
         }
         else if (!icc.btnsHeld[ind] && icc.btnHeldNotes[ind] != null) {
           icc.btnHeldNotes[ind] = null;
@@ -353,12 +324,19 @@ export class InputConverterComponent implements OnInit {
     JZZ().refresh();
     rAF(icc.updateController);
   }
+  /**
+   *  Initialize the html element properties
+   * @param icc
+   */
   getSetHTMLElements(icc: InputConverterComponent) {
     icc.div_Editor = document.getElementById('editor') as HTMLDivElement;
     icc.div_editInputIcons = document.getElementById('editor-input-icons') as HTMLDivElement;
     icc.div_editInputIcons.addEventListener('mouseover', (e) => {
     });
   }
+  /**
+   * Boot Jingle
+   */
   playStartJingle() {
     let mtop = InputConverterComponent.inpConvComp.midiOutPort;
     // let mtip = InputConverterComponent.inpConvComp.midiInPort;
@@ -367,6 +345,9 @@ export class InputConverterComponent implements OnInit {
       .note(0, 'D5', 127, 100).wait(100)
       .note(0, 'G5', 127, 100);
   }
+  /**
+   * Controller Connected Jingle
+   */
   playControllerConnectedJingle() {
     let mtop = InputConverterComponent.inpConvComp.midiOutPort;
     mtop
@@ -376,7 +357,8 @@ export class InputConverterComponent implements OnInit {
   }
 }
 export function getPad() {
-  return controllers[0];
+  return controllers[0] !== undefined ? controllers[0] : controllers[1];
+
 }
 function getTestToneForButton(ind) {
   switch (ind) {
@@ -448,10 +430,6 @@ function onMIDISuccess(mAcc) {
   midiAccess.onstatechange += JZZ().onChange;
 }
 function onMIDIFailure(data) { }
-function MIDIStateChanged(data?): any {
-  console.warn('MIDI State has changed!');
-  return null;
-}
 
 export function nameButton(i) {
   switch (InputDisplayComponent.inpDispCmp.butNotTy) {

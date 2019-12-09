@@ -511,8 +511,8 @@ export class GamepadObject {
   getArcadeLayoutButtonNumbers(): number[] {
     switch (this.type) {
       case GamepadType.XInput:
-        return [2, 3, 5, 4, 0, 1, 7, 6];
-        // return [0, 1, 2, 3, 4, 5, 6, 7];
+        // return [2, 3, 5, 4, 0, 1, 7, 6];
+        return [0, 1, 2, 3, 4, 5, 6, 7];
       default:
         return [0, 1, 2, 3, 4, 5, 6, 7];
         // return [0, 0, 0, 0, 0, 0, 0, 0];
