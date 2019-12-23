@@ -38,6 +38,7 @@ export var gamepadObjects: Array<GamepadObject>;
   styleUrls: ['./input-display.component.sass'],
 })
 export class InputDisplayComponent implements OnInit {
+  static rAF = window.requestAnimationFrame;
   // controllers: Array<Gamepad>;
   gamepadObjects: Array<GamepadObject>;
   static inpDispCmp: InputDisplayComponent;
@@ -47,174 +48,273 @@ export class InputDisplayComponent implements OnInit {
   butNotTypes = ButtonNotationType;
   mntKeys = Object.keys(MovementNotationType);
   bntKeys = Object.keys(ButtonNotationType);
+  haveWebkitEvents = 'WebKitGamepadEvent' in window;
+  haveEvents = 'GamepadEvent' in window;
+  btnDivs: Array<HTMLDivElement>;
+
+  padHTMLShells = [];
   constructor() { }
 
   ngOnInit() {
     InputDisplayComponent.inpDispCmp = this;
     controllers = new Array<Gamepad>();
     gamepadObjects = new Array<GamepadObject>();
+    // window.onload = function () {
+    /**
+     * EVENTS
+     */
+    if (this.haveEvents) {
+      window.addEventListener('gamepadconnected', (e) => this.connecthandler(e));
+      window.addEventListener('gamepaddisconnected', (e) => this.disconnecthandler(e));
+    } else if (this.haveWebkitEvents) {
+      window.addEventListener('webkitgamepadconnected', (e) => this.connecthandler(e));
+      window.addEventListener('webkitgamepaddisconnected', (e) => this.disconnecthandler(e));
+    } else {
+      setInterval(() => this.scangamepads(), 500);
+    }
+    // }
   }
   getControllers() { return controllers; }
-}
-
-var haveEvents = 'GamepadEvent' in window;
-var haveWebkitEvents = 'WebKitGamepadEvent' in window;
-var rAF = window.requestAnimationFrame;
-var btnDivs: Array<HTMLDivElement>;
-
-var padHTMLShells = [];
-/**
- * Handles the connecting event of a gamepad
- * @param e event
- */
-function connecthandler(e) {
-  addgamepad(e.gamepad);
-}
-/**
- * The addgamepad function is large and does most of the work in this component.
- * First, it sets the current gamepad to the array of controllers.
- * Next, it creates a series of div elements where things such as gamepad info, gamepad buttons, and gamepad arrows will live.
- * After the divs, it creates the arrow icons through a switch statement.
- * After creating the arrows, the gamepad buttons are created through similar means.
- * @param gamepad gamepad to be added
- */
-function addgamepad(gamepad) {
-  controllers[gamepad.index] = gamepad;
-  gamepadObjects[gamepad.index] = new GamepadObject(gamepad);
-  btnDivs = new Array<HTMLDivElement>();
-  var div_info = document.createElement("div");
-  var div_cntrllr = document.createElement("div");
-  div_cntrllr.className = "controller";
-  div_cntrllr.setAttribute("id", "controller" + gamepad.index);
-
-  //Create controller id title
-  var title = document.createElement("h6");
-  title.appendChild(document.createTextNode("gamepad: " + gamepad.id));
-  div_info.appendChild(title);
-  div_cntrllr.appendChild(div_info);
-  var div_arrows = document.createElement("div");
-  div_arrows.className = "grid3x3";
-  for (let i = 0; i < 9; i++) {
-    let singleArrow = document.createElement("div");
-    singleArrow.className = "directionalArrows";
-
-    switch (i) {
-      case 0: singleArrow.innerHTML = `<img src="assets/images/left.png" width=80px height=80px>`; break;
-      case 1: singleArrow.innerHTML = `<img src="assets/images/up.png" width=80px height=80px>`; break;
-      case 2: singleArrow.innerHTML = `<img src="assets/images/up.png" width=80px height=80px>`; break;
-      case 3: singleArrow.innerHTML = `<img src="assets/images/left.png" width=80px height=80px>`; break;
-      case 4: singleArrow.innerHTML = `<img src="assets/images/ls.png" width=80px height=80px>`; break;
-      case 5: singleArrow.innerHTML = `<img src="assets/images/right.png" width=80px height=80px>`; break;
-      case 6: singleArrow.innerHTML = `<img src="assets/images/down.png" width=80px height=80px>`; break;
-      case 7: singleArrow.innerHTML = `<img src="assets/images/down.png" width=80px height=80px>`; break;
-      case 8: singleArrow.innerHTML = `<img src="assets/images/right.png" width=80px height=80px>`; break;
-    }
-    div_arrows.appendChild(singleArrow);
-  }
-  div_cntrllr.appendChild(div_arrows);
-
-
-  //Create Button Icons
-  var div_btns = document.createElement("div"); div_btns.className = "grid4x2";
-  // var div_btns = document.createElement("div"); div_btns.className = "gamepad-buttons";
-  // for (var i = 0; i < gamepad.buttons.length; i++) { div_btns.appendChild(createButtonIcon(i)); }
-  let btnOrder = gamepadObjects[gamepad.index].getArcadeLayoutButtonNumbers();
-  for (let btnNum of btnOrder) {
-    let div = createButtonIcon(btnNum);
-    div_btns.appendChild(div);
-    btnDivs.push(div);
-  }
-  //Append Buttons to div
-  div_cntrllr.appendChild(div_btns);
-
-  // Create Axis Meters
-  var div_axes = document.createElement("div"); div_axes.className = "axes";
-  for (let i = 0; i < gamepad.axes.length / 4; i++) { div_axes.appendChild(createAxisMeter(i)); }
-  //Append Meters to div
-  div_cntrllr.appendChild(div_axes);
-
-  padHTMLShells.push(new gamepadHTMLShell(title, div_axes, div_btns));
-  //Hide start message
-  document.getElementById("start").style.display = "none";
-  document.getElementById("controllers").appendChild(div_cntrllr);
-  // document.body.appendChild(div);
-  rAF(updateStatus);
-}
-/**
- * Handles the disconnecting event of a gamepad
- * @param e event
- */
-function disconnecthandler(e) {
-  removegamepad(e.gamepad);
-}
-/**
- * Handles the removing of a gamepad element from the controller array
- * @param gamepad
- */
-function removegamepad(gamepad) {
-  var d = document.getElementById("controller" + gamepad.index);
-  document.body.removeChild(d);
-  delete controllers[gamepad.index];
-}
-/**
- * The updateStatus function handles the updates that happen to gamepad input.
- * First, it iterates through all the buttons on the gamepad.
- * If any buttons are pressed, they will light up on the interface.
- * This is achieved by swapping the default image with a "pressed" image.
- * (lb.png and pressed_lb.png).
- * The same process then happens for the directional arrows on the gamepad.
- */
-function updateStatus() {
-  scangamepads();
   /**
-   * Controller Status Loop */
-  controllers.forEach((j, ind) => {
-    // for (let h = 0; h < controllers.length; h++) {
-    // var controller = controllers[j.id];
-    var controller = j;
-    var d = document.getElementById("controller" + j.index);
-    /**
-     * Button Status Loop */
-    // var divs_Btns = d.getElementsByClassName("gamepad-buttons");
-    // for (var i = 0; i < controller.buttons.length; i++) {
-    for (let i of gamepadObjects[ind].getArcadeLayoutButtonNumbers()) {
-      // for (var i = 0; i <= 7; i++) {
-      // var b = divs_Btns[i] as HTMLDivElement;
-      var b = btnDivs[i];
-      if (b == undefined) { break; }
-      var val = controller.buttons[i];
-      var pressed = val.value > .8;
-      if (typeof (val) == "object") {
-        pressed = val.pressed;
-        // val = val.value;
+   * Names the axis based on the axis id number
+   * @param {*} i - the axis id number
+   */
+  nameAxis(i) {
+    switch (i) {
+      case 0: return 'LS X';
+      case 1: return 'LS Y';
+      case 2: return 'RS X';
+      case 3: return 'RS Y';
+      // case 4: return "LT";
+      // case 5: return "RT";
+      default:
+        return null;
+    }
+  }
+  /**
+   * The createAxisMeter function gets passed one axis at a time, until there are 2 axes (x and y).
+   * It then assigns each axis a default value of 0, min of -1, and max of 1 so that we can tell the direction of the joystick easily.
+   * @param ind
+   */
+  createAxisMeter(ind) {
+    let axisName = this.nameAxis(ind);
+    console.log(axisName)
+    var e = document.createElement('span');
+    e.className = 'axis';
+
+    //e.id = "a" + i;
+    e.setAttribute('min', '-1');
+    e.setAttribute('max', '1');
+    e.setAttribute('value', '0');
+    // let imageString = `<img src="assets/images/left.png" width=80px height=80px>`
+    // e.innerHTML = imageString;
+    // return e;
+    return e;
+  }
+  /**
+   * The addgamepad function is large and does most of the work in this component.
+   * First, it sets the current gamepad to the array of controllers.
+   * Next, it creates a series of div elements where things such as gamepad info, gamepad buttons, and gamepad arrows will live.
+   * After the divs, it creates the arrow icons through a switch statement.
+   * After creating the arrows, the gamepad buttons are created through similar means.
+   * @param gamepad gamepad to be added
+   */
+  addgamepad(gamepad) {
+    controllers[gamepad.index] = gamepad;
+    gamepadObjects[gamepad.index] = new GamepadObject(gamepad);
+    this.btnDivs = new Array<HTMLDivElement>();
+    var div_info = document.createElement('div');
+    var div_cntrllr = document.createElement('div');
+    div_cntrllr.className = 'controller';
+    div_cntrllr.setAttribute('id', 'controller' + gamepad.index);
+
+    //Create controller id title
+    var title = document.createElement('h6');
+    title.appendChild(document.createTextNode('gamepad: ' + gamepad.id));
+    div_info.appendChild(title);
+    div_cntrllr.appendChild(div_info);
+    var div_arrows = document.createElement('div');
+    div_arrows.className = 'grid3x3';
+    for (let i = 0; i < 9; i++) {
+      let singleArrow = document.createElement('div');
+      singleArrow.className = 'directionalArrows';
+
+      switch (i) {
+        case 0: singleArrow.innerHTML = `<img src="assets/images/left.png" width=80px height=80px>`; break;
+        case 1: singleArrow.innerHTML = `<img src="assets/images/up.png" width=80px height=80px>`; break;
+        case 2: singleArrow.innerHTML = `<img src="assets/images/up.png" width=80px height=80px>`; break;
+        case 3: singleArrow.innerHTML = `<img src="assets/images/left.png" width=80px height=80px>`; break;
+        case 4: singleArrow.innerHTML = `<img src="assets/images/ls.png" width=80px height=80px>`; break;
+        case 5: singleArrow.innerHTML = `<img src="assets/images/right.png" width=80px height=80px>`; break;
+        case 6: singleArrow.innerHTML = `<img src="assets/images/down.png" width=80px height=80px>`; break;
+        case 7: singleArrow.innerHTML = `<img src="assets/images/down.png" width=80px height=80px>`; break;
+        case 8: singleArrow.innerHTML = `<img src="assets/images/right.png" width=80px height=80px>`; break;
       }
-      var pct = Math.round(val.value * 100) + "%";
-      b.style.backgroundSize = pct + " " + pct;
-      let imageString = 'a';
-      let buttonString = 'a';
-      if (pressed) {
-        // If pressed, switches to the pressed version of the button's image
-        buttonString = nameButton(i);
-        imageString = `<img src="assets/images/pressed_${buttonString}.png" width=80px height=80px>`;
-        b.innerHTML = imageString;
-      } else {
-        // If released/not pressed, switches to the regular version of the button's image
-        buttonString = nameButton(i);
-        imageString = `<img src="assets/images/${buttonString}.png" width=80px height=80px>`;
-        b.innerHTML = imageString;
+      div_arrows.appendChild(singleArrow);
+    }
+    div_cntrllr.appendChild(div_arrows);
+
+
+    //Create Button Icons
+    var div_btns = document.createElement('div'); div_btns.className = 'grid4x2';
+    // var div_btns = document.createElement("div"); div_btns.className = "gamepad-buttons";
+    // for (var i = 0; i < gamepad.buttons.length; i++) { div_btns.appendChild(createButtonIcon(i)); }
+    let btnOrder = gamepadObjects[gamepad.index].getArcadeLayoutButtonNumbers();
+    for (let btnNum of btnOrder) {
+      let div = this.createButtonIcon(btnNum);
+      div_btns.appendChild(div);
+      this.btnDivs.push(div);
+    }
+    //Append Buttons to div
+    div_cntrllr.appendChild(div_btns);
+
+    // Create Axis Meters
+    var div_axes = document.createElement('div'); div_axes.className = 'axes';
+    for (let i = 0; i < gamepad.axes.length / 4; i++) { div_axes.appendChild(this.createAxisMeter(i)); }
+    //Append Meters to div
+    div_cntrllr.appendChild(div_axes);
+
+    this.padHTMLShells.push(new gamepadHTMLShell(title, div_axes, div_btns));
+    //Hide start message
+    document.getElementById('start').style.display = 'none';
+    document.getElementById('controllers').appendChild(div_cntrllr);
+    // document.body.appendChild(div);
+    InputDisplayComponent.rAF((cb) => this.updateStatus());
+  }
+  /**
+   * Handles the removing of a gamepad element from the controller array
+   * @param gamepad
+   */
+  removegamepad(gamepad) {
+    var d = document.getElementById('controller' + gamepad.index);
+    document.body.removeChild(d);
+    delete controllers[gamepad.index];
+  }
+  /**
+  * Handles the connecting event of a gamepad
+  * @param e event
+  */
+  connecthandler(e) {
+    this.addgamepad(e.gamepad);
+  }
+
+  /**
+   * Handles the disconnecting event of a gamepad
+   * @param e event
+   */
+  disconnecthandler(e) {
+    this.removegamepad(e.gamepad);
+  }
+
+  /**
+   * The scangamepads function scans for any gamepads that are connected.
+   * If a gamepad is detected and is currently not in the controller array, it will be added to the array.
+   */
+  scangamepads() {
+    var gamepads;
+    if (navigator.getGamepads) {
+      gamepads = navigator.getGamepads();
+    }
+    for (var i = 0; i < gamepads.length; i++) {
+      if (gamepads[i]) {
+        if (!(gamepads[i].index in controllers)) {
+          this.addgamepad(gamepads[i]);
+        } else {
+          controllers[gamepads[i].index] = gamepads[i];
+        }
       }
     }
+  }
+  /**
+   * The updateStatus function handles the updates that happen to gamepad input.
+   * \-First, it iterates through all the buttons on the gamepad.
+   * \-If any buttons are pressed, they will light up on the interface.
+   * \-This is achieved by swapping the default image with a "pressed" image.
+   * (lb.png and pressed_lb.png).
+   * The same process then happens for the directional arrows on the gamepad.
+   */
+  updateStatus() {
+    this.scangamepads();
     /**
-     * Get Axis Status */
-    var axes = d.getElementsByClassName("axis");
-    var leftAxis = axes[0]
-    // var rightAxis = axes[1]
-    var arrowsArray = d.getElementsByClassName('directionalArrows')
-    getJoystickDirections(controller, leftAxis, arrowsArray)
-  });
+     * Controller Status Loop
+     */
+    controllers.forEach((j, ind) => {
+      // for (let h = 0; h < controllers.length; h++) {
+      // var controller = controllers[j.id];
+      var controller = j;
+      var d = document.getElementById('controller' + j.index);
+      /**
+       * Button Status Loop */
+      // var divs_Btns = d.getElementsByClassName("gamepad-buttons");
+      // for (var i = 0; i < controller.buttons.length; i++) {
+      for (let i of gamepadObjects[ind].getArcadeLayoutButtonNumbers()) {
+        // for (var i = 0; i <= 7; i++) {
+        // var b = divs_Btns[i] as HTMLDivElement;
+        var b = this.btnDivs[i];
+        if (b == undefined) { break; }
+        var val = controller.buttons[i];
+        var pressed = val.value > .8;
+        if (typeof (val) == 'object') {
+          pressed = val.pressed;
+          // val = val.value;
+        }
+        var pct = Math.round(val.value * 100) + '%';
+        b.style.backgroundSize = pct + ' ' + pct;
+        let imageString = 'a';
+        let buttonString = 'a';
+        if (pressed) {
+          // If pressed, switches to the pressed version of the button's image
+          buttonString = nameButton(i);
+          imageString = `<img src="assets/images/pressed_${buttonString}.png" width=80px height=80px>`;
+          b.innerHTML = imageString;
+        } else {
+          // If released/not pressed, switches to the regular version of the button's image
+          buttonString = nameButton(i);
+          imageString = `<img src="assets/images/${buttonString}.png" width=80px height=80px>`;
+          b.innerHTML = imageString;
+        }
+      }
+      /**
+       * Get Axis Status */
+      var axes = d.getElementsByClassName('axis');
+      var leftAxis = axes[0]
+      // var rightAxis = axes[1]
+      var arrowsArray = d.getElementsByClassName('directionalArrows')
+      getJoystickDirections(controller, leftAxis, arrowsArray)
+    });
 
-  rAF(updateStatus);
+    InputDisplayComponent.rAF((cb) => this.updateStatus());
+  }
+  /**
+   * The createButtonIcon creates the gamepad button icons.
+   * Button inputs have unique indexes based on specific controllers, and we specified the inputs below.
+   * If (0) is passed into this function, an image will come up for the Xbox A button.
+   * This function sets the default images by DOM manipulation, which get changed by the scangamepads function above.
+   * @param ind
+   */
+  createButtonIcon(ind) {
+    let button = nameButton(ind)
+    var e = document.createElement('div');
+    e.className = 'gamepad-buttons';
+    // This if allows me to post the button images to the page for the game. (If Street fighter doesn't need SELECT,
+    // there won't be a broken image link for a SELECT button on the page)
+    if (button != null) {
+      // This allows me to manipulate the element and leave the current CSS styling.
+      // This just adds a span which contains an image of the buttons
+      let imageString = `<img src="assets/images/${button}.png" width=80px height=80px>`;
+      e.innerHTML = imageString;
+    }
+    //e.id = "b" + i;
+    //e.innerHTML = nameButton(ind);
+    // e.innerHTML = i;
+    return e;
+  }
 }
+
+
+
+
+
 /**
  * The getJoystickDirections function looks at the axes of the controller.
  * Based on current axes information [0, 0, 0, 0].
@@ -314,69 +414,9 @@ function resetArrows(arrowsArray, index) {
     }
   }
 }
-/**
- * The scangamepads function scans for any gamepads that are connected.
- * If a gamepad is detected and is currently not in the controller array, it will be added to the array.
- */
-function scangamepads() {
-  var gamepads;
-  if (navigator.getGamepads) {
-    gamepads = navigator.getGamepads();
-  }
-  for (var i = 0; i < gamepads.length; i++) {
-    if (gamepads[i]) {
-      if (!(gamepads[i].index in controllers)) {
-        addgamepad(gamepads[i]);
-      } else {
-        controllers[gamepads[i].index] = gamepads[i];
-      }
-    }
-  }
-}
-/**
- * The createButtonIcon creates the gamepad button icons.
- * Button inputs have unique indexes based on specific controllers, and we specified the inputs below.
- * If (0) is passed into this function, an image will come up for the Xbox A button.
- * This function sets the default images by DOM manipulation, which get changed by the scangamepads function above.
- * @param ind
- */
-function createButtonIcon(ind) {
-  let button = nameButton(ind)
-  var e = document.createElement("div");
-  e.className = "gamepad-buttons";
-  // This if allows me to post the button images to the page for the game. (If Street fighter doesn't need SELECT,
-  // there won't be a broken image link for a SELECT button on the page)
-  if (button != null) {
-    // This allows me to manipulate the element and leave the current CSS styling.
-    // This just adds a span which contains an image of the buttons
-    let imageString = `<img src="assets/images/${button}.png" width=80px height=80px>`;
-    e.innerHTML = imageString;
-  }
-  //e.id = "b" + i;
-  //e.innerHTML = nameButton(ind);
-  // e.innerHTML = i;
-  return e;
-}
-/**
- * The createAxisMeter function gets passed one axis at a time, until there are 2 axes (x and y).
- * It then assigns each axis a default value of 0, min of -1, and max of 1 so that we can tell the direction of the joystick easily.
- * @param ind
- */
-function createAxisMeter(ind) {
-  let axisName = nameAxis(ind);
-  console.log(axisName)
-  var e = document.createElement("span");
-  e.className = "axis";
 
-  //e.id = "a" + i;
-  e.setAttribute("min", "-1");
-  e.setAttribute("max", "1");
-  e.setAttribute("value", "0");
-  // let imageString = `<img src="assets/images/left.png" width=80px height=80px>`
-  // e.innerHTML = imageString;
-  // return e;
-  return e;
-}
+
+
 export var xbBtns = ['a', 'b', 'x', 'y', 'lb', 'rb', 'lt', 'rt'];
 export var psBtns = ['X', 'O', '[]', '^', 'l1', 'r1', 'l2', 'r2'];
 export var sfBtns = ['lk', 'mk', 'lp', 'mp', 'l1', 'hp', 'l2', 'hk'];
@@ -420,38 +460,10 @@ export function nameButton(i) {
   }
   return i;
 }
-/**
- * Names the axis based on the axis id number
- * @param {*} i - the axis id number
- */
-function nameAxis(i) {
-  switch (i) {
-    case 0: return "LS X";
-    case 1: return "LS Y";
-    case 2: return "RS X";
-    case 3: return "RS Y";
-    // case 4: return "LT";
-    // case 5: return "RT";
-    default:
-      return null;
-  }
-}
-/**
- * EVENTS
- */
-if (haveEvents) {
-  window.addEventListener("gamepadconnected", connecthandler);
-  window.addEventListener("gamepaddisconnected", disconnecthandler);
-} else if (haveWebkitEvents) {
-  window.addEventListener("webkitgamepadconnected", connecthandler);
-  window.addEventListener("webkitgamepaddisconnected", disconnecthandler);
-} else {
-  setInterval(scangamepads, 500);
-}
 
-window.onload = function () {
-  // console.log("onload in gamepadtest reached!");
-}
+
+
+
 /**
  * not used much, but still necessary collection of elements for each controller
  */
@@ -479,7 +491,7 @@ export class GamepadObject {
   mapping: string;
   timestamp: number;
   vibrationActuator: GamepadHapticActuator;
-  constructor(gp, a?, b?, c?, i1?, i2?, m?, ts?, va?, ty?) {
+  constructor(gp, ax?, btns?, conn?, id?, ind?, map?, ts?, vibra?, ty?) {
     if (gp !== null && gp !== undefined) {
       this.pad = gp;
       this.type = this.getType(gp.id);
@@ -492,15 +504,15 @@ export class GamepadObject {
       this.timestamp = gp.timestamp;
       this.vibrationActuator = gp.vibrationActuator;
     } else {
-      this.axes = a;
-      this.buttons = b;
-      this.connected = c;
-      this.id = i1;
-      this.index = i2;
+      this.axes = ax;
+      this.buttons = btns;
+      this.connected = conn;
+      this.id = id;
+      this.index = ind;
       this.type = ty;
-      this.mapping = m;
+      this.mapping = map;
       this.timestamp = ts;
-      this.vibrationActuator = va;
+      this.vibrationActuator = vibra;
     }
   }
   /**

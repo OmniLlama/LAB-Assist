@@ -1,4 +1,16 @@
-<p>database-explorer works!</p>
-<ol id="midi-file-list">MIDI File List
-
+<p>
+|--|
+</p>
+<ol id="midi-file-list">Database
 </ol>
+<ul>
+  <li class="text" *ngFor="let s of sequences | async">
+    {{s.documentId}}
+  </li>
+</ul>
+<ul>
+  <li class="text" *ngFor="let t of test | async">
+    {{t.id}}
+  </li>
+</ul>
+<span>{{seq}}</span>
