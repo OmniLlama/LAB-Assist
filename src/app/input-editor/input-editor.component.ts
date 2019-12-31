@@ -926,8 +926,8 @@ function drawNote(ref_note: Note, iec: InputEditorComponent) {
   // store note and div
   InputEditorComponent.inpEdComp.allNotes[ref_note.id] = ref_note;
   iec.html.divs_AllNotes[ref_note.id] = div_Note;
-  div_Note.addEventListener('mouseover', InputEditorComponent.inpEdComp.evt_Note_MouOver, false);
-  div_Note.addEventListener('mousedown', InputEditorComponent.inpEdComp.evt_Note_lMouDown, false);
+  div_Note.addEventListener('mouseover', (e) => InputEditorComponent.inpEdComp.evt_Note_MouOver(e), false);
+  div_Note.addEventListener('mousedown', (e) => InputEditorComponent.inpEdComp.evt_Note_lMouDown(e), false);
   img_Note_leftEdge.addEventListener('mouseover', (e) => { InputEditorComponent.inpEdComp.evt_NoteEdge_Left_MouOver(e); });
   img_Note_leftEdge.addEventListener('mousedown', (e) => { InputEditorComponent.inpEdComp.evt_NoteEdge_Left_lMouDown(e); });
   img_Note_rightEdge.addEventListener('mouseover', (e) => { InputEditorComponent.inpEdComp.evt_NoteEdge_Right_MouOver(e); });

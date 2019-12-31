@@ -250,10 +250,10 @@ export class InputDisplayComponent implements OnInit {
       for (let i of gamepadObjects[ind].getArcadeLayoutButtonNumbers()) {
         // for (var i = 0; i <= 7; i++) {
         // var b = divs_Btns[i] as HTMLDivElement;
-        var b = this.btnDivs[i];
+        let b = this.btnDivs[i];
         if (b == undefined) { break; }
-        var val = controller.buttons[i];
-        var pressed = val.value > .8;
+        let val = controller.buttons[i];
+        let pressed = val.value > .8;
         if (typeof (val) == 'object') {
           pressed = val.pressed;
           // val = val.value;
@@ -410,7 +410,7 @@ function getJoystickDirections(controller, leftAxis, arrowsArray) {
 function resetArrows(arrowsArray, index) {
   for (let i = 0; i < arrowsArray.length; i++) {
     if (i != index) {
-      arrowsArray[i].innerHTML = returnXboxArrows(i);
+      arrowsArray[i].innerHTML = returnXboxArrowImgElmt(i);
     }
   }
 }
@@ -431,18 +431,21 @@ export var snkBtns = ['B', 'D', 'A', 'C'];
  * This function is used to make all the other arrows look "non-pressed" when the user changes the joystick direction.
  * @param i
  */
-function returnXboxArrows(i) {
+function returnXboxArrowImgElmt(i: number): string {
+  let s: string;
   switch (i) {
-    case 0: return `<img src="assets/images/up_left.png" width=80px height=80px>`;
-    case 1: return `<img src="assets/images/up.png" width=80px height=80px>`;
-    case 2: return `<img src="assets/images/up_right.png" width=80px height=80px>`;
-    case 3: return `<img src="assets/images/left.png" width=80px height=80px>`;
-    case 4: return `<img src="assets/images/ls.png" width=80px height=80px>`;
-    case 5: return `<img src="assets/images/right.png" width=80px height=80px>`;
-    case 6: return `<img src="assets/images/down_left.png" width=80px height=80px>`;
-    case 7: return `<img src="assets/images/down.png" width=80px height=80px>`;
-    case 8: return `<img src="assets/images/down_right.png" width=80px height=80px>`;
+    case 0: s = `up_left`; break;
+    case 1: s = `up`; break;
+    case 2: s = `up_right`; break;
+    case 3: s = `left`; break;
+    case 4: s = `ls`; break;
+    case 5: s = `right`; break;
+    case 6: s = `down_left`; break;
+    case 7: s = `down`; break;
+    case 8: s = `down_right`; break;
   }
+  return `<img src="assets/images/${s}.png" width=80px height=80px>`;
+
 }
 
 
@@ -450,7 +453,7 @@ function returnXboxArrows(i) {
  * Names the button with the proper designation based on button notation selection
  * @param {*} i - the button id number
  */
-export function nameButton(i) {
+export function nameButton(i: number): any {
   switch (InputDisplayComponent.inpDispCmp.butNotTy) {
     case ButtonNotationType.StreetFighter: return (xbBtns[i] !== undefined ? xbBtns[i] : null);
     case ButtonNotationType.GuiltyGear: return (ggBtns[i] !== undefined ? ggBtns[i] : i);

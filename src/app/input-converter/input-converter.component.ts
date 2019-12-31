@@ -93,11 +93,11 @@ export class InputConverterComponent implements OnInit {
       icc.btnInpEnds = new Array<number>(getPad().buttons.length);
       icc.btnHeldNotes = new Array<[MIDINote, number]>(getPad().buttons.length);
       if (getPad() != null && getPad() != undefined) {
-        rAF(icc.updateController);
+        rAF((cb) => icc.updateController());
       }
     }
     else {
-      rAF(icc.getController);
+      rAF((cb) => icc.getController());
     }
   }
   deadZone = .5;
