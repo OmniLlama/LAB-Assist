@@ -17,11 +17,13 @@ export class DatabaseExplorerComponent implements OnInit {
   sequences: Observable<any[]>;
   seq;
   test: Observable<any[]>;
-  constructor(/* db: AngularFirestore */) {
+  constructor() {
+    // constructor(db: AngularFirestore) {
     // this.sequences = db.collection('Sequences').valueChanges();
     // // this.seq = db.collection('Sequences').doc('QCF LP+MP');
     // this.test = db.collection('test').valueChanges();
-  }
+  // }
+}
 
   Pause() { }
 

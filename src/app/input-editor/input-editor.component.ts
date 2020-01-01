@@ -293,7 +293,7 @@ export class InputEditorComponent implements OnInit {
    *Event: left mouse click down on part
    * @param e
    */
-  evt_Part_lMouDown(e) {
+  evt_Part_lMouDown(e): void {
     let iec = InputEditorComponent.inpEdComp as InputEditorComponent;
     let tmp_part = iec.allParts[e.target.id];
     if (e.ctrlKey) {
@@ -304,7 +304,9 @@ export class InputEditorComponent implements OnInit {
       iec.currNote = null;
     } else {
       // iec.keyEditor.startMovePart(tmp_part, iec.edtrInfo.screenX, iec.edtrInfo.screenY);
-      iec.keyEditor.startMovePart(tmp_part, iec.info.clientX + InputEditorComponent.inpEdComp.html.div_Editor.scrollLeft, iec.info.pageY);
+      iec.keyEditor.startMovePart(tmp_part,
+        iec.info.clientX + InputEditorComponent.inpEdComp.html.div_Editor.scrollLeft,
+        iec.info.pageY);
       document.addEventListener('mouseup', iec.evt_Part_lMouUp, false);
     }
   }
@@ -312,7 +314,7 @@ export class InputEditorComponent implements OnInit {
    * Event: left mouse click up on part
    * @param e
    */
-  evt_Part_lMouUp(e) {
+  evt_Part_lMouUp(e): void {
     let iec = InputEditorComponent.inpEdComp;
     iec.keyEditor.stopMovePart();
     let thing = iec.allParts[iec.currPart.id] as Part;
@@ -329,12 +331,12 @@ export class InputEditorComponent implements OnInit {
    * Event: mouse hover over note
    * @param e
    */
-  evt_Note_MouOver(e) { (e.target as HTMLDivElement).style.cursor = 'move'; }
+  evt_Note_MouOver(e): void { (e.target as HTMLDivElement).style.cursor = 'move'; }
   /**
  * Event: left mouse click down on note
  * @param e
  */
-  evt_Note_lMouDown(e) {
+  evt_Note_lMouDown(e): void {
     let iec = InputEditorComponent.inpEdComp;
     if (!holdingEdge) {
       let tmp_note = InputEditorComponent.inpEdComp.allNotes[e.target.id];
@@ -354,7 +356,7 @@ export class InputEditorComponent implements OnInit {
    * Event: left mouse click up on note
    * @param e
    */
-  evt_Note_lMouUp(e: MouseEvent) {
+  evt_Note_lMouUp(e: MouseEvent): void {
     let iec = InputEditorComponent.inpEdComp;
     iec.keyEditor.stopMoveNote();
     let elmt = iec.html.divs_AllNotes[iec.currNote.id];
@@ -370,17 +372,17 @@ export class InputEditorComponent implements OnInit {
    * Event: mouse over left note edge
    * @param e
    */
-  evt_NoteEdge_Left_MouOver(e: MouseEvent) { (e.target as HTMLDivElement).style.cursor = 'w-resize'; }
+  evt_NoteEdge_Left_MouOver(e: MouseEvent): void { (e.target as HTMLDivElement).style.cursor = 'w-resize'; }
   /**
    * Event: mouse over right note edge
    * @param e
    */
-  evt_NoteEdge_Right_MouOver(e: MouseEvent) { (e.target as HTMLDivElement).style.cursor = 'e-resize'; }
+  evt_NoteEdge_Right_MouOver(e: MouseEvent): void { (e.target as HTMLDivElement).style.cursor = 'e-resize'; }
   /**
    * Event: mouse left click on left note edge
    * @param e
    */
-  evt_NoteEdge_Left_lMouDown(e: MouseEvent) {
+  evt_NoteEdge_Left_lMouDown(e: MouseEvent): void {
     holdingEdge = true;
     (e.target as HTMLDivElement).style.cursor = 'w-resize';
     let tmp_note = InputEditorComponent.inpEdComp.allNotes[(e.target as HTMLDivElement).id];

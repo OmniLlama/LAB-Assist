@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { MIDIEvent, Note, MIDINote } from 'heartbeat-sequencer';
 import { InputEditorComponent, updateElementBBox, getEdgeDivs, createEdgeBBoxes } from '../input-editor/input-editor.component';
-import { InputDisplayComponent, ButtonNotationType, GamepadObject, GamepadTypeString, GamepadType, controllers, xbBtns, ggBtns, scBtns, tknBtns, snkBtns } from '../input-display/input-display.component';
+import { InputDisplayComponent, GamepadObject, controllers, xbBtns, ggBtns, scBtns, tknBtns, snkBtns } from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
+import { GamepadType, ButtonNotationType } from 'src/Enums';
 declare let sequencer: any;
 
 @Component({
@@ -61,7 +62,7 @@ export class InputConverterComponent implements OnInit {
     // window.addEventListener("mousemove", (e) => this.getController(e));
     this.playStartJingle();
     JZZ().refresh();
-    rAF(this.getController);
+    rAF((cb) => this.getController());
   }
   /**
    * Waits for, then receives the first controller that is added to the display component,
@@ -107,7 +108,7 @@ export class InputConverterComponent implements OnInit {
    * Then, the D-Pad buttons
    * then, the Eight main buttons
    */
-  updateController() {
+  updateController(): void {
     let icc = InputConverterComponent.inpConvComp;
     let idc = InputDisplayComponent.inpDispCmp;
     let iec = InputEditorComponent.inpEdComp;
@@ -116,9 +117,6 @@ export class InputConverterComponent implements OnInit {
       icc.trackingNotes = true;
     }
     else if (!iec.song.playing && icc.trackingNotes) {
-      // icc.trackedNotes.forEach(note => {
-      //   iec.createNote(iec, note[0], note[1], note[2]);
-      // });
       icc.trackedNotes = null;
       iec.song.update();
       icc.trackingNotes = false;
@@ -328,18 +326,15 @@ export class InputConverterComponent implements OnInit {
    *  Initialize the html element properties
    * @param icc
    */
-  getSetHTMLElements(icc: InputConverterComponent) {
+  getSetHTMLElements(icc: InputConverterComponent): void {
     icc.div_Editor = document.getElementById('editor') as HTMLDivElement;
     icc.div_editInputIcons = document.getElementById('editor-input-icons') as HTMLDivElement;
-    icc.div_editInputIcons.addEventListener('mouseover', (e) => {
-    });
   }
   /**
    * Boot Jingle
    */
   playStartJingle() {
     let mtop = InputConverterComponent.inpConvComp.midiOutPort;
-    // let mtip = InputConverterComponent.inpConvComp.midiInPort;
     mtop
       .note(0, 'C5', 127, 100).wait(100)
       .note(0, 'D5', 127, 100).wait(100)
