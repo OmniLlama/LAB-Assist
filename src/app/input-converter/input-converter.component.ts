@@ -103,10 +103,7 @@ export class InputConverterComponent implements OnInit {
   }
   deadZone = .5;
   /**
-   * Updates all controller values,
-   * First, the Axes,
-   * Then, the D-Pad buttons
-   * then, the Eight main buttons
+   * Updates all controller values, First, the Axes, then, the D-Pad buttons. finally, the Eight main buttons
    */
   updateController(): void {
     let icc = InputConverterComponent.inpConvComp;
@@ -122,8 +119,7 @@ export class InputConverterComponent implements OnInit {
       icc.trackingNotes = false;
     }
     /**
-     * Update Controller Axes
-     */
+     * Update Controller Axes */
     getPad().axes.forEach((a, ind) => {
       let i1 = (ind * 2);
       let i2 = (ind * 2) + 1;
@@ -229,18 +225,10 @@ export class InputConverterComponent implements OnInit {
         let imageString = 'a';
         let buttonString;
         switch (ind) {
-          case 0:
-            buttonString = 'up';
-            break;
-          case 1:
-            buttonString = 'down';
-            break;
-          case 2:
-            buttonString = 'left';
-            break;
-          case 3:
-            buttonString = 'right';
-            break;
+          case 0: buttonString = 'up'; break;
+          case 1: buttonString = 'down'; break;
+          case 2: buttonString = 'left'; break;
+          case 3: buttonString = 'right'; break;
         }
         if (pressed) {
           // If pressed, switches to the pressed version of the button's image
@@ -259,6 +247,9 @@ export class InputConverterComponent implements OnInit {
      */
     let btnIconDivs = document.getElementsByClassName("editor-input-icon");
     let btns = new Array<GamepadButton>();
+    /*
+    BADness Fiksx p[ezle-
+    */
     for (let i of icc.testController.getArcadeLayoutButtonNumbers()) { btns.push(getPad().buttons[i]); }
     btns.forEach((b, ind) => {
       let pitch = getTestToneForButton(ind);
@@ -304,7 +295,7 @@ export class InputConverterComponent implements OnInit {
         var pct = Math.round(b.value * 100) + "%";
         btn.style.backgroundSize = pct + " " + pct;
         let imageString = 'a';
-        let buttonString = 'a';
+        let buttonString;
         if (pressed) {
           // If pressed, switches to the pressed version of the button's image
           buttonString = nameButton(ind);
@@ -336,9 +327,13 @@ export class InputConverterComponent implements OnInit {
   playStartJingle() {
     let mtop = InputConverterComponent.inpConvComp.midiOutPort;
     mtop
-      .note(0, 'C5', 127, 100).wait(100)
-      .note(0, 'D5', 127, 100).wait(100)
-      .note(0, 'G5', 127, 100);
+      .note(0, 'C5', 127, 100).wait(66)
+      .note(0, 'C2', 127, 100).wait(100)
+      .note(0, 'C#5', 127, 100).wait(33)
+      .note(0, 'D6', 127, 100).wait(45)
+      .note(0, 'F7', 127, 100).wait(50)
+      .note(0, 'G#7', 127, 100).wait(83)
+      .note(0, 'C#8', 127, 100);
   }
   /**
    * Controller Connected Jingle
@@ -346,9 +341,13 @@ export class InputConverterComponent implements OnInit {
   playControllerConnectedJingle() {
     let mtop = InputConverterComponent.inpConvComp.midiOutPort;
     mtop
-      .note(0, 'C3', 127, 100).wait(100)
-      .note(0, 'D3', 127, 100).wait(100)
-      .note(0, 'G3', 127, 100);
+      .note(0, 'A4', 127, 100).wait(33)
+      .note(0, 'C#5', 127, 100).wait(33)
+      .note(0, 'F5', 127, 100).wait(33)
+      .note(0, 'G6', 127, 100).wait(66)
+      .note(0, 'A6', 127, 100).wait(33)
+      .note(0, 'C6', 127, 100).wait(166)
+      .note(0, 'F6', 127, 100);
   }
 }
 /**
@@ -394,18 +393,10 @@ function getDirectionPitchFromDPad(ind): number {
  */
 function getDirectionPitchFromAxis(ind, val): number {
   switch (ind) {
-    case 0:
-      if (val > 0) { return 39; }
-      else { return 40; }
-    case 1:
-      if (val > 0) { return 37; }
-      else { return 38; }
-    case 2:
-      if (val > 0) { return 35; }
-      else { return 36; }
-    case 3:
-      if (val > 0) { return 33; }
-      else { return 34; }
+    case 0: if (val > 0) { return 39; } else { return 40; }
+    case 1: if (val > 0) { return 37; } else { return 38; }
+    case 2: if (val > 0) { return 35; } else { return 36; }
+    case 3: if (val > 0) { return 33; } else { return 34; }
   }
 }
 /**
@@ -457,17 +448,11 @@ function onMIDIFailure(data) { }
  */
 export function nameButton(i) {
   switch (InputDisplayComponent.inpDispCmp.butNotTy) {
-    case ButtonNotationType.StreetFighter:
-      return (xbBtns[i] !== undefined ? xbBtns[i] : i);
-    // return (sfBtns[i] != undefined ? sfBtns[i] : i);
-    case ButtonNotationType.GuiltyGear:
-      return (ggBtns[i] !== undefined ? ggBtns[i] : i);
-    case ButtonNotationType.SoulCalibur:
-      return (scBtns[i] !== undefined ? scBtns[i] : i);
-    case ButtonNotationType.Tekken:
-      return (tknBtns[i] !== undefined ? tknBtns[i] : i);
-    case ButtonNotationType.SNK:
-      return (snkBtns[i] !== undefined ? snkBtns[i] : i);
+    case ButtonNotationType.StreetFighter: return (xbBtns[i] !== undefined ? xbBtns[i] : i);
+    case ButtonNotationType.GuiltyGear: return (ggBtns[i] !== undefined ? ggBtns[i] : i);
+    case ButtonNotationType.SoulCalibur: return (scBtns[i] !== undefined ? scBtns[i] : i);
+    case ButtonNotationType.Tekken: return (tknBtns[i] !== undefined ? tknBtns[i] : i);
+    case ButtonNotationType.SNK: return (snkBtns[i] !== undefined ? snkBtns[i] : i);
   }
   return i;
 }
