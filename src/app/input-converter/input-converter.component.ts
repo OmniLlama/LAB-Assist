@@ -178,7 +178,7 @@ export class InputConverterComponent implements OnInit {
      * Update Controller Digital Pad
      */
     let dPadBtns: GamepadButton[] = new Array<GamepadButton>();
-    let dpadIconDivs = document.getElementsByClassName("editor-input-icon-direction");
+    let dpadIconDivs = document.getElementsByClassName('editor-input-icon-direction');
     for (let i of icc.testController.getDPadButtonNumbers()) { dPadBtns.push(getPad().buttons[i]); }
     dPadBtns.forEach((b, ind) => {
       let pitch = getDirectionPitchFromDPad(ind);
@@ -194,13 +194,13 @@ export class InputConverterComponent implements OnInit {
         }
         //if RELEASED this frame
       } else if (!b.pressed && icc.dpadHeld[ind]) {
-        //if RECORDING
+        icc.dpadHeld[ind] = false;
+        icc.midiOutPort.noteOff(0, pitch, 127);
+          //if RECORDING
         if (icc.trackingNotes) {
           icc.dpadInpEnds[ind] = iec.info.ticksAtHead;
-          icc.midiOutPort.noteOff(0, pitch, 127);
           icc.trackedNotes.push([icc.dpadInpStarts[ind], icc.dpadInpEnds[ind], pitch]);
         }
-        icc.dpadHeld[ind] = false;
       }
       // EXPERIMENTALISISISMZ
       if (icc.trackingNotes) {
@@ -265,14 +265,14 @@ export class InputConverterComponent implements OnInit {
         }
         //if RELEASED this frame
       } else if (!b.pressed && icc.btnsHeld[ind]) {
-        //if RECORDING
+        icc.btnsHeld[ind] = false;
+        icc.midiOutPort.noteOff(0, pitch, 127);
+          //if RECORDING
         if (icc.trackingNotes) {
           icc.btnInpStarts[ind] = iec.info.ticksAtHead;
           icc.btnInpEnds[ind] = iec.info.ticksAtHead;
-          icc.midiOutPort.noteOff(0, pitch, 127);
           icc.trackedNotes.push([icc.btnInpStarts[ind], icc.btnInpEnds[ind], getButtonPitch(ind)]);
         }
-        icc.btnsHeld[ind] = false;
       }
       // EXPERIMENTALISISISMZ
       if (icc.trackingNotes) {
