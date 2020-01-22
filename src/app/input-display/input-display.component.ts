@@ -1,36 +1,40 @@
 import { Component, OnInit } from '@angular/core';
 import { MovementNotationType, ButtonNotationType, GamepadTypeString, GamepadType } from 'src/Enums';
 
-export var controllers: Array<Gamepad>;
-export var gamepadObjects: Array<GamepadObject>;
+export let pads: Array<Gamepad>;
+export let gamepadObjects: Array<GamepadObject>;
+const dirIconWidth = 'width=60px';
+const dirIconHeight = 'height=60px';
+const btnIconWidth = 'width=72px';
+const btnIconHeight = 'height=72px';
 @Component({
   selector: 'app-input-display',
   templateUrl: './input-display.component.html',
   styleUrls: ['./input-display.component.sass'],
 })
 export class InputDisplayComponent implements OnInit {
-  static
-    rAF = window.requestAnimationFrame;
+  static rAF = window.requestAnimationFrame;
+  static inpDispCmp: InputDisplayComponent;
   // controllers: Array<Gamepad>;
   gamepadObjects: Array<GamepadObject>;
-  static inpDispCmp: InputDisplayComponent;
   mvNotTy: MovementNotationType;
   mvNotTypes = MovementNotationType;
   butNotTy: ButtonNotationType = ButtonNotationType.StreetFighter;
   butNotTypes = ButtonNotationType;
   mntKeys = Object.keys(MovementNotationType);
   bntKeys = Object.keys(ButtonNotationType);
+  btnDivs: Array<HTMLDivElement>;
   haveWebkitEvents = 'WebKitGamepadEvent' in window;
   haveEvents = 'GamepadEvent' in window;
-  btnDivs: Array<HTMLDivElement>;
   diagDeadzone = .4;
+  orthoDeadzone = .75;
 
   padHTMLShells = [];
   constructor() { }
 
   ngOnInit(): void {
     InputDisplayComponent.inpDispCmp = this;
-    controllers = new Array<Gamepad>();
+    pads = new Array<Gamepad>();
     gamepadObjects = new Array<GamepadObject>();
     /**
      * EVENTS
@@ -45,7 +49,7 @@ export class InputDisplayComponent implements OnInit {
       setInterval(() => this.scangamepads(), 500);
     }
   }
-  getControllers() { return controllers; }
+  getControllers() { return pads; }
   /**
    * Names the axis based on the axis id number
    * @param {*} i - the axis id number
@@ -70,7 +74,7 @@ export class InputDisplayComponent implements OnInit {
   createAxisSpanElement(ind): HTMLSpanElement {
     let axisName = this.nameAxis(ind);
     console.log(axisName)
-    var elmt = document.createElement('span');
+    let elmt = document.createElement('span');
     elmt.className = 'axis';
 
     //e.id = "a" + i;
@@ -88,37 +92,25 @@ export class InputDisplayComponent implements OnInit {
    * @param gamepad gamepad to be added
    */
   addHtmlGamepad(gamepad: Gamepad): void {
-    controllers[gamepad.index] = gamepad;
+    pads[gamepad.index] = gamepad;
     gamepadObjects[gamepad.index] = new GamepadObject(gamepad);
     this.btnDivs = new Array<HTMLDivElement>();
-    var div_info = document.createElement('div');
-    var div_cntrllr = document.createElement('div');
+    let div_info = document.createElement('div');
+    let div_cntrllr = document.createElement('div');
     div_cntrllr.className = 'controller';
     div_cntrllr.setAttribute('id', 'controller' + gamepad.index);
 
     //Create controller id title
-    var title = document.createElement('h6');
+    let title = document.createElement('h6');
     title.appendChild(document.createTextNode('gamepad: ' + gamepad.id));
     div_info.appendChild(title);
     div_cntrllr.appendChild(div_info);
-    var div_arrows = document.createElement('div');
+    let div_arrows = document.createElement('div');
     div_arrows.className = 'grid3x3';
     for (let i = 0; i < 9; i++) {
       let arrow = document.createElement('div');
       arrow.className = 'directionalArrows';
-      let arrowInner = `<img src="assets/images/${() => {
-        switch (i) {
-          case 0: return `left`;
-          case 1: return `up`;
-          case 2: return `up`;
-          case 3: return `left`;
-          case 4: return `ls`;
-          case 5: return `right`;
-          case 6: return `down`;
-          case 7: return `down`;
-          case 8: return `right`;
-        }
-      }}.png" width=64px height=64px>`;
+      let arrowInner = `<img src="assets/images/${this.arrayIndexToDirection(i)}.png" ${dirIconWidth} ${dirIconHeight}>`;
 
       arrow.innerHTML = arrowInner;
       div_arrows.appendChild(arrow);
@@ -138,12 +130,12 @@ export class InputDisplayComponent implements OnInit {
     div_cntrllr.appendChild(div_btns);
 
     // Create Axis Meters
-    var div_axes = document.createElement('div'); div_axes.className = 'axes';
+    let div_axes = document.createElement('div'); div_axes.className = 'axes';
     for (let i = 0; i < gamepad.axes.length / 4; i++) { div_axes.appendChild(this.createAxisSpanElement(i)); }
     //Append Meters to div
     div_cntrllr.appendChild(div_axes);
 
-    this.padHTMLShells.push(new gamepadHTMLShell(title, div_axes, div_btns));
+    this.padHTMLShells.push(new GamepadHTMLShell(title, div_axes, div_btns));
     //Hide start message
     document.getElementById('start').style.display = 'none';
     document.getElementById('controllers').appendChild(div_cntrllr);
@@ -155,41 +147,37 @@ export class InputDisplayComponent implements OnInit {
    * @param gamepad
    */
   removegamepad(gamepad): void {
-    var d = document.getElementById('controller' + gamepad.index);
+    let d = document.getElementById('controller' + gamepad.index);
     document.body.removeChild(d);
-    delete controllers[gamepad.index];
+    delete pads[gamepad.index];
   }
   /**
-  * Handles the connecting event of a gamepad
-  * @param e event
-  */
-  connecthandler(e): void {
-    this.addHtmlGamepad(e.gamepad);
-  }
+   * Handles the connecting event of a gamepad
+   * @param e event
+   */
+  connecthandler(e): void { this.addHtmlGamepad(e.gamepad); }
 
   /**
    * Handles the disconnecting event of a gamepad
    * @param e event
    */
-  disconnecthandler(e) {
-    this.removegamepad(e.gamepad);
-  }
+  disconnecthandler(e) { this.removegamepad(e.gamepad); }
 
   /**
    * The scangamepads function scans for any gamepads that are connected.
    * If a gamepad is detected and is currently not in the controller array, it will be added to the array.
    */
   scangamepads() {
-    var gamepads;
+    let gamepads;
     if (navigator.getGamepads) {
       gamepads = navigator.getGamepads();
     }
     for (var i = 0; i < gamepads.length; i++) {
       if (gamepads[i]) {
-        if (!(gamepads[i].index in controllers)) {
+        if (!(gamepads[i].index in pads)) {
           this.addHtmlGamepad(gamepads[i]);
         } else {
-          controllers[gamepads[i].index] = gamepads[i];
+          pads[gamepads[i].index] = gamepads[i];
         }
       }
     }
@@ -199,15 +187,15 @@ export class InputDisplayComponent implements OnInit {
     /**
      * Controller Status Loop
      */
-    controllers.forEach((j, ind) => {
-      var controller = j;
+    pads.forEach((j, ind) => {
+      var pad = j;
       var d = document.getElementById('controller' + j.index);
       /**
        * Button Status Loop */
       for (let i of gamepadObjects[ind].getArcadeLayoutButtonNumbers()) {
         let b = this.btnDivs[i];
         if (b == undefined) { break; }
-        let val = controller.buttons[i];
+        let val = pad.buttons[i];
         let pressed = val.value > .8;
         if (typeof (val) == 'object') {
           pressed = val.pressed;
@@ -219,22 +207,22 @@ export class InputDisplayComponent implements OnInit {
         if (pressed) {
           // If pressed, switches to the pressed version of the button's image
           buttonString = nameButton(i);
-          imageString = `<img src="assets/images/pressed_${buttonString}.png" width=64px height=o4px>`;
+          imageString = `<img src="assets/images/pressed_${buttonString}.png">`;
+          // imageString = `<img src="assets/images/pressed_${buttonString}.png" ${btnIconWidth} ${btnIconHeight}>`;
           b.innerHTML = imageString;
         } else {
           // If released/not pressed, switches to the regular version of the button's image
           buttonString = nameButton(i);
-          imageString = `<img src="assets/images/${buttonString}.png" width=64px height=64px>`;
+          imageString = `<img src="assets/images/${buttonString}.png">`;
+          // imageString = `<img src="assets/images/${buttonString}.png" ${btnIconWidth} ${btnIconHeight}>`;
           b.innerHTML = imageString;
         }
       }
       /**
        * Get Axis Status */
       var axes = d.getElementsByClassName('axis');
-      var leftAxis = axes[0]
-      // var rightAxis = axes[1]
-      var arrowsArray = d.getElementsByClassName('directionalArrows')
-      getJoystickDirections(controller, leftAxis, arrowsArray)
+      var arrowsArray = d.getElementsByClassName('directionalArrows');
+      getJoystickDirections(pad.axes[0], pad.axes[1], arrowsArray);
     });
 
     InputDisplayComponent.rAF((cb) => this.updateStatus());
@@ -251,16 +239,26 @@ export class InputDisplayComponent implements OnInit {
     var e = document.createElement('div');
     e.className = 'gamepad-buttons';
     if (button != null) {
-      let imageString = `<img src="assets/images/${button}.png" width=64px height=64px>`;
+      // let imageString = `<img src="assets/images/${button}.png" ${btnIconWidth} ${btnIconHeight}>`;
+      let imageString = `<img src="assets/images/${button}.png">`;
       e.innerHTML = imageString;
     }
     return e;
   }
+  arrayIndexToDirection(i) {
+    switch (i) {
+      case 0: return `up_left`;
+      case 1: return `up`;
+      case 2: return `up_right`;
+      case 3: return `left`;
+      case 4: return `ls`;
+      case 5: return `right`;
+      case 6: return `down_left`;
+      case 7: return `down`;
+      case 8: return `down_right`;
+    }
+  }
 }
-
-
-
-
 
 /**
  * The getJoystickDirections function looks at the axes of the controller.
@@ -268,123 +266,118 @@ export class InputDisplayComponent implements OnInit {
  * You can tell what direction the joystick is going.
  * Based on the direction of the joystick, the correct image for that direction is chosen.
  * If the joystick is currently not going in any direction, all the icons will be reset to their regular image.
- * @param controller
- * @param leftAxis
+ * @param pad
+ * @param horiAxis
  * @param arrowsArray
  */
-function getJoystickDirections(controller, leftAxis, arrowsArray) {
+function getJoystickDirections(horiAxis, vertAxis, arrowsArray) {
   let idc = InputDisplayComponent.inpDispCmp;
+  let preString = '<img src="assets/images/';
+  let postString = `.png" ${dirIconWidth} ${dirIconHeight}>`;
   // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
-  if (controller.axes[0] < -idc.diagDeadzone && controller.axes[1] < -idc.diagDeadzone) {
-    arrowsArray[0].innerHTML = `<img src="assets/images/pressed_up_left.png" width=64px height=64px>`;
+  if (horiAxis < -idc.diagDeadzone && vertAxis < -idc.diagDeadzone) {
+    arrowsArray[0].innerHTML = `${preString}pressed_up_left${postString}`;
     let index = 0;
     resetArrows(arrowsArray, index);
-  } else if (controller.axes[0] < -idc.diagDeadzone && controller.axes[1] > idc.diagDeadzone) {
-    arrowsArray[6].innerHTML = `<img src="assets/images/pressed_down_left.png" width=64px height=64px>`;
+  } else if (horiAxis < -idc.diagDeadzone && vertAxis > idc.diagDeadzone) {
+    arrowsArray[6].innerHTML = `${preString}pressed_down_left${postString}`;
     let index = 6;
     resetArrows(arrowsArray, index);
-  } else if (controller.axes[0] > idc.diagDeadzone && controller.axes[1] < -idc.diagDeadzone) {
-    arrowsArray[2].innerHTML = `<img src="assets/images/pressed_up_right.png" width=64px height=64px>`;
+  } else if (horiAxis > idc.diagDeadzone && vertAxis < -idc.diagDeadzone) {
+    arrowsArray[2].innerHTML = `${preString}pressed_up_right${postString}`;
     let index = 2;
     resetArrows(arrowsArray, index);
-  } else if (controller.axes[0] > idc.diagDeadzone && controller.axes[1] > idc.diagDeadzone) {
-    arrowsArray[8].innerHTML = `<img src="assets/images/pressed_down_right.png" width=64px height=64px>`;
+  } else if (horiAxis > idc.diagDeadzone && vertAxis > idc.diagDeadzone) {
+    arrowsArray[8].innerHTML = `${preString}pressed_down_right${postString}`;
     let index = 8;
     resetArrows(arrowsArray, index);
   }
 
   // Now handle all the regular directions, if the constraints for diagonal directions are not met
-  else if (controller.axes[0] < -0.75 && (controller.axes[1] < Math.abs(idc.diagDeadzone))) {
-    arrowsArray[3].innerHTML = `<img src="assets/images/pressed_left.png" width=64px height=64px>`;
+  else if (horiAxis < -idc.orthoDeadzone && (vertAxis < Math.abs(idc.diagDeadzone))) {
+    arrowsArray[3].innerHTML = `${preString}pressed_left${postString}`;
     let index = 3;
     resetArrows(arrowsArray, index);
-  } else if (controller.axes[1] < -0.75 && (controller.axes[0] < Math.abs(idc.diagDeadzone))) {
-    arrowsArray[1].innerHTML = `<img src="assets/images/pressed_up.png" width=64px height=64px>`;
+  } else if (vertAxis < -idc.orthoDeadzone && (horiAxis < Math.abs(idc.diagDeadzone))) {
+    arrowsArray[1].innerHTML = `${preString}pressed_up${postString}`;
     let index = 1;
     resetArrows(arrowsArray, index);
-  } else if (controller.axes[0] > 0.75 && (controller.axes[1] < Math.abs(idc.diagDeadzone))) {
-    arrowsArray[5].innerHTML = `<img src="assets/images/pressed_right.png" width=64px height=64px>`;
+  } else if (horiAxis > idc.orthoDeadzone && (vertAxis < Math.abs(idc.diagDeadzone))) {
+    arrowsArray[5].innerHTML = `${preString}pressed_right${postString}`;
     let index = 5;
     resetArrows(arrowsArray, index);
-  } else if (controller.axes[1] > 0.75 && (controller.axes[0] < Math.abs(idc.diagDeadzone))) {
-    arrowsArray[7].innerHTML = `<img src="assets/images/pressed_down.png" width=64px height=64px>`;
+  } else if (vertAxis > idc.orthoDeadzone && (horiAxis < Math.abs(idc.diagDeadzone))) {
+    arrowsArray[7].innerHTML = `${preString}pressed_down${postString}`;
     let index = 7;
     resetArrows(arrowsArray, index);
   } else {
-    arrowsArray[0].innerHTML = `<img src="assets/images/up_left.png" width=64px height=64px>`;
-    arrowsArray[1].innerHTML = `<img src="assets/images/up.png" width=64px height=64px>`;
-    arrowsArray[2].innerHTML = `<img src="assets/images/up_right.png" width=64px height=64px>`;
-    arrowsArray[3].innerHTML = `<img src="assets/images/left.png" width=64px height=64px>`;
-    arrowsArray[4].innerHTML = `<img src="assets/images/ls.png" width=64px height=64px>`;
-    arrowsArray[5].innerHTML = `<img src="assets/images/right.png" width=64px height=64px>`;
-    arrowsArray[6].innerHTML = `<img src="assets/images/down_left.png" width=64px height=64px>`;
-    arrowsArray[7].innerHTML = `<img src="assets/images/down.png" width=64px height=64px>`;
-    arrowsArray[8].innerHTML = `<img src="assets/images/down_right.png" width=64px height=64px>`;
+    for (let i = 0; i < 9; i++) {
+      let arrow = document.createElement('div');
+      arrow.className = 'directionalArrows';
+      arrowsArray[i].innerHTML = `${preString}${idc.arrayIndexToDirection(i)}${postString}`;
+    }
   }
-
-
 
   // Same as above, but now for the Right Stick
   // if ( controller.axes[2] < -this.diagDeadzone && controller.axes[3] < -this.diagDeadzone ) {
-  //   rightAxis.innerHTML = `<img src="assets/images/pressed_up_left.png" width=64px height=64px>`
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_up_left.png" ${dirIconWidth} ${dirIconHeight}>`
   // } else if ( controller.axes[2] < -this.diagDeadzone && controller.axes[3] > this.diagDeadzone ) {
-  //   rightAxis.innerHTML = `<img src="assets/images/pressed_down_left.png" width=64px height=64px>`
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_down_left.png" ${dirIconWidth} ${dirIconHeight}>`
   // } else if ( controller.axes[2] > this.diagDeadzone && controller.axes[3] < -this.diagDeadzone ) {
-  //   rightAxis.innerHTML = `<img src="assets/images/pressed_up_right.png" width=64px height=64px>`
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_up_right.png" ${dirIconWidth} ${dirIconHeight}>`
   // } else if ( controller.axes[2] > this.diagDeadzone && controller.axes[3] > this.diagDeadzone ) {
-  //   rightAxis.innerHTML = `<img src="assets/images/pressed_down_right.png" width=64px height=64px>`
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_down_right.png" ${dirIconWidth} ${dirIconHeight}>`
   // }
 
   //   else if ( controller.axes[2] < -0.75 && ( controller.axes[3] < this.diagDeadzone && controller.axes[3] > -.4 )) {
-  //   rightAxis.innerHTML = `<img src="assets/images/pressed_left.png" width=64px height=64px>`
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_left.png" ${dirIconWidth} ${dirIconHeight}>`
   // } else if (controller.axes[3] < -0.75 && ( controller.axes[2] < this.diagDeadzone && controller.axes[2] > -.4 ))  {
-  //   rightAxis.innerHTML = `<img src="assets/images/pressed_up.png" width=64px height=64px>`
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_up.png" ${dirIconWidth} ${dirIconHeight}>`
   // }  else if (controller.axes[2] > 0.75 && ( controller.axes[3] < this.diagDeadzone && controller.axes[3] > -.4 ))  {
-  //   rightAxis.innerHTML = `<img src="assets/images/pressed_right.png" width=64px height=64px>`
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_right.png" ${dirIconWidth} ${dirIconHeight}>`
   // } else if (controller.axes[3] > 0.75 && ( controller.axes[2] < this.diagDeadzone && controller.axes[2] > -.4 ))  {
-  //   rightAxis.innerHTML = `<img src="assets/images/pressed_down.png" width=64px height=64px>`
+  //   rightAxis.innerHTML = `<img src="assets/images/pressed_down.png" ${dirIconWidth} ${dirIconHeight}>`
   // } else {
-  //   rightAxis.innerHTML = `<img src="assets/images/rs.png" width=64px height=64px>`
+  //   rightAxis.innerHTML = `<img src="assets/images/rs.png" ${dirIconWidth} ${dirIconHeight}>`
   // }
-  function getDirectionsFromAxes(ns: number, we: number)
-  {
-    if (ns < -idc.diagDeadzone && we < -idc.diagDeadzone) {
-      arrowsArray[0].innerHTML = `<img src="assets/images/pressed_up_left.png" width=64px height=64px>`;
-      let index = 0;
-      resetArrows(arrowsArray, index);
-    } else if (ns < -idc.diagDeadzone && we > idc.diagDeadzone) {
-      arrowsArray[6].innerHTML = `<img src="assets/images/pressed_down_left.png" width=64px height=64px>`;
-      let index = 6;
-      resetArrows(arrowsArray, index);
-    } else if (ns > idc.diagDeadzone && we < -idc.diagDeadzone) {
-      arrowsArray[2].innerHTML = `<img src="assets/images/pressed_up_right.png" width=64px height=64px>`;
-      let index = 2;
-      resetArrows(arrowsArray, index);
-    } else if (ns > idc.diagDeadzone && we > idc.diagDeadzone) {
-      arrowsArray[8].innerHTML = `<img src="assets/images/pressed_down_right.png" width=64px height=64px>`;
-      let index = 8;
-      resetArrows(arrowsArray, index);
-    }
+  // function getDirectionsFromAxes(ns: number, we: number) {
+  //   if (ns < -idc.diagDeadzone && we < -idc.diagDeadzone) {
+  //     arrowsArray[0].innerHTML = `<img src="assets/images/pressed_up_left.png" width=64px height=64px>`;
+  //     let index = 0;
+  //     resetArrows(arrowsArray, index);
+  //   } else if (ns < -idc.diagDeadzone && we > idc.diagDeadzone) {
+  //     arrowsArray[6].innerHTML = `<img src="assets/images/pressed_down_left.png" width=64px height=64px>`;
+  //     let index = 6;
+  //     resetArrows(arrowsArray, index);
+  //   } else if (ns > idc.diagDeadzone && we < -idc.diagDeadzone) {
+  //     arrowsArray[2].innerHTML = `<img src="assets/images/pressed_up_right.png" width=64px height=64px>`;
+  //     let index = 2;
+  //     resetArrows(arrowsArray, index);
+  //   } else if (ns > idc.diagDeadzone && we > idc.diagDeadzone) {
+  //     arrowsArray[8].innerHTML = `<img src="assets/images/pressed_down_right.png" width=64px height=64px>`;
+  //     let index = 8;
+  //     resetArrows(arrowsArray, index);
+  //   }
 
-    // Now handle all the regular directions, if the constraints for diagonal directions are not met
-    else if (ns < -0.75 && (we < Math.abs(idc.diagDeadzone))) {
-      arrowsArray[3].innerHTML = `<img src="assets/images/pressed_left.png" width=64px height=64px>`;
-      let index = 3;
-      resetArrows(arrowsArray, index);
-    } else if (we < -0.75 && (ns < Math.abs(idc.diagDeadzone))) {
-      arrowsArray[1].innerHTML = `<img src="assets/images/pressed_up.png" width=64px height=64px>`;
-      let index = 1;
-      resetArrows(arrowsArray, index);
-    } else if (ns > 0.75 && (we < Math.abs(idc.diagDeadzone))) {
-      arrowsArray[5].innerHTML = `<img src="assets/images/pressed_right.png" width=64px height=64px>`;
-      let index = 5;
-      resetArrows(arrowsArray, index);
-    } else if (controller.axes[1] > 0.75 && (ns < Math.abs(idc.diagDeadzone))) {
-      arrowsArray[7].innerHTML = `<img src="assets/images/pressed_down.png" width=64px height=64px>`;
-      let index = 7;
-      resetArrows(arrowsArray, index);
-    }
-  }
+  //   // Now handle all the regular directions, if the constraints for diagonal directions are not met
+  //   else if (ns < -0.75 && (we < Math.abs(idc.diagDeadzone))) {
+  //     arrowsArray[3].innerHTML = `<img src="assets/images/pressed_left.png" width=64px height=64px>`;
+  //     let index = 3;
+  //     resetArrows(arrowsArray, index);
+  //   } else if (we < -0.75 && (ns < Math.abs(idc.diagDeadzone))) {
+  //     arrowsArray[1].innerHTML = `<img src="assets/images/pressed_up.png" width=64px height=64px>`;
+  //     let index = 1;
+  //     resetArrows(arrowsArray, index);
+  //   } else if (ns > 0.75 && (we < Math.abs(idc.diagDeadzone))) {
+  //     arrowsArray[5].innerHTML = `<img src="assets/images/pressed_right.png" width=64px height=64px>`;
+  //     let index = 5;
+  //     resetArrows(arrowsArray, index);
+  //   } else if (pad.axes[1] > 0.75 && (ns < Math.abs(idc.diagDeadzone))) {
+  //     arrowsArray[7].innerHTML = `<img src="assets/images/pressed_down.png" width=64px height=64px>`;
+  //     let index = 7;
+  //     resetArrows(arrowsArray, index);
+  //   }
+  // }
 }
 
 /**
@@ -430,9 +423,9 @@ function returnXboxArrowImgElmt(i: number): string {
     case 6: s = `down_left`; break;
     case 7: s = `down`; break;
     case 8: s = `down_right`; break;
+    default: s = `up`; break;
   }
-  return `<img src="assets/images/${s}.png" width=64px height=64px>`;
-
+  return `<img src="assets/images/${s}.png" ${dirIconWidth} ${dirIconHeight}>`;
 }
 
 
@@ -455,7 +448,7 @@ export function nameButton(i: number): any {
 
 /**
  * not used much, but still necessary collection of elements for each controller */
-class gamepadHTMLShell {
+class GamepadHTMLShell {
   padTitle: HTMLHeadElement;
   padAxes: HTMLDivElement[];
   padButtons: HTMLDivElement[];

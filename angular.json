@@ -28,11 +28,11 @@
               "src/heartbeat/assets"
             ],
             "styles": [
-              "src/styles.sass"
+              "src/styles.sass",
+              "src/app/input-display/input-display.component.sass"
             ],
             "scripts": [
               "src/assets/js/input-helper.js",
-
               "src/assets/js/hb-editor-main.js",
               "src/app/input-editor/hb-editor-main.ts",
               "node_modules/heartbeat-sequencer/build/heartbeat.js"

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MIDIEvent, Note, MIDINote } from 'heartbeat-sequencer';
 import { InputEditorComponent, updateElementBBox, getEdgeDivs, createEdgeBBoxes } from '../input-editor/input-editor.component';
-import { InputDisplayComponent, GamepadObject, controllers, xbBtns, ggBtns, scBtns, tknBtns, snkBtns } from '../input-display/input-display.component';
+import { InputDisplayComponent, GamepadObject, pads, xbBtns, ggBtns, scBtns, tknBtns, snkBtns } from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
 import { GamepadType, ButtonNotationType } from 'src/Enums';
 declare let sequencer: any;
@@ -42,6 +42,7 @@ export class InputConverterComponent implements OnInit {
   btnHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
   btnInpStarts: Array<number>;
   btnInpEnds: Array<number>;
+  deadZone = .5;
   constructor() { }
 
   ngOnInit() {
@@ -71,8 +72,8 @@ export class InputConverterComponent implements OnInit {
   getController() {
     let idc = InputDisplayComponent.inpDispCmp;
     let icc = InputConverterComponent.inpConvComp;
-    if (controllers !== undefined && controllers.length != 0 && icc.testController == null) {
-      let ctlr = (controllers[0] !== undefined ? controllers[0] : controllers[1]);
+    if (pads !== undefined && pads.length != 0 && icc.testController == null) {
+      let ctlr = (pads[0] !== undefined ? pads[0] : pads[1]);
       icc.testController = new GamepadObject(ctlr);
       let thing = GamepadType[icc.testController.type];
       console.log(thing);
@@ -101,7 +102,6 @@ export class InputConverterComponent implements OnInit {
       rAF((cb) => icc.getController());
     }
   }
-  deadZone = .5;
   /**
    * Updates all controller values, First, the Axes, then, the D-Pad buttons. finally, the Eight main buttons
    */
@@ -217,11 +217,11 @@ export class InputConverterComponent implements OnInit {
       var btn = dpadIconDivs[ind] as HTMLDivElement;
       if (btn != undefined) {
         var pressed = b.value > .8;
-        if (typeof (b) == "object") {
+        if (typeof (b) === 'object') {
           pressed = b.pressed;
         }
-        var pct = Math.round(b.value * 100) + "%";
-        btn.style.backgroundSize = pct + " " + pct;
+        var pct = Math.round(b.value * 100) + '%';
+        btn.style.backgroundSize = pct + ' ' + pct;
         let imageString = 'a';
         let buttonString;
         switch (ind) {
@@ -286,14 +286,14 @@ export class InputConverterComponent implements OnInit {
           icc.btnHeldNotes[ind] = null;
         }
       }
-      var btn = btnIconDivs[ind] as HTMLDivElement;
+      let btn = btnIconDivs[ind] as HTMLDivElement;
       if (btn != undefined) {
-        var pressed = b.value > .8;
-        if (typeof (b) == "object") {
+        let pressed = b.value > .8;
+        if (typeof (b) === 'object') {
           pressed = b.pressed;
         }
-        var pct = Math.round(b.value * 100) + "%";
-        btn.style.backgroundSize = pct + " " + pct;
+        let pct = Math.round(b.value * 100) + '%';
+        btn.style.backgroundSize = pct + ' ' + pct;
         let imageString = 'a';
         let buttonString;
         if (pressed) {
@@ -327,13 +327,14 @@ export class InputConverterComponent implements OnInit {
   playStartJingle() {
     let mtop = InputConverterComponent.inpConvComp.midiOutPort;
     mtop
+      .wait(200)
       .note(0, 'C5', 127, 100).wait(66)
-      .note(0, 'C2', 127, 100).wait(100)
-      .note(0, 'C#5', 127, 100).wait(33)
-      .note(0, 'D6', 127, 100).wait(45)
-      .note(0, 'F7', 127, 100).wait(50)
-      .note(0, 'G#7', 127, 100).wait(83)
-      .note(0, 'C#8', 127, 100);
+      .note(0, 'C4', 127, 100).wait(99)
+      .note(0, 'C#5', 127, 100).wait(33);
+    // .note(0, 'D6', 127, 100).wait(45)
+    // .note(0, 'F7', 127, 100).wait(50)
+    // .note(0, 'G#7', 127, 100).wait(83)
+    // .note(0, 'C#8', 127, 100);
   }
   /**
    * Controller Connected Jingle
@@ -354,7 +355,7 @@ export class InputConverterComponent implements OnInit {
  * returns first likely instance of a controller to act as main interface
  */
 export function getPad() {
-  return controllers[0] !== undefined ? controllers[0] : controllers[1];
+  return pads[0] !== undefined ? pads[0] : pads[1];
 
 }
 /**
