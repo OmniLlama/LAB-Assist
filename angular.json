@@ -28,8 +28,7 @@
               "src/heartbeat/assets"
             ],
             "styles": [
-              "src/styles.sass",
-              "src/app/input-display/input-display.component.sass"
+              "src/styles.sass"
             ],
             "scripts": [
               "src/assets/js/input-helper.js",
