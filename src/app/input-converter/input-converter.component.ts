@@ -4,6 +4,10 @@ import { InputEditorComponent, updateElementBBox, getEdgeDivs, createEdgeBBoxes 
 import { InputDisplayComponent, GamepadObject, pads, xbBtns, ggBtns, scBtns, tknBtns, snkBtns } from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
 import { GamepadType, ButtonNotationType } from 'src/Enums';
+import jzz = require('jzz');
+import jzzInpKbd = require('jzz-input-kbd');
+import jzzSynOSC = require('jzz-synth-osc');
+
 declare let sequencer: any;
 
 @Component({
@@ -12,8 +16,7 @@ declare let sequencer: any;
   styleUrls: ['./input-converter.component.sass']
 })
 
-export class InputConverterComponent implements OnInit
-{
+export class InputConverterComponent implements OnInit {
   static inpConvComp: InputConverterComponent;
   events: MIDIEvent[];
   div_Editor: HTMLDivElement;
@@ -46,24 +49,23 @@ export class InputConverterComponent implements OnInit
   deadZone = .5;
   constructor() { }
 
-  ngOnInit()
-  {
+  ngOnInit() {
     InputConverterComponent.inpConvComp = this;
     let port = JZZ().openMidiIn(1).or('MIDI-In: Cannot open!');
     this.midi = JZZ.MIDI;
     console.warn(port.name);
   }
-  ngAfterViewInit()
-  {
+  ngAfterViewInit() {
     this.getSetHTMLElements(this);
     this.inpEdCmp = InputEditorComponent.inpEdComp;
     this.inpDispCmp = InputDisplayComponent.inpDispCmp;
+    // let jso = jzzSynOSC(JZZ);
+    jzzInpKbd(JZZ);
     this.midiOutPort =
       JZZ().or('Cannot start MIDI engine!')
         .openMidiOut().or('Cannot open MIDI Out port!')
         .and(function () { console.log('MIDI-Out:', this.name()); });
     this.midiWidget = JZZ.Widget();
-    // window.addEventListener("mousemove", (e) => this.getController(e));
     this.playStartJingle();
     JZZ().refresh();
     rAF((cb) => this.getController());
@@ -72,12 +74,10 @@ export class InputConverterComponent implements OnInit
    * Waits for, then receives the first controller that is added to the display component,
    * Initializes arrays that hold the various inputs and their respective notes
    */
-  getController()
-  {
+  getController() {
     let idc = InputDisplayComponent.inpDispCmp;
     let icc = InputConverterComponent.inpConvComp;
-    if (pads !== undefined && pads.length != 0 && icc.testController == null)
-    {
+    if (pads !== undefined && pads.length != 0 && icc.testController == null) {
       let ctlr = (pads[0] !== undefined ? pads[0] : pads[1]);
       icc.testController = new GamepadObject(ctlr);
       let thing = GamepadType[icc.testController.type];
@@ -99,51 +99,42 @@ export class InputConverterComponent implements OnInit
       icc.btnInpStarts = new Array<number>(getPad().buttons.length);
       icc.btnInpEnds = new Array<number>(getPad().buttons.length);
       icc.btnHeldNotes = new Array<[MIDINote, number]>(getPad().buttons.length);
-      if (getPad() != null && getPad() != undefined)
-      {
+      if (getPad() != null && getPad() != undefined) {
         rAF((cb) => icc.updateController());
       }
     }
-    else
-    {
+    else {
       rAF((cb) => icc.getController());
     }
   }
   /**
    * Updates all controller values, First, the Axes, then, the D-Pad buttons. finally, the Eight main buttons
    */
-  updateController(): void
-  {
+  updateController(): void {
     let icc = InputConverterComponent.inpConvComp;
     let idc = InputDisplayComponent.inpDispCmp;
     let iec = InputEditorComponent.inpEdComp;
-    if (iec.song.playing && !icc.trackingNotes)
-    {
+    if (iec.song.playing && !icc.trackingNotes) {
       icc.trackedNotes = new Array<[number, number, number]>();
       icc.trackingNotes = true;
     }
-    else if (!iec.song.playing && icc.trackingNotes)
-    {
+    else if (!iec.song.playing && icc.trackingNotes) {
       icc.trackedNotes = null;
       iec.song.update();
       icc.trackingNotes = false;
     }
     /**
      * Update Controller Axes */
-    getPad().axes.forEach((a, ind) =>
-    {
+    getPad().axes.forEach((a, ind) => {
       let i1 = (ind * 2);
       let i2 = (ind * 2) + 1;
       let pitchNum;
-      if (a.valueOf() > icc.deadZone)
-      {
+      if (a.valueOf() > icc.deadZone) {
         pitchNum = getDirectionPitchFromAxis(ind, a.valueOf());
-        if (!icc.dirsHeld[i2])
-        {
+        if (!icc.dirsHeld[i2]) {
           icc.dirsHeld[i2] = true;
           icc.dirsHeld[i1] = false;
-          if (icc.trackingNotes)
-          {
+          if (icc.trackingNotes) {
             icc.dirInpStarts[i2] = iec.info.ticksAtHead;
             let thing = iec.createNote(iec,
               icc.dirInpStarts[i2],
@@ -152,15 +143,12 @@ export class InputConverterComponent implements OnInit
             icc.dirHeldNotes[i2] = [thing[0].midiNote, iec.info.ticksAtHead];
           }
         }
-      } else if (a.valueOf() < -icc.deadZone)
-      {
+      } else if (a.valueOf() < -icc.deadZone) {
         pitchNum = getDirectionPitchFromAxis(ind, a.valueOf());
-        if (!icc.dirsHeld[i1])
-        {
+        if (!icc.dirsHeld[i1]) {
           icc.dirsHeld[i1] = true;
           icc.dirsHeld[i2] = false;
-          if (icc.trackingNotes)
-          {
+          if (icc.trackingNotes) {
             icc.dirInpStarts[i1] = iec.info.ticksAtHead;
             let thing = iec.createNote(iec,
               icc.dirInpStarts[i1],
@@ -169,30 +157,24 @@ export class InputConverterComponent implements OnInit
             icc.dirHeldNotes[i1] = [thing[0].midiNote, iec.info.ticksAtHead];
           }
         }
-      } else
-      {
+      } else {
         icc.dirsHeld[i1] = false;
         icc.dirsHeld[i2] = false;
       }
-      if (icc.trackingNotes)
-      {
-        if (icc.dirsHeld[i2])
-        {
+      if (icc.trackingNotes) {
+        if (icc.dirsHeld[i2]) {
           icc.dirHeldNotes[i2][0].part.moveEvent(icc.dirHeldNotes[i2][0].noteOff,
             (iec.info.ticksAtHead - icc.dirHeldNotes[i2][1]));
           icc.dirHeldNotes[i2][1] = iec.info.ticksAtHead;
           iec.song.update();
-        } else if (icc.dirsHeld[i1])
-        {
+        } else if (icc.dirsHeld[i1]) {
           icc.dirHeldNotes[i1][0].part.moveEvent(icc.dirHeldNotes[i1][0].noteOff,
             (iec.info.ticksAtHead - icc.dirHeldNotes[i1][1]));
           icc.dirHeldNotes[i1][1] = iec.info.ticksAtHead;
           iec.song.update();
-        } else if (!icc.dirsHeld[i2] && icc.dirHeldNotes[i2] != null)
-        {
+        } else if (!icc.dirsHeld[i2] && icc.dirHeldNotes[i2] != null) {
           icc.dirHeldNotes[i2] = null;
-        } else if (!icc.dirsHeld[i1] && icc.dirHeldNotes[i1] != null)
-        {
+        } else if (!icc.dirsHeld[i1] && icc.dirHeldNotes[i1] != null) {
           icc.dirHeldNotes[i1] = null;
         }
       }
@@ -203,74 +185,61 @@ export class InputConverterComponent implements OnInit
     let dPadBtns: GamepadButton[] = new Array<GamepadButton>();
     let dpadIconDivs = document.getElementsByClassName('editor-input-icon-direction');
     for (let i of icc.testController.getDPadButtonNumbers()) { dPadBtns.push(getPad().buttons[i]); }
-    dPadBtns.forEach((b, ind) =>
-    {
+    dPadBtns.forEach((b, ind) => {
       let pitch = getDirectionPitchFromDPad(ind);
-      if (b.pressed && !icc.dpadHeld[ind])
-      {
+      if (b.pressed && !icc.dpadHeld[ind]) {
         icc.dpadHeld[ind] = true;
         icc.midiOutPort.noteOn(0, pitch, 127);
         //if RECORDING
-        if (icc.trackingNotes)
-        {
+        if (icc.trackingNotes) {
           icc.dpadInpStarts[ind] = iec.info.ticksAtHead;
           let thing = iec.createNote(iec, icc.dpadInpStarts[ind], icc.dpadInpStarts[ind] + 128, pitch);
           icc.dpadHeldNotes[ind] = [thing[0].midiNote, iec.info.ticksAtHead];
           console.log('hit button while playing');
         }
         //if RELEASED this frame
-      } else if (!b.pressed && icc.dpadHeld[ind])
-      {
+      } else if (!b.pressed && icc.dpadHeld[ind]) {
         icc.dpadHeld[ind] = false;
         icc.midiOutPort.noteOff(0, pitch, 127);
         //if RECORDING
-        if (icc.trackingNotes)
-        {
+        if (icc.trackingNotes) {
           icc.dpadInpEnds[ind] = iec.info.ticksAtHead;
           icc.trackedNotes.push([icc.dpadInpStarts[ind], icc.dpadInpEnds[ind], pitch]);
         }
       }
       // EXPERIMENTALISISISMZ
-      if (icc.trackingNotes)
-      {
-        if (icc.dpadHeld[ind])
-        {
+      if (icc.trackingNotes) {
+        if (icc.dpadHeld[ind]) {
           icc.dpadHeldNotes[ind][0].part.moveEvent(icc.dpadHeldNotes[ind][0].noteOff,
             (iec.info.scrollTicksAtHead - icc.dpadHeldNotes[ind][1]));
           icc.dpadHeldNotes[ind][1] = iec.info.ticksAtHead;
           iec.song.update();
         }
-        else if (!icc.dpadHeld[ind] && icc.dpadHeldNotes[ind] != null)
-        {
+        else if (!icc.dpadHeld[ind] && icc.dpadHeldNotes[ind] != null) {
           icc.dpadHeldNotes[ind] = null;
         }
       }
       var btn = dpadIconDivs[ind] as HTMLDivElement;
-      if (btn != undefined)
-      {
+      if (btn != undefined) {
         var pressed = b.value > .8;
-        if (typeof (b) === 'object')
-        {
+        if (typeof (b) === 'object') {
           pressed = b.pressed;
         }
         var pct = Math.round(b.value * 100) + '%';
         btn.style.backgroundSize = pct + ' ' + pct;
         let imageString = 'a';
         let buttonString;
-        switch (ind)
-        {
+        switch (ind) {
           case 0: buttonString = 'up'; break;
           case 1: buttonString = 'down'; break;
           case 2: buttonString = 'left'; break;
           case 3: buttonString = 'right'; break;
         }
-        if (pressed)
-        {
+        if (pressed) {
           // If pressed, switches to the pressed version of the button's image
           imageString = `<img id="icon-img" src="assets/images/pressed_${buttonString}.png">`;
           btn.innerHTML = imageString;
-        } else
-        {
+        } else {
           // If released/not pressed, switches to the regular version of the button's image
           imageString = `<img id="icon-img" src="assets/images/${buttonString}.png" >`;
           btn.innerHTML = imageString;
@@ -281,86 +250,76 @@ export class InputConverterComponent implements OnInit
     /**
      * Update Controller Buttons
      */
-    let btnIconDivs = document.getElementsByClassName("editor-input-icon");
-    let btns = new Array<GamepadButton>();
+    let btnIconDivs = document.getElementsByClassName('editor-input-icon');
+    let btns = getPad().buttons;
     /*
     BADness Fiksx p[ezle-
     */
-    for (let i of icc.testController.getArcadeLayoutButtonNumbers()) { btns.push(getPad().buttons[i]); }
-    btns.forEach((b, ind) =>
-    {
-      let pitch = getTestToneForButton(ind);
+    // for (let i of icc.testController.getArcadeLayoutButtonNumbers()) { btns.push(getPad().buttons[i]); }
+    let harmMinScaleArr = [0, 2, 3, 5, 7, 8, 11, 12]; //harmonic minor scale
+    let majScaleArr = [0, 2, 4, 5, 7, 9, 11, 12]; //major scale
+    let scale = harmMinScaleArr;
+    let rootNote = 51;
+    btns.forEach((b, ind) => {
+      if(ind >= scale.length) return;
+      let pitch = getPitchStringFromNumber(scale[ind] + rootNote);
+      // let pitch = getPitchStringFromNumber(majScaleArr[ind] + rootNote);
       //if PRESSED this frame
-      if (b.pressed && !icc.btnsHeld[ind])
-      {
+      if (b.pressed && !icc.btnsHeld[ind]) {
         icc.btnsHeld[ind] = true;
-        if (dPadBtns.some((b) => b.pressed))
-        {
-          console.log("should be fuckin bending, idk");
-          // JZZ.MIDI.pitchBend(0, 12);
+        if (dPadBtns.some((b) => b.pressed)) {
+          console.log('should be fuckin bending, idk');
           // icc.midiOutPort.damper(0, true);
-          icc.midiOutPort.noteOn(0, pitch, 127).pitchBend(0, 50);
         }
-        else
-        {
+        else {
           // icc.midiOutPort.damper(0, false);
         }
         icc.midiOutPort.noteOn(0, pitch, 127);
         //if RECORDING
-        if (icc.trackingNotes)
-        {
+        if (icc.trackingNotes) {
           icc.btnInpStarts[ind] = iec.info.ticksAtHead;
           let thing = iec.createNote(iec, icc.btnInpStarts[ind], icc.btnInpStarts[ind] + 128, getButtonPitch(ind));
           icc.btnHeldNotes[ind] = [thing[0].midiNote, iec.info.ticksAtHead];
         }
         //if RELEASED this frame
-      } else if (!b.pressed && icc.btnsHeld[ind])
-      {
+      } else if (!b.pressed && icc.btnsHeld[ind]) {
         icc.btnsHeld[ind] = false;
         icc.midiOutPort.noteOff(0, pitch, 127);
         //if RECORDING
-        if (icc.trackingNotes)
-        {
+        if (icc.trackingNotes) {
           icc.btnInpStarts[ind] = iec.info.ticksAtHead;
           icc.btnInpEnds[ind] = iec.info.ticksAtHead;
           icc.trackedNotes.push([icc.btnInpStarts[ind], icc.btnInpEnds[ind], getButtonPitch(ind)]);
         }
       }
       // EXPERIMENTALISISISMZ
-      if (icc.trackingNotes)
-      {
-        if (icc.btnsHeld[ind])
-        {
+      if (icc.trackingNotes) {
+        if (icc.btnsHeld[ind]) {
           icc.btnHeldNotes[ind][0].part.moveEvent(icc.btnHeldNotes[ind][0].noteOff,
             (iec.info.scrollTicksAtHead - icc.btnHeldNotes[ind][1]));
           icc.btnHeldNotes[ind][1] = iec.info.ticksAtHead;
           iec.song.update();
         }
-        else if (!icc.btnsHeld[ind] && icc.btnHeldNotes[ind] != null)
-        {
+        else if (!icc.btnsHeld[ind] && icc.btnHeldNotes[ind] != null) {
           icc.btnHeldNotes[ind] = null;
         }
       }
       let btn = btnIconDivs[ind] as HTMLDivElement;
-      if (btn != undefined)
-      {
+      if (btn != undefined) {
         let pressed = b.value > .8;
-        if (typeof (b) === 'object')
-        {
+        if (typeof (b) === 'object') {
           pressed = b.pressed;
         }
         let pct = Math.round(b.value * 100) + '%';
         btn.style.backgroundSize = pct + ' ' + pct;
         let imageString = 'a';
         let buttonString;
-        if (pressed)
-        {
+        if (pressed) {
           // If pressed, switches to the pressed version of the button's image
           buttonString = nameButton(ind);
           imageString = `<img id="icon-img" src="assets/images/pressed_${buttonString}.png">`;
           btn.innerHTML = imageString;
-        } else
-        {
+        } else {
           // If released/not pressed, switches to the regular version of the button's image
           buttonString = nameButton(ind);
           imageString = `<img id="icon-img" src="assets/images/${buttonString}.png" >`;
@@ -376,21 +335,20 @@ export class InputConverterComponent implements OnInit
    *  Initialize the html element properties
    * @param icc
    */
-  getSetHTMLElements(icc: InputConverterComponent): void
-  {
+  getSetHTMLElements(icc: InputConverterComponent): void {
     icc.div_Editor = document.getElementById('editor') as HTMLDivElement;
     icc.div_editInputIcons = document.getElementById('editor-input-icons') as HTMLDivElement;
   }
   /**
    * Boot Jingle
    */
-  playStartJingle()
-  {
+  playStartJingle() {
     let mtop = InputConverterComponent.inpConvComp.midiOutPort;
     mtop
       .wait(200)
       .note(0, 'C5', 127, 100).wait(66)
-      .note(0, 'C4', 127, 100).wait(99)
+      .note(0, 'C4', 127, 100).wait(66)
+      .note(0, 'A#4', 127, 100).wait(99)
       .note(0, 'C#5', 127, 100).wait(33);
     // .note(0, 'D6', 127, 100).wait(45)
     // .note(0, 'F7', 127, 100).wait(50)
@@ -400,8 +358,7 @@ export class InputConverterComponent implements OnInit
   /**
    * Controller Connected Jingle
    */
-  playControllerConnectedJingle()
-  {
+  playControllerConnectedJingle() {
     let mtop = InputConverterComponent.inpConvComp.midiOutPort;
     mtop
       .note(0, 'A4', 127, 100).wait(33)
@@ -416,39 +373,13 @@ export class InputConverterComponent implements OnInit
 /**
  * returns first likely instance of a controller to act as main interface
  */
-export function getPad()
-{
-  return pads[0] !== undefined ? pads[0] : pads[1];
-
-}
-/**
- * Sends Midi playback tone depending on which of the eight default buttons was triggered
- * @param ind
- */
-function getTestToneForButton(ind)
-{
-  switch (ind)
-  {
-    case 0: return 'C4';
-    case 1: return 'D4';
-    case 2: return 'E4';
-    case 3: return 'F4';
-    case 4: return 'G4';
-    case 5: return 'A4';
-    case 6: return 'B4';
-    case 7: return 'C5';
-
-    default: return 'C#6';
-  }
-}
+export function getPad() { return pads[0] !== undefined ? pads[0] : pads[1]; }
 /**
  * Sends pitch based on which d-pad input direction was sent
  * @param ind
  */
-function getDirectionPitchFromDPad(ind): number
-{
-  switch (ind)
-  {
+function getDirectionPitchFromDPad(ind): number {
+  switch (ind) {
     case 0: return 32;
     case 1: return 31;
     case 2: return 30;
@@ -459,10 +390,8 @@ function getDirectionPitchFromDPad(ind): number
  * Sends pitch based on which axis direction was sent
  * @param ind
  */
-function getDirectionPitchFromAxis(ind, val): number
-{
-  switch (ind)
-  {
+function getDirectionPitchFromAxis(ind, val): number {
+  switch (ind) {
     case 0: if (val > 0) { return 39; } else { return 40; }
     case 1: if (val > 0) { return 37; } else { return 38; }
     case 2: if (val > 0) { return 35; } else { return 36; }
@@ -473,10 +402,8 @@ function getDirectionPitchFromAxis(ind, val): number
  * Sends pitch based on which button was sent
  * @param ind
  */
-function getButtonPitch(ind)
-{
-  switch (ind)
-  {
+function getButtonPitch(ind) {
+  switch (ind) {
     case 0: return 28; //E1
     case 1: return 27; //D#1
     case 2: return 26; //D1
@@ -493,20 +420,17 @@ let midiAccess;
 let inputs;
 let outputs;
 let rAF = window.requestAnimationFrame;
-if (JZZ.requestMIDIAccess)
-{
+if (JZZ.requestMIDIAccess) {
   JZZ.requestMIDIAccess({ sysex: false }).then(onMIDISuccess, onMIDIFailure);
-  console.log("There totally is MIDI support in your browser");
-} else
-{
-  console.warn("No MIDI support in your browser");
+  console.log('There totally is MIDI support in your browser');
+} else {
+  console.warn('No MIDI support in your browser');
 }
 /**
  * MIDI success procedures
  * @param mAcc
  */
-function onMIDISuccess(mAcc)
-{
+function onMIDISuccess(mAcc) {
   midiAccess = mAcc;
   inputs = midiAccess.inputs;
   outputs = midiAccess.outputs;
@@ -522,10 +446,8 @@ function onMIDIFailure(data) { }
  * returns the button name, based on the components selected notation type
  * @param i button number
  */
-export function nameButton(i)
-{
-  switch (InputDisplayComponent.inpDispCmp.butNotTy)
-  {
+export function nameButton(i) {
+  switch (InputDisplayComponent.inpDispCmp.butNotTy) {
     case ButtonNotationType.StreetFighter: return (xbBtns[i] !== undefined ? xbBtns[i] : i);
     case ButtonNotationType.GuiltyGear: return (ggBtns[i] !== undefined ? ggBtns[i] : i);
     case ButtonNotationType.SoulCalibur: return (scBtns[i] !== undefined ? scBtns[i] : i);
@@ -533,4 +455,40 @@ export function nameButton(i)
     case ButtonNotationType.SNK: return (snkBtns[i] !== undefined ? snkBtns[i] : i);
   }
   return i;
+}
+
+export function getPitchStringFromNumber(n: number): string {
+  let noteLetter = n % 12;
+  let noteOctave = (n / 12);
+  let str = '';
+  switch (noteLetter) {
+    case 0: str += 'C'; break;
+    case 1: str += 'C#'; break;
+    case 2: str += 'D'; break;
+    case 3: str += 'D#'; break;
+    case 4: str += 'E'; break;
+    case 5: str += 'F'; break;
+    case 6: str += 'F#'; break;
+    case 7: str += 'G'; break;
+    case 8: str += 'G#'; break;
+    case 9: str += 'A'; break;
+    case 10: str += 'A#'; break;
+    case 11: str += 'B'; break;
+    default:
+      break;
+  }
+  switch (true) {
+    case (noteOctave < 1): str += '0'; break;
+    case (noteOctave < 2): str += '1'; break;
+    case (noteOctave < 3): str += '2'; break;
+    case (noteOctave < 4): str += '3'; break;
+    case (noteOctave < 5): str += '4'; break;
+    case (noteOctave < 6): str += '5'; break;
+    case (noteOctave < 7): str += '6'; break;
+    case (noteOctave < 8): str += '7'; break;
+    case (noteOctave < 9): str += '8'; break;
+    default:
+      break;
+  }
+  return str;
 }

@@ -26,7 +26,7 @@
     "heartbeat-sequencer": "0.0.16",
     "html5-gamepad": "^1.1.0",
     "jzz": "^0.9.9",
-    "jzz-input-kbd": "^1.1.2",
+    "jzz-input-kbd": "^1.1.3",
     "jzz-synth-osc": "^1.1.5",
     "jzz-synth-tiny": "^1.1.4",
     "rxjs": "^6.5.4",

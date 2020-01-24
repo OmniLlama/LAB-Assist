@@ -291,27 +291,36 @@ $dir-width: 60px
 $dir-height: 60px
 $btn-width: 72px
 $btn-height: 72px
-
+.directionalArrows
+  // div
+  float: left
+  height: $dir-height
+  line-height: $dir-height
+  text-align: center
+  width: $dir-width
 .grid3x3
   display: inline-block
   height: $dir-height * 3
   width: $dir-width * 3
 
-.grid3x3
-  div
+  .stickSpace
     float: left
     height: $dir-height
     line-height: $dir-height
     text-align: center
     width: $dir-width
 
-.grid3x3
-  div
-    img
-      display: block
+    #stick
+      height: $dir-height
+      line-height: $dir-height
       vertical-align: middle
-      max-width: 100%
-      max-height: 100%
+      position: relative
+      width: $dir-width
+
+  div img
+    vertical-align: middle
+    max-width: 100%
+    max-height: 100%
 
 .grid4x2
   display: block
