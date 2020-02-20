@@ -644,12 +644,15 @@ function initInputEvents() {
    * Text
    */
   iec.html.txt_KeyRangeStart.addEventListener('change', (e) => {
-    iec.song.setPitchRange(iec.html.txt_KeyRangeStart.value, iec.keyEditor.highestNote);
-    iec.song.update();
+    iec.keyEditor.lowestNote = parseInt(iec.html.txt_KeyRangeStart.value);
+    // iec.song.setPitchRange(iec.html.txt_KeyRangeStart.value, iec.keyEditor.highestNote);
+    iec.keyEditor.updateSong(iec.song);
   });
   iec.html.txt_KeyRangeEnd.addEventListener('change', (e) => {
-    iec.song.setPitchRange(iec.keyEditor.lowestNote, iec.html.txt_KeyRangeEnd.value);
-    iec.song.update();
+    iec.keyEditor.highestNote = parseInt(iec.html.txt_KeyRangeEnd.value);
+    // iec.song.setPitchRange(iec.keyEditor.lowestNote, iec.html.txt_KeyRangeEnd.value);
+    // iec.song.update();
+    iec.keyEditor.updateSong(iec.song);
   });
   // listen for scale and draw events, a scale event is fired when you change the number of bars per page
   // a draw event is fired when you change the size of the viewport by resizing the browser window
@@ -716,16 +719,16 @@ function initInputEvents() {
     iec.info.snapTicksAtX = iec.keyEditor.getTicksAt(
       iec.info.clientX - iec.info.editorFrameOffsetX, true);
     iec.html.div_MouseX.innerHTML =
-      `\nclient: (${iec.info.clientX}, ${iec.info.clientY}')` +
-      `\n|screen: (${iec.info.screenX}, ${iec.info.screenY})` +
-      '\n|editor-scrl: (' + iec.info.editorScrollX + ', ' + iec.info.editorScrollY + ')' +
-      '\n|page: (' + iec.info.pageX + ', ' + iec.info.pageY + ')' +
-      '\n|ticks-at-mouse: ' + iec.info.ticksAtX.toFixed(1) +
-      '\n|x Bar: ' + iec.info.mouseBarPos +
-      '\n|x-head: ' + iec.info.headX.toFixed(2) +
-      '\n|scrolled-x-head: ' + iec.info.scrolledHeadX.toFixed(2) +
-      '\n|snap-ticks-head: ' + iec.info.snapTicksAtHead.toFixed(0) +
-      '\n|ticks-head: ' + iec.info.ticksAtHead.toFixed(0);
+      `client: (${iec.info.clientX}, ${iec.info.clientY}')` +
+      `<br/>screen: (${iec.info.screenX}, ${iec.info.screenY})` +
+      '<br/>editor-scrl: (' + iec.info.editorScrollX + ', ' + iec.info.editorScrollY + ')' +
+      '<br/>page: (' + iec.info.pageX + ', ' + iec.info.pageY + ')' +
+      '<br/>ticks-at-mouse: ' + iec.info.ticksAtX.toFixed(1) +
+      '<br/>x Bar: ' + iec.info.mouseBarPos +
+      '<br/>x-head: ' + iec.info.headX.toFixed(2) +
+      '<br/>scrolled-x-head: ' + iec.info.scrolledHeadX.toFixed(2) +
+      '<br/>snap-ticks-head: ' + iec.info.snapTicksAtHead.toFixed(0) +
+      '<br/>ticks-head: ' + iec.info.ticksAtHead.toFixed(0);
     ;
     iec.info.mousePitchPos = iec.keyEditor.getPitchAt(iec.info.pageY - iec.html.div_Editor.offsetTop).number;
     iec.html.div_MouseY.innerHTML = 'y Pitch: ' + iec.info.mousePitchPos +
@@ -1071,16 +1074,16 @@ function render() {
     iec.info.ticksAtHead = iec.keyEditor.getTicksAt(iec.info.headX, false);
     iec.info.scrollTicksAtHead = iec.keyEditor.getTicksAt(iec.info.scrolledHeadX, false);
     iec.html.div_MouseX.innerHTML =
-      '\nclient: (' + iec.info.clientX + ', ' + iec.info.clientY + ')' +
-      '\n|screen: (' + iec.info.screenX + ', ' + iec.info.screenY + ')' +
-      '\n|editor-scrl: (' + iec.info.editorScrollX + ', ' + iec.info.editorScrollY + ')' +
-      '\n|page: (' + iec.info.pageX + ', ' + iec.info.pageY + ')' +
-      '\n|ticks-at-mouse: ' + iec.info.ticksAtX.toFixed(1) +
-      '\n|x Bar: ' + iec.info.mouseBarPos +
-      '\n|x-head: ' + iec.info.headX.toFixed(2) +
-      '\n|scrolled-x-head: ' + iec.info.scrolledHeadX.toFixed(2) +
-      '\n|snap-ticks-head: ' + iec.info.snapTicksAtHead +
-      '\n|ticks-head: ' + iec.info.ticksAtHead;
+      'client: (' + iec.info.clientX + ', ' + iec.info.clientY + ')' +
+      '<br/>|screen: (' + iec.info.screenX + ', ' + iec.info.screenY + ')' +
+      '<br/>|editor-scrl: (' + iec.info.editorScrollX + ', ' + iec.info.editorScrollY + ')' +
+      '<br/>|page: (' + iec.info.pageX + ', ' + iec.info.pageY + ')' +
+      '<br/>|ticks-at-mouse: ' + iec.info.ticksAtX.toFixed(1) +
+      '<br/>|x Bar: ' + iec.info.mouseBarPos +
+      '<br/>|x-head: ' + iec.info.headX.toFixed(2) +
+      '<br/>|scrolled-x-head: ' + iec.info.scrolledHeadX.toFixed(2) +
+      '<br/>|snap-ticks-head: ' + iec.info.snapTicksAtHead +
+      '<br/>|ticks-head: ' + iec.info.ticksAtHead;
   }
   requestAnimationFrame(render);
 }
