@@ -154,20 +154,6 @@ export class InputDisplayComponent implements OnInit {
           arrow.appendChild(this.div_leftStick);
           break;
       }
-      // if (i !== 4) {
-      //   arrow.className = 'directionalArrows';
-      //   let arrowInner = `<img src="assets/images/${this.arrayIndexToDirection(
-      //     i
-      //   )}.png" ${dirIconWidth} ${dirIconHeight}>`;
-      //   arrow.innerHTML = arrowInner;
-      // }
-      // else {
-      //   arrow.className = 'stickSpace';
-      //   this.div_leftStick = document.createElement('div');
-      //   this.div_leftStick.id = 'stick';
-      //   this.div_leftStick.innerHTML = `<img src="assets/images/ls.png" ${dirIconWidth} ${dirIconHeight}>`;
-      //   arrow.appendChild(this.div_leftStick);
-      // }
       div_arrows.appendChild(arrow);
     }
 
@@ -269,13 +255,11 @@ export class InputDisplayComponent implements OnInit {
           // If pressed, switches to the pressed version of the button's image
           buttonString = nameButton(i);
           imageString = `<img src="assets/images/pressed_${buttonString}.png">`;
-          // imageString = `<img src="assets/images/pressed_${buttonString}.png" ${btnIconWidth} ${btnIconHeight}>`;
           b.innerHTML = imageString;
         } else {
           // If released/not pressed, switches to the regular version of the button's image
           buttonString = nameButton(i);
           imageString = `<img src="assets/images/${buttonString}.png">`;
-          // imageString = `<img src="assets/images/${buttonString}.png" ${btnIconWidth} ${btnIconHeight}>`;
           b.innerHTML = imageString;
         }
       }

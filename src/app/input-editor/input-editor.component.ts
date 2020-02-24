@@ -646,13 +646,13 @@ function initInputEvents() {
   iec.html.txt_KeyRangeStart.addEventListener('change', (e) => {
     iec.keyEditor.lowestNote = parseInt(iec.html.txt_KeyRangeStart.value);
     // iec.song.setPitchRange(iec.html.txt_KeyRangeStart.value, iec.keyEditor.highestNote);
-    iec.keyEditor.updateSong(iec.song);
+    // iec.keyEditor.updateSong(iec.song);
   });
   iec.html.txt_KeyRangeEnd.addEventListener('change', (e) => {
     iec.keyEditor.highestNote = parseInt(iec.html.txt_KeyRangeEnd.value);
     // iec.song.setPitchRange(iec.keyEditor.lowestNote, iec.html.txt_KeyRangeEnd.value);
     // iec.song.update();
-    iec.keyEditor.updateSong(iec.song);
+    // iec.keyEditor.updateSong(iec.song);
   });
   // listen for scale and draw events, a scale event is fired when you change the number of bars per page
   // a draw event is fired when you change the size of the viewport by resizing the browser window
