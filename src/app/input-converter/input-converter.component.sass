@@ -1,4 +1,37 @@
+$converter-bg: #181818
+$converter-icon-height: 28px
+
+#record-check
+  background-size: 24px
+
 
 #record-check-label
-    font-size: .8em
-    color: white
+  font-size: .8em
+  background-color: rgba(60, 60, 60, .6)
+  color: white
+  &:checked
+    background-color: rgba(240, 60, 60, .9)
+
+#button-divider
+  img
+    position: absolute
+    z-index: 100
+#editor-input-icons
+  background-color: $converter-bg
+  display: block
+  float: left
+  max-width: 24px
+
+.editor-input-icons-dir
+  padding-top: 2px
+  .editor-input-icon-direction
+    display: block
+    height: $converter-icon-height - 3
+    .editor-input-icon:first-of-type
+      padding-top: 1px
+.editor-input-icons-btn
+  .editor-input-icon:first-of-type
+    padding-top: 4px
+.editor-input-icon
+  display: block
+  height: $converter-icon-height

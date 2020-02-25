@@ -1,6 +1,8 @@
-@import 'app/input-converter/input-converter.component'  
-$converter-bg: #181818
-$converter-icon-height: 28px
+@import 'app/input-converter/input-converter.component'
+@import 'app/input-display/input-display.component'
+@import 'app/input-editor/input-editor.component'
+
+
 html
   background-color: #d6d6d6
   font-family: helvetica
@@ -8,68 +10,8 @@ html
 #title-header
   font: Arial
 
-#editor-input-icons
-  background-color: $converter-bg
-  display: block
-  float: left
-  max-width: 24px
-
-  div:first-of-type
-    padding-top: 4px
-
-.editor-input-icon-direction
-  display: block
-  height: $converter-icon-height
-
-.editor-input-icon
-  display: block
-  height: $converter-icon-height
-
 #icon-img
   max-width: 24px
-#editor-controls
-  float: left
-  background-color: #fff
-  width: 100%
-  min-height: 30px
-  border-top: 1px solid #333
-  // overflow: auto
-
-  .editor-control
-    background-color: #6e6e6ec9
-    font-size: 15px
-    font-weight: bold
-    font-family: monospace
-    float: left
-    // height: 30px
-    line-height: 30px
-    margin: 3px
-
-  input[type='button']
-    float: left
-    margin: 5px 3px
-
-  selectF
-    padding: 10px
-    margin-top: 6px
-    height: 20px
-
-#pitch-range
-  // width: 6em
-  font: .2em
-  #key-range-start, #key-range-end
-    width: 4em
-    font: .6em sans-serif
-  #key-range-start-label, #key-range-end-label
-    font: .6em sans-serif
-
-#debug-info
-  max-width: 10%
-
-#mouse-x, #mouse-y
-  font: .7em sans-serif
-  font-weight: bold
-  color: #181818
 
 .pipe
   color: #eee

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MIDIEvent, Note, MIDINote } from 'heartbeat-sequencer';
 import { InputEditorComponent, updateElementBBox, getEdgeDivs, createEdgeBBoxes } from '../input-editor/input-editor.component';
-import { InputDisplayComponent, GamepadObject, pads, xbBtns, ggBtns, scBtns, tknBtns, snkBtns } from '../input-display/input-display.component';
+import { InputDisplayComponent, GamepadObject, pads, padObjs, xbBtns, ggBtns, scBtns, tknBtns, snkBtns } from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
 import { GamepadType, ButtonNotationType } from 'src/Enums';
 import jzz = require('jzz');
@@ -26,7 +26,7 @@ export class InputConverterComponent implements OnInit {
   midiWidget;
   midiInKbd;
   midiOutPort;
-  testController: GamepadObject;
+  testPadObj: GamepadObject;
   midi;
   inp;
   trackingNotes: boolean;
@@ -48,6 +48,12 @@ export class InputConverterComponent implements OnInit {
   btnInpStarts: Array<number>;
   btnInpEnds: Array<number>;
   deadZone = .5;
+
+  /**
+   * DEBUG
+   */
+  playJingles: boolean = false;
+
   constructor() { }
 
   ngOnInit() {
@@ -77,10 +83,11 @@ export class InputConverterComponent implements OnInit {
   getController() {
     let idc = InputDisplayComponent.inpDispCmp;
     let icc = InputConverterComponent.inpConvComp;
-    if (pads !== undefined && pads.length != 0 && icc.testController == null) {
-      let ctlr = (pads[0] !== undefined ? pads[0] : pads[1]);
-      icc.testController = new GamepadObject(ctlr);
-      let thing = GamepadType[icc.testController.type];
+    if (pads !== undefined && pads.length != 0 && icc.testPadObj == null) {
+      let pad = (pads[0] !== undefined ? pads[0] : pads[1]);
+      let padObj = (padObjs[0] !== undefined ? padObjs[0] : padObjs[1]);
+      icc.testPadObj = padObj;
+      let thing = GamepadType[icc.testPadObj.type];
       console.log(thing);
 
       icc.playControllerConnectedJingle();
@@ -114,6 +121,9 @@ export class InputConverterComponent implements OnInit {
     let icc = InputConverterComponent.inpConvComp;
     let idc = InputDisplayComponent.inpDispCmp;
     let iec = InputEditorComponent.inpEdComp;
+    let padObj = icc.testPadObj;
+    let pad = getPad();
+    // if(!this.recordingPrimed) return;
     if (iec.song.playing && !icc.trackingNotes) {
       icc.trackedNotes = new Array<[number, number, number]>();
       icc.trackingNotes = true;
@@ -125,7 +135,8 @@ export class InputConverterComponent implements OnInit {
     }
     /**
      * Update Controller Axes */
-    getPad().axes.forEach((a, ind) => {
+    padObj.pad.axes.forEach((a, ind) => {
+      // pad.axes.forEach((a, ind) => {
       let i1 = (ind * 2);
       let i2 = (ind * 2) + 1;
       let pitchNum;
@@ -182,9 +193,8 @@ export class InputConverterComponent implements OnInit {
     /**
      * Update Controller Digital Pad
      */
-    let dPadBtns: GamepadButton[] = new Array<GamepadButton>();
+    let dPadBtns: readonly GamepadButton[] = padObj.DPad();
     let dpadIconDivs = document.getElementsByClassName('editor-input-icon-direction');
-    for (let i of icc.testController.getDPadButtonNumbers()) { dPadBtns.push(getPad().buttons[i]); }
     dPadBtns.forEach((b, ind) => {
       let pitch = getDirectionPitchFromDPad(ind);
       if (b.pressed && !icc.dpadHeld[ind]) {
@@ -227,22 +237,21 @@ export class InputConverterComponent implements OnInit {
         }
         let pct: string = Math.round(b.value * 100) + '%';
         btn.style.backgroundSize = pct + ' ' + pct;
-        let imageString = 'a';
-        let buttonString;
+        let imageStr = 'a', dirStr: string;
         switch (ind) {
-          case 0: buttonString = 'up'; break;
-          case 1: buttonString = 'down'; break;
-          case 2: buttonString = 'left'; break;
-          case 3: buttonString = 'right'; break;
+          case 0: dirStr = 'up'; break;
+          case 1: dirStr = 'down'; break;
+          case 2: dirStr = 'left'; break;
+          case 3: dirStr = 'right'; break;
         }
         if (pressed) {
           // If pressed, switches to the pressed version of the button's image
-          imageString = `<img id="icon-img" src="assets/images/pressed_${buttonString}.png">`;
-          btn.innerHTML = imageString;
+          imageStr = `<img id="icon-img" src="assets/images/pressed_${dirStr}.png">`;
+          btn.innerHTML = imageStr;
         } else {
           // If released/not pressed, switches to the regular version of the button's image
-          imageString = `<img id="icon-img" src="assets/images/${buttonString}.png" >`;
-          btn.innerHTML = imageString;
+          imageStr = `<img id="icon-img" src="assets/images/${dirStr}.png" >`;
+          btn.innerHTML = imageStr;
         }
       }
     });
@@ -251,13 +260,14 @@ export class InputConverterComponent implements OnInit {
      * Update Controller Buttons
      */
     let btnIconDivs = document.getElementsByClassName('editor-input-icon');
-    let btns: readonly GamepadButton[] = getPad().buttons;
+    let btns: readonly GamepadButton[] = pad.buttons;
     let harmMinScaleArr: number[] = [0, 2, 3, 5, 7, 8, 11, 12]; //harmonic minor scale
     let majScaleArr: number[] = [0, 2, 4, 5, 7, 9, 11, 12]; //major scale
     let scale: number[] = harmMinScaleArr;
     let rootNote: number = 51;
-    btns.forEach((b, ind) => {
-      if(ind >= scale.length) return;
+    padObj.pad.buttons.forEach((b, ind) => {
+      // pad.buttons.forEach((b, ind) => {
+      if (ind >= scale.length) return;
       let pitch: string = getPitchStringFromNumber(scale[ind] + rootNote);
       //if PRESSED this frame
       if (b.pressed && !icc.btnsHeld[ind]) {
@@ -336,6 +346,7 @@ export class InputConverterComponent implements OnInit {
    * Boot Jingle
    */
   playStartJingle() {
+    if (!this.playJingles) return;
     let mtop = InputConverterComponent.inpConvComp.midiOutPort;
     mtop
       .wait(200)
@@ -352,6 +363,7 @@ export class InputConverterComponent implements OnInit {
    * Controller Connected Jingle
    */
   playControllerConnectedJingle() {
+    if (!this.playJingles) return;
     let mtop = InputConverterComponent.inpConvComp.midiOutPort;
     mtop
       .note(0, 'A4', 127, 100).wait(33)
@@ -361,11 +373,6 @@ export class InputConverterComponent implements OnInit {
       .note(0, 'A6', 127, 100).wait(33)
       .note(0, 'C6', 127, 100).wait(166)
       .note(0, 'F6', 127, 100);
-  }
-  setRecordPrime(b){
-    console.log("priming record");
-    
-    this.recordingPrimed = !this.recordingPrimed;
   }
 }
 /**

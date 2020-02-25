@@ -718,7 +718,7 @@ function initInputEvents() {
       iec.info.clientX - iec.info.editorFrameOffsetX, false);
     iec.info.snapTicksAtX = iec.keyEditor.getTicksAt(
       iec.info.clientX - iec.info.editorFrameOffsetX, true);
-    iec.html.div_MouseX.innerHTML =
+    iec.html.div_Info1.innerHTML =
       `client: (${iec.info.clientX}, ${iec.info.clientY}')` +
       `<br/>screen: (${iec.info.screenX}, ${iec.info.screenY})` +
       '<br/>editor-scrl: (' + iec.info.editorScrollX + ', ' + iec.info.editorScrollY + ')' +
@@ -731,7 +731,7 @@ function initInputEvents() {
       '<br/>ticks-head: ' + iec.info.ticksAtHead.toFixed(0);
     ;
     iec.info.mousePitchPos = iec.keyEditor.getPitchAt(iec.info.pageY - iec.html.div_Editor.offsetTop).number;
-    iec.html.div_MouseY.innerHTML = 'y Pitch: ' + iec.info.mousePitchPos +
+    iec.html.div_Info2.innerHTML = 'y Pitch: ' + iec.info.mousePitchPos +
       '\nframe-offset-y: ' + iec.info.editorFrameOffsetY;
     // move part or note if selected
     if (tmp_part !== undefined) {
@@ -871,21 +871,17 @@ function drawVerticalLine(ref_data) {
   div_VLine.className = ref_data.type + '-line';
   div_VLine.style.left = ref_data.x + 'px';
   div_VLine.style.width = '5px'; // if you make the width too small, the background image of sometimes disappears
-  // tmp_div_VLine.x = ref_data.x;
 
   switch (tmp_type) {
     case 'bar':
       div_VLine.innerHTML = ref_data.position.barsAsString;
-      // if (iec !== null)
       div_VLine.style.height = InputEditorComponent.inpEdComp.html.div_Score.scrollHeight.toString() + 'px';
       InputEditorComponent.inpEdComp.html.div_BarLines.appendChild(div_VLine);
       break;
     case 'beat':
-      // if (iec !== null)
       InputEditorComponent.inpEdComp.html.div_BeatLines.appendChild(div_VLine);
       break;
     case 'sixteenth':
-      // if (iec !== null)
       InputEditorComponent.inpEdComp.html.div_SixteenthLines.appendChild(div_VLine);
       break;
   }
@@ -906,23 +902,13 @@ function drawNote(ref_note: Note, iec: InputEditorComponent) {
   div_Note.id = ref_note.id;
   div_Note.setAttribute('pitch', ref_note.name);
   div_Note.className = 'note';
-  // let tmpThing = iec.song.notes;
-  // let tmp_vel = -1;
-  // tmpThing.forEach((e: MIDINote) => {
-  //   if (e.id == ref_note.id) {
-  //     tmp_vel = e.velocity;
-  //   }
-  // });
-  // tmp_div_Note_info.id = 'note-info';
-  // tmp_div_Note_info.innerHTML = "   " + tmp_vel.toString();
 
   img_Note_leftEdge.id = div_Note.id;
-  img_Note_leftEdge.className = 'note-edge';
-  img_Note_leftEdge.src = 'assets/images/Editor-Arrow-Left.png';
-
   img_Note_rightEdge.id = div_Note.id;
+  img_Note_leftEdge.className = 'note-edge';
   img_Note_rightEdge.className = 'note-edge';
-  img_Note_rightEdge.src = 'assets/images/Editor-Arrow-Right.png';
+  img_Note_leftEdge.src = 'assets/images/Editor-Arrow-Left-Transparent.png';
+  img_Note_rightEdge.src = 'assets/images/Editor-Arrow-Right-Transparent.png';
 
   updateElementBBox(div_Note, bbox);
   updateElementBBox(img_Note_leftEdge, edgeBBoxes[0]);
@@ -981,8 +967,6 @@ export function updateElementBBox(element, bbox: BBox) {
  */
 function resize() {
   let iec = InputEditorComponent.inpEdComp;
-  // let tmp_div_icons = document.getElementById('editor-input-icons');
-  // let tmp_icons_w = tmp_div_icons.clientWidth;
   let tmp_icons_w = 64;
   let tmp_c = iec.html.div_Controls.getBoundingClientRect().height;
   let tmp_w = window.innerWidth - tmp_icons_w;
@@ -990,8 +974,6 @@ function resize() {
 
   // tell the key editor that the viewport has canged, necessary for auto scroll during playback
   iec.keyEditor.setViewport(tmp_w, tmp_h);
-  // tmp_div_icons.style.width = tmp_icons_w + 'px';
-  // tmp_div_icons.style.height = tmp_h + 'px';
   iec.html.div_Editor.style.width = tmp_w + 'px';
   iec.html.div_Editor.style.left = tmp_icons_w + 'px';
   iec.html.div_Editor.style.height = tmp_h + 'px';
@@ -1073,17 +1055,17 @@ function render() {
     iec.info.snapTicksAtHead = iec.keyEditor.getTicksAt(iec.info.headX);
     iec.info.ticksAtHead = iec.keyEditor.getTicksAt(iec.info.headX, false);
     iec.info.scrollTicksAtHead = iec.keyEditor.getTicksAt(iec.info.scrolledHeadX, false);
-    iec.html.div_MouseX.innerHTML =
+    iec.html.div_Info1.innerHTML =
       'client: (' + iec.info.clientX + ', ' + iec.info.clientY + ')' +
-      '<br/>|screen: (' + iec.info.screenX + ', ' + iec.info.screenY + ')' +
-      '<br/>|editor-scrl: (' + iec.info.editorScrollX + ', ' + iec.info.editorScrollY + ')' +
-      '<br/>|page: (' + iec.info.pageX + ', ' + iec.info.pageY + ')' +
-      '<br/>|ticks-at-mouse: ' + iec.info.ticksAtX.toFixed(1) +
-      '<br/>|x Bar: ' + iec.info.mouseBarPos +
-      '<br/>|x-head: ' + iec.info.headX.toFixed(2) +
-      '<br/>|scrolled-x-head: ' + iec.info.scrolledHeadX.toFixed(2) +
-      '<br/>|snap-ticks-head: ' + iec.info.snapTicksAtHead +
-      '<br/>|ticks-head: ' + iec.info.ticksAtHead;
+      '<br/>screen: (' + iec.info.screenX + ', ' + iec.info.screenY + ')' +
+      '<br/>editor-scrl: (' + iec.info.editorScrollX + ', ' + iec.info.editorScrollY + ')' +
+      '<br/>page: (' + iec.info.pageX + ', ' + iec.info.pageY + ')' +
+      '<br/>ticks-at-mouse: ' + iec.info.ticksAtX.toFixed(1) +
+      '<br/>x Bar: ' + iec.info.mouseBarPos +
+      '<br/>x-head: ' + iec.info.headX.toFixed(2) +
+      '<br/>scrolled-x-head: ' + iec.info.scrolledHeadX.toFixed(2) +
+      '<br/>snap-ticks-head: ' + iec.info.snapTicksAtHead +
+      '<br/>ticks-head: ' + iec.info.ticksAtHead;
   }
   requestAnimationFrame(render);
 }
@@ -1330,8 +1312,8 @@ export class EditorHTMLShell {
   div_Controls: HTMLDivElement;
   div_BarsBeats: HTMLDivElement;
   div_Seconds: HTMLDivElement;
-  div_MouseX: HTMLDivElement;
-  div_MouseY: HTMLDivElement;
+  div_Info1: HTMLDivElement;
+  div_Info2: HTMLDivElement;
   div_currNote: HTMLDivElement;
   div_currPart: HTMLDivElement;
 
@@ -1371,8 +1353,8 @@ export class EditorHTMLShell {
       this.div_Controls = document.getElementById('editor-controls') as HTMLDivElement,
       this.div_BarsBeats = document.getElementById('time-bars-beats') as HTMLDivElement,
       this.div_Seconds = document.getElementById('time-seconds') as HTMLDivElement,
-      this.div_MouseX = document.getElementById('mouse-x') as HTMLDivElement,
-      this.div_MouseY = document.getElementById('mouse-y') as HTMLDivElement,
+      this.div_Info1 = document.getElementById('info-1') as HTMLDivElement,
+      this.div_Info2 = document.getElementById('info-2') as HTMLDivElement,
       this.div_PageNumbers = document.getElementById('page-numbers') as HTMLDivElement,
       this.div_Editor = document.getElementById('editor') as HTMLDivElement,
       this.div_Score = document.getElementById('score') as HTMLDivElement,
