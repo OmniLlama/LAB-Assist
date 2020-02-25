@@ -29,6 +29,7 @@
         <input type='button' class="editor-control-param" id='record' value='record' />
         <input type='button' class="editor-control-param" id='loop' value='loop' />
         <input type='button' class="editor-control-param" id='stop' value='stop' />
+        <input type="checkbox" id="record-check">Prime
       </span>
       <span class="editor-control">
         <div id='bpm-label'>BPM:</div>
@@ -44,7 +45,6 @@
             value="{{pitchStart}}" /></div>
         <div id="key-range-end-label">end<input type="text" id='key-range-end' (ngModel)="pitchEnd"
             value="{{pitchEnd}}" /></div>
-        <!-- <button id="update-range" (click)="UpdatePitchRange()">Update</button> -->
       </span>
 
       <div class='pipe'>|</div>

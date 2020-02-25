@@ -30,12 +30,13 @@ export class InputConverterComponent implements OnInit {
   midi;
   inp;
   trackingNotes: boolean;
+  recordingPrimed: boolean;
   trackedNotes: Array<[number, number, number]>; // startTicks, endTicks, pitch
 
-  dirsHeld: Array<boolean>;
-  dirHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
-  dirInpStarts: Array<number>;
-  dirInpEnds: Array<number>;
+  stxHeld: Array<boolean>;
+  stxHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
+  stxInpStarts: Array<number>;
+  stxInpEnds: Array<number>;
 
   dpadHeld: Array<boolean>;
   dpadHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
@@ -59,7 +60,6 @@ export class InputConverterComponent implements OnInit {
     this.getSetHTMLElements(this);
     this.inpEdCmp = InputEditorComponent.inpEdComp;
     this.inpDispCmp = InputDisplayComponent.inpDispCmp;
-    // let jso = jzzSynOSC(JZZ);
     jzzInpKbd(JZZ);
     this.midiOutPort =
       JZZ().or('Cannot start MIDI engine!')
@@ -85,10 +85,10 @@ export class InputConverterComponent implements OnInit {
 
       icc.playControllerConnectedJingle();
 
-      icc.dirsHeld = new Array<boolean>(getPad().axes.length * 2);
-      icc.dirInpStarts = new Array<number>((getPad().axes.length * 2));
-      icc.dirInpEnds = new Array<number>((getPad().axes.length * 2));
-      icc.dirHeldNotes = new Array<[MIDINote, number]>((getPad().axes.length * 2));
+      icc.stxHeld = new Array<boolean>(getPad().axes.length * 2);
+      icc.stxInpStarts = new Array<number>((getPad().axes.length * 2));
+      icc.stxInpEnds = new Array<number>((getPad().axes.length * 2));
+      icc.stxHeldNotes = new Array<[MIDINote, number]>((getPad().axes.length * 2));
 
       icc.dpadHeld = new Array<boolean>(4);
       icc.dpadInpStarts = new Array<number>(4);
@@ -131,51 +131,51 @@ export class InputConverterComponent implements OnInit {
       let pitchNum;
       if (a.valueOf() > icc.deadZone) {
         pitchNum = getDirectionPitchFromAxis(ind, a.valueOf());
-        if (!icc.dirsHeld[i2]) {
-          icc.dirsHeld[i2] = true;
-          icc.dirsHeld[i1] = false;
+        if (!icc.stxHeld[i2]) {
+          icc.stxHeld[i2] = true;
+          icc.stxHeld[i1] = false;
           if (icc.trackingNotes) {
-            icc.dirInpStarts[i2] = iec.info.ticksAtHead;
+            icc.stxInpStarts[i2] = iec.info.ticksAtHead;
             let thing = iec.createNote(iec,
-              icc.dirInpStarts[i2],
-              icc.dirInpStarts[i2] + 128,
+              icc.stxInpStarts[i2],
+              icc.stxInpStarts[i2] + 128,
               pitchNum, a.valueOf() * 127);
-            icc.dirHeldNotes[i2] = [thing[0].midiNote, iec.info.ticksAtHead];
+            icc.stxHeldNotes[i2] = [thing[0].midiNote, iec.info.ticksAtHead];
           }
         }
       } else if (a.valueOf() < -icc.deadZone) {
         pitchNum = getDirectionPitchFromAxis(ind, a.valueOf());
-        if (!icc.dirsHeld[i1]) {
-          icc.dirsHeld[i1] = true;
-          icc.dirsHeld[i2] = false;
+        if (!icc.stxHeld[i1]) {
+          icc.stxHeld[i1] = true;
+          icc.stxHeld[i2] = false;
           if (icc.trackingNotes) {
-            icc.dirInpStarts[i1] = iec.info.ticksAtHead;
+            icc.stxInpStarts[i1] = iec.info.ticksAtHead;
             let thing = iec.createNote(iec,
-              icc.dirInpStarts[i1],
-              icc.dirInpStarts[i1] + 128,
+              icc.stxInpStarts[i1],
+              icc.stxInpStarts[i1] + 128,
               pitchNum, -a.valueOf() * 127);
-            icc.dirHeldNotes[i1] = [thing[0].midiNote, iec.info.ticksAtHead];
+            icc.stxHeldNotes[i1] = [thing[0].midiNote, iec.info.ticksAtHead];
           }
         }
       } else {
-        icc.dirsHeld[i1] = false;
-        icc.dirsHeld[i2] = false;
+        icc.stxHeld[i1] = false;
+        icc.stxHeld[i2] = false;
       }
       if (icc.trackingNotes) {
-        if (icc.dirsHeld[i2]) {
-          icc.dirHeldNotes[i2][0].part.moveEvent(icc.dirHeldNotes[i2][0].noteOff,
-            (iec.info.ticksAtHead - icc.dirHeldNotes[i2][1]));
-          icc.dirHeldNotes[i2][1] = iec.info.ticksAtHead;
+        if (icc.stxHeld[i2]) {
+          icc.stxHeldNotes[i2][0].part.moveEvent(icc.stxHeldNotes[i2][0].noteOff,
+            (iec.info.ticksAtHead - icc.stxHeldNotes[i2][1]));
+          icc.stxHeldNotes[i2][1] = iec.info.ticksAtHead;
           iec.song.update();
-        } else if (icc.dirsHeld[i1]) {
-          icc.dirHeldNotes[i1][0].part.moveEvent(icc.dirHeldNotes[i1][0].noteOff,
-            (iec.info.ticksAtHead - icc.dirHeldNotes[i1][1]));
-          icc.dirHeldNotes[i1][1] = iec.info.ticksAtHead;
+        } else if (icc.stxHeld[i1]) {
+          icc.stxHeldNotes[i1][0].part.moveEvent(icc.stxHeldNotes[i1][0].noteOff,
+            (iec.info.ticksAtHead - icc.stxHeldNotes[i1][1]));
+          icc.stxHeldNotes[i1][1] = iec.info.ticksAtHead;
           iec.song.update();
-        } else if (!icc.dirsHeld[i2] && icc.dirHeldNotes[i2] != null) {
-          icc.dirHeldNotes[i2] = null;
-        } else if (!icc.dirsHeld[i1] && icc.dirHeldNotes[i1] != null) {
-          icc.dirHeldNotes[i1] = null;
+        } else if (!icc.stxHeld[i2] && icc.stxHeldNotes[i2] != null) {
+          icc.stxHeldNotes[i2] = null;
+        } else if (!icc.stxHeld[i1] && icc.stxHeldNotes[i1] != null) {
+          icc.stxHeldNotes[i1] = null;
         }
       }
     });
@@ -225,7 +225,7 @@ export class InputConverterComponent implements OnInit {
         if (typeof (b) === 'object') {
           pressed = b.pressed;
         }
-        var pct = Math.round(b.value * 100) + '%';
+        let pct: string = Math.round(b.value * 100) + '%';
         btn.style.backgroundSize = pct + ' ' + pct;
         let imageString = 'a';
         let buttonString;
@@ -251,28 +251,21 @@ export class InputConverterComponent implements OnInit {
      * Update Controller Buttons
      */
     let btnIconDivs = document.getElementsByClassName('editor-input-icon');
-    let btns = getPad().buttons;
-    /*
-    BADness Fiksx p[ezle-
-    */
-    // for (let i of icc.testController.getArcadeLayoutButtonNumbers()) { btns.push(getPad().buttons[i]); }
-    let harmMinScaleArr = [0, 2, 3, 5, 7, 8, 11, 12]; //harmonic minor scale
-    let majScaleArr = [0, 2, 4, 5, 7, 9, 11, 12]; //major scale
-    let scale = harmMinScaleArr;
-    let rootNote = 51;
+    let btns: readonly GamepadButton[] = getPad().buttons;
+    let harmMinScaleArr: number[] = [0, 2, 3, 5, 7, 8, 11, 12]; //harmonic minor scale
+    let majScaleArr: number[] = [0, 2, 4, 5, 7, 9, 11, 12]; //major scale
+    let scale: number[] = harmMinScaleArr;
+    let rootNote: number = 51;
     btns.forEach((b, ind) => {
       if(ind >= scale.length) return;
-      let pitch = getPitchStringFromNumber(scale[ind] + rootNote);
-      // let pitch = getPitchStringFromNumber(majScaleArr[ind] + rootNote);
+      let pitch: string = getPitchStringFromNumber(scale[ind] + rootNote);
       //if PRESSED this frame
       if (b.pressed && !icc.btnsHeld[ind]) {
         icc.btnsHeld[ind] = true;
         if (dPadBtns.some((b) => b.pressed)) {
           console.log('should be fuckin bending, idk');
-          // icc.midiOutPort.damper(0, true);
         }
         else {
-          // icc.midiOutPort.damper(0, false);
         }
         icc.midiOutPort.noteOn(0, pitch, 127);
         //if RECORDING
@@ -369,6 +362,11 @@ export class InputConverterComponent implements OnInit {
       .note(0, 'C6', 127, 100).wait(166)
       .note(0, 'F6', 127, 100);
   }
+  setRecordPrime(b){
+    console.log("priming record");
+    
+    this.recordingPrimed = !this.recordingPrimed;
+  }
 }
 /**
  * returns first likely instance of a controller to act as main interface
@@ -462,18 +460,18 @@ export function getPitchStringFromNumber(n: number): string {
   let noteOctave = (n / 12);
   let str = '';
   switch (noteLetter) {
-    case 0: str += 'C'; break;
-    case 1: str += 'C#'; break;
-    case 2: str += 'D'; break;
-    case 3: str += 'D#'; break;
-    case 4: str += 'E'; break;
-    case 5: str += 'F'; break;
-    case 6: str += 'F#'; break;
-    case 7: str += 'G'; break;
-    case 8: str += 'G#'; break;
-    case 9: str += 'A'; break;
-    case 10: str += 'A#'; break;
-    case 11: str += 'B'; break;
+    case 0: str = 'C'; break;
+    case 1: str = 'C#'; break;
+    case 2: str = 'D'; break;
+    case 3: str = 'D#'; break;
+    case 4: str = 'E'; break;
+    case 5: str = 'F'; break;
+    case 6: str = 'F#'; break;
+    case 7: str = 'G'; break;
+    case 8: str = 'G#'; break;
+    case 9: str = 'A'; break;
+    case 10: str = 'A#'; break;
+    case 11: str = 'B'; break;
     default:
       break;
   }
