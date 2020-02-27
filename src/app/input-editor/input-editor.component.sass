@@ -7,13 +7,22 @@
   #key-range-start-label, #key-range-end-label
     font: .6em sans-serif
 
-#debug-info
+#debug-info-control
   max-width: 10%
+#debug-info
+  float: left
+  border: 2px solid
+  tr
+    td
+      text-justify: right
+      font: .8em sans-serif
+      color: rgb(5, 200, 120)
+      font-weight: bold
 
-#info-1, #info-2
-  font: .7em sans-serif
-  font-weight: bold
-  color: #181818
+      &:first-child
+        font: .8em sans-serif
+        color: rgb(20, 20, 20)
+
 
 #editor-controls
   float: left
@@ -129,3 +138,7 @@
 
 .part-muted
   background-color: rgba(55, 55, 55, 0.5)
+
+.pipe
+  color: #eee
+  margin-top: 0px

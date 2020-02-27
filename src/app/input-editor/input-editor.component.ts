@@ -30,6 +30,7 @@ export class InputEditorComponent implements OnInit {
   pitchHeight = 28;
   timeSigNom = 3;
   timeSigDenom = 4;
+  snapAmt;
   editorHeight = ((this.pitchEnd - this.pitchStart + 2) * this.pitchHeight);
   track: Track;
   tracks: Track[];
@@ -77,6 +78,7 @@ export class InputEditorComponent implements OnInit {
    * @param iec
    */
   init(iec: InputEditorComponent): void {
+    this.info.edHTMLShell = this.html;
     this.enableGUI(false);
     let tmp_icons_w = 128;
     let tmp_w = window.innerWidth - tmp_icons_w;
@@ -106,9 +108,9 @@ export class InputEditorComponent implements OnInit {
     iec.html.txt_BPM.value = tmp_bpm;
     setSliderValues(iec.html.sldr_barsPerPage, keyEditor.barsPerPage, 1, 32, 1);
 
-    initContextEvents();
-    initInputEvents();
-    initWindowEvents(iec);
+    this.initContextEvents();
+    this.initInputEvents();
+    this.initWindowEvents(iec);
 
     this.enableGUI(true);
 
@@ -124,24 +126,21 @@ export class InputEditorComponent implements OnInit {
    * Initializes Song and its properties in the editor
    */
   initSong(): Song {
-    const tmp_midiFileName = 'Blank Test';
     let song: Song;
     let tmp_midiFiles = sequencer.getMidiFiles();
-    let tmp_midiFile = tmp_midiFiles[3];
-    if (tmp_midiFile === null || tmp_midiFile === undefined) {
-      console.error("MIDI file name string invalid, defaulting to blank score...");
-      tmp_midiFile = sequencer.getMidiFiles()[0];
-    }
+    let tmp_midiFile = tmp_midiFiles[0];
     switch (this.testMethod) {
       case 1:
         // method 1: create a song directly from the midi file, this way the midi file is treated as a config object
         if (tmp_midiFile !== undefined) { song = sequencer.createSong(tmp_midiFile); }
         else {
           song = sequencer.createSong({
-            bpm: 153
+            bpm: 153,
+            nominator: 3,
+            denominator: 4,
+            useMetronome: true
           });
         }
-        song.useMetronome = true;
         this.track = song.tracks[0];
         break;
 
@@ -160,9 +159,9 @@ export class InputEditorComponent implements OnInit {
       case 3:
         //method 3: just add base midiFile to a song, and continue
         song = sequencer.createSong(tmp_midiFile);
+        song.setTimeSignature(3, 4, true);
     }
     // song.tracks[0].recordEnabled = 'midi';
-    song.setTimeSignature(3, 4, true);
     return song;
   }
   /**
@@ -194,7 +193,7 @@ export class InputEditorComponent implements OnInit {
   flattenTracks(song: Song) {
     song.tracks.forEach(
       (track) => {
-        track.setInstrument('piano');
+        track.setInstrument('sinewave');
         track.monitor = true;
         track.setMidiInput('all', true);
       }
@@ -551,7 +550,7 @@ export class InputEditorComponent implements OnInit {
       iec.currNote = null;
       if (iec.currPart !== null) { this.unselectPart(iec.currPart); }
       iec.currPart = null;
-      iec.keyEditor.setPlayheadToX(e.clientX - iec.info.editorFrameOffsetX);
+      iec.keyEditor.setPlayheadToX(e.pageX - iec.info.editorFrameOffsetX);
       return;
     }
     // you could also use:
@@ -566,7 +565,7 @@ export class InputEditorComponent implements OnInit {
    * @param pitch - pitch to assign note
    * @param vel - velocity to assign note
    */
-  createNote(iec: InputEditorComponent, start: number, end: number, pitch: number, vel?: number): [MIDIEvent, MIDIEvent] {
+  createNoteEvents(iec: InputEditorComponent, start: number, end: number, pitch: number, vel?: number): [MIDIEvent, MIDIEvent] {
     if (iec.currPart != null && iec.currPart != undefined) {
     }
     else {
@@ -577,10 +576,133 @@ export class InputEditorComponent implements OnInit {
     }
     let noteEvts = createNewNoteEvents(start, end, pitch, vel);
     iec.currPart.addEvents(noteEvts);
-    // this.currPart.addEvents(createNewNoteEvents(start, end, pitch));
     iec.track.update();
     iec.song.update();
     return noteEvts;
+  }
+  /**
+   * init of basic input events
+   */
+  initInputEvents() {
+    let iec = InputEditorComponent.inpEdComp;
+    /**
+     * Text
+     */
+    iec.html.txt_KeyRangeStart.addEventListener('change', (e) => {
+      iec.keyEditor.lowestNote = parseInt(iec.html.txt_KeyRangeStart.value);
+      // iec.song.setPitchRange(iec.html.txt_KeyRangeStart.value, iec.keyEditor.highestNote);
+      // iec.keyEditor.updateSong(iec.song);
+    });
+    iec.html.txt_KeyRangeEnd.addEventListener('change', (e) => {
+      iec.keyEditor.highestNote = parseInt(iec.html.txt_KeyRangeEnd.value);
+      // iec.song.setPitchRange(iec.keyEditor.lowestNote, iec.html.txt_KeyRangeEnd.value);
+      // iec.song.update();
+      // iec.keyEditor.updateSong(iec.song);
+    });
+    // listen for scale and draw events, a scale event is fired when you change the number of bars per page
+    // a draw event is fired when you change the size of the viewport by resizing the browser window
+    iec.keyEditor.addEventListener('scale draw', () => { draw(iec); });
+
+    window.addEventListener('scroll', (sc) => { iec.info.UpdateInfo(null, iec.keyEditor); });
+    // listen for scroll events, the score automatically follows the song positon during playback: as soon as
+    // the playhead moves off the right side of the screen, a scroll event is fired
+    iec.keyEditor.addEventListener('scroll', (data) => { iec.html.div_Editor.scrollLeft = data.x; });
+    /**
+     * EXPERIMENTAL - Add notes and parts when double clicked in certain contexts
+     */
+    iec.html.div_Score.addEventListener('dblclick', (me) => { InputEditorComponent.inpEdComp.evt_Grid_lMouDbl(me); });
+    // you can set the playhead at any position by clicking on the score
+    /** OR - if element clicked on is a part or note, it sets the current note / part to that element */
+    iec.html.div_Score.addEventListener('mousedown', (me) => { InputEditorComponent.inpEdComp.evt_Generic_lMouDown(me); });
+    /** AUDIO CONTEXT CHECKER EVENT */
+    iec.html.div_Editor.addEventListener('click', (me) => { iec.info.UpdateInfo(me, iec.keyEditor); });
+    // if you scroll the score by hand you must inform the key editor. necessary for calculating
+    // the song position by x coordinate and the pitch by y coordinate
+    iec.html.div_Editor.addEventListener('scroll', () => {
+      iec.info.UpdateInfo(null, iec.keyEditor);
+      iec.keyEditor.updateScroll(iec.html.div_Editor.scrollLeft, iec.html.div_Editor.scrollTop);
+    }, false);
+    /**
+     * Score Mouse Movement Tracker
+     */
+    // iec.html.div_Score.addEventListener('mousemove', (e) => {
+    window.addEventListener('mousemove', (me) => {
+      me.preventDefault();
+      let tmp_part = iec.keyEditor.selectedPart;
+      let tmp_note = iec.keyEditor.selectedNote;
+
+      // show the song position and pitch of the current mouse position; handy for debugging
+      iec.info.UpdateInfo(me, iec.keyEditor);
+      // move part or note if selected
+      if (tmp_part !== undefined) iec.keyEditor.movePart(iec.info.pageX, iec.info.pageY);
+      if (tmp_note !== undefined) iec.keyEditor.moveNote(iec.info.pageX, iec.info.pageY - iec.info.editorFrameOffsetY);
+    },
+      false
+    );
+    /**
+     * Grid
+     */
+    iec.html.slct_Snap.addEventListener('change', () => {
+      iec.snapAmt = iec.html.slct_Snap.options[iec.html.slct_Snap.selectedIndex].value;
+      iec.keyEditor.setSnapX(Number.parseInt(iec.html.slct_Snap.options[iec.html.slct_Snap.selectedIndex].value));
+    }, false);
+    /**
+     * Buttons
+     */
+    iec.html.btn_Play.addEventListener('click', () => { iec.song.pause(); });
+    iec.html.btn_Record.addEventListener('click', () => { iec.song.startRecording(); });
+    iec.html.btn_Loop.addEventListener('click', () => { iec.song.loop = !iec.song.loop; });
+
+    iec.html.btn_Stop.addEventListener('click', () => { iec.song.stop(); });
+    iec.html.btn_Next.addEventListener('click', () => { iec.keyEditor.scroll('>'); });
+    iec.html.btn_Prev.addEventListener('click', () => { iec.keyEditor.scroll('<'); });
+    iec.html.btn_First.addEventListener('click', () => { iec.keyEditor.scroll('<<'); });
+    iec.html.btn_Last.addEventListener('click', () => { iec.keyEditor.scroll('>>'); });
+    iec.html.btn_AddPart.addEventListener('click', () => { addRandomPartAtPlayhead(iec); });
+    /**
+     * Sliders
+     */
+    iec.html.sldr_barsPerPage.addEventListener(
+      'change',
+      function (e) {
+        var tmp_bpp = parseFloat((e.target as HTMLInputElement).value);
+        iec.html.lbl_sldr_barsPerPage.innerHTML = '#bars ' + tmp_bpp;
+        iec.keyEditor.setBarsPerPage(tmp_bpp);
+      },
+      false
+    );
+    /**
+     * Keyboard Shortcuts
+     */
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace') { iec.song.stop(); }
+      if (e.key === ' ') { iec.song.pause(); }
+      if (e.key === 'Delete') { }
+      //dumb hack: brings playhead to first displayed location from left if offscreen to the left
+      if (e.key === 'ArrowRight') { iec.keyEditor.setPlayheadToX(Math.max(iec.keyEditor.getPlayheadX(true) + 16, 0)); }
+      if (e.key === 'ArrowLeft') { iec.keyEditor.setPlayheadToX(Math.max(iec.keyEditor.getPlayheadX(true) - 16, 0)); }
+    });
+  }
+  /**
+ * Initialization of basic window events
+ * @param iec
+ */
+  initWindowEvents(iec: InputEditorComponent) {
+    window.addEventListener('mouseover', (e) => { });
+    window.addEventListener('resize', (e) => { resize(); }, false);
+  }
+  /**
+   * Initializes the context sensitive editor controls
+   */
+  initContextEvents() {
+    InputEditorComponent.inpEdComp.song.addEventListener('play', () => { setElementValue(InputEditorComponent.inpEdComp.html.btn_Play, 'pause'); });
+    InputEditorComponent.inpEdComp.song.addEventListener('pause', () => { setElementValue(InputEditorComponent.inpEdComp.html.btn_Play, 'play'); });
+    InputEditorComponent.inpEdComp.song.addEventListener('stop', () => { setElementValue(InputEditorComponent.inpEdComp.html.btn_Play, 'play'); });
+
+    InputEditorComponent.inpEdComp.html.div_Editor.addEventListener('mousedown', () => {
+      InputEditorComponent.inpEdComp.html.div_currPart.innerHTML = 'Sel Part: ' + (InputEditorComponent.inpEdComp.currPart !== null ? InputEditorComponent.inpEdComp.currPart.id : 'none');
+      InputEditorComponent.inpEdComp.html.div_currNote.innerHTML = 'Sel Note: ' + (InputEditorComponent.inpEdComp.currNote !== null ? InputEditorComponent.inpEdComp.currNote.id : 'none');
+    });
   }
 
   /**
@@ -595,198 +717,14 @@ export function getEdgeDivs(note: MIDINote): [HTMLDivElement, HTMLDivElement, HT
   let tmp_noteDiv = document.getElementById(note.id) as HTMLDivElement;
   if (tmp_noteDiv != null)
     return [tmp_noteDiv, tmp_noteDiv.children[0] as HTMLDivElement, tmp_noteDiv.children[1] as HTMLDivElement]
-  else {
+  else
     return null;
-  }
 }
 let heldEdge;
 let changingNote;
 let holdingEdge = false;
 
-/**
- * Initialization of basic window events
- * @param iec
- */
-function initWindowEvents(iec: InputEditorComponent) {
-  /**
-   * Check for working Audio Context, and if not, create one and resume it when user mouses over window
-   */
-  window.addEventListener('mouseover', (e) => {
-    // if (!window.AudioContext) {
-    //   console.log('hitting the context startup');
-    // }
-    // if (!audCntxt) {
-    //   audCntxt = new AudioContext();
-    //   audCntxt.resume();
-    // }
-  });
-  window.addEventListener('resize', (e) => { resize(); }, false);
-}
-/**
- * Initializes the context sensitive editor controls
- */
-function initContextEvents() {
-  InputEditorComponent.inpEdComp.song.addEventListener('play', () => { setElementValue(InputEditorComponent.inpEdComp.html.btn_Play, 'pause'); });
-  InputEditorComponent.inpEdComp.song.addEventListener('pause', () => { setElementValue(InputEditorComponent.inpEdComp.html.btn_Play, 'play'); });
-  InputEditorComponent.inpEdComp.song.addEventListener('stop', () => { setElementValue(InputEditorComponent.inpEdComp.html.btn_Play, 'play'); });
 
-  InputEditorComponent.inpEdComp.html.div_Editor.addEventListener('mousedown', () => {
-    InputEditorComponent.inpEdComp.html.div_currPart.innerHTML = 'Sel Part: ' + (InputEditorComponent.inpEdComp.currPart !== null ? InputEditorComponent.inpEdComp.currPart.id : 'none');
-    InputEditorComponent.inpEdComp.html.div_currNote.innerHTML = 'Sel Note: ' + (InputEditorComponent.inpEdComp.currNote !== null ? InputEditorComponent.inpEdComp.currNote.id : 'none');
-  });
-}
-/**
- * init of basic input events
- */
-function initInputEvents() {
-  let iec = InputEditorComponent.inpEdComp;
-  /**
-   * Text
-   */
-  iec.html.txt_KeyRangeStart.addEventListener('change', (e) => {
-    iec.keyEditor.lowestNote = parseInt(iec.html.txt_KeyRangeStart.value);
-    // iec.song.setPitchRange(iec.html.txt_KeyRangeStart.value, iec.keyEditor.highestNote);
-    // iec.keyEditor.updateSong(iec.song);
-  });
-  iec.html.txt_KeyRangeEnd.addEventListener('change', (e) => {
-    iec.keyEditor.highestNote = parseInt(iec.html.txt_KeyRangeEnd.value);
-    // iec.song.setPitchRange(iec.keyEditor.lowestNote, iec.html.txt_KeyRangeEnd.value);
-    // iec.song.update();
-    // iec.keyEditor.updateSong(iec.song);
-  });
-  // listen for scale and draw events, a scale event is fired when you change the number of bars per page
-  // a draw event is fired when you change the size of the viewport by resizing the browser window
-  iec.keyEditor.addEventListener('scale draw', () => { draw(iec); });
-
-  // listen for scroll events, the score automatically follows the song positon during playback: as soon as
-  // the playhead moves off the right side of the screen, a scroll event is fired
-  iec.keyEditor.addEventListener('scroll', (data) => { iec.html.div_Editor.scrollLeft = data.x; });
-  /**
-   * EXPERIMENTAL - Add notes and parts when double clicked in certain contexts
-   */
-  iec.html.div_Score.addEventListener('dblclick', (e) => { InputEditorComponent.inpEdComp.evt_Grid_lMouDbl(e); });
-  // you can set the playhead at any position by clicking on the score
-  /**
-   * OR - if element clicked on is a part or note, it sets the current note / part to that element
-   */
-  iec.html.div_Score.addEventListener('mousedown', (e) => { InputEditorComponent.inpEdComp.evt_Generic_lMouDown(e); });
-  /**
-   * AUDIO CONTEXT CHECKER EVENT
-   */
-  iec.html.div_Editor.addEventListener('click', (e) => {
-    // if (!audCntxt) {
-    //   audCntxt = new AudioContext();
-    //   audCntxt.resume();
-    //   if (window.AudioContext && window.AudioContext != audCntxt) {
-    //     window.AudioContext = audCntxt;
-    //     console.log('hitting the context startup');
-    //   }
-    // }
-  });
-  // if you scroll the score by hand you must inform the key editor. necessary for calculating
-  // the song position by x coordinate and the pitch by y coordinate
-  iec.html.div_Editor.addEventListener('scroll', () => {
-    iec.keyEditor.updateScroll(iec.html.div_Editor.scrollLeft, iec.html.div_Editor.scrollTop);
-  }, false);
-  /**
-   * Score Mouse Movement Tracker
-   */
-  // iec.html.div_Score.addEventListener('mousemove', (e) => {
-  window.addEventListener('mousemove', (e) => {
-    e.preventDefault();
-    let tmp_part = iec.keyEditor.selectedPart;
-    let tmp_note = iec.keyEditor.selectedNote;
-
-    // show the song position and pitch of the current mouse position; handy for debugging
-    iec.info.screenX = e.screenX;
-    iec.info.screenY = e.screenY;
-    iec.info.pageX = e.pageX;
-    iec.info.pageY = e.pageY;
-    iec.info.clientX = e.clientX;
-    iec.info.clientY = e.clientY;
-    iec.info.mouseBarPos = iec.keyEditor.getPositionAt(iec.info.pageX).barsAsString;
-    iec.info.editorScrollX = iec.html.div_Editor.scrollLeft;
-    iec.info.editorScrollY = iec.html.div_Editor.scrollTop;
-    iec.info.editorFrameOffsetY = iec.html.div_Editor.offsetTop;
-    iec.info.editorFrameOffsetX = iec.html.div_Editor.offsetLeft;
-    iec.info.headX = iec.keyEditor.getPlayheadX();
-    iec.info.scrolledHeadX = iec.keyEditor.getPlayheadX(true);
-    iec.info.snapTicksAtHead = iec.keyEditor.getTicksAt(iec.info.headX);
-    iec.info.ticksAtHead = iec.keyEditor.getTicksAt(iec.info.headX, false);
-    iec.info.scrollTicksAtHead = iec.keyEditor.getTicksAt(iec.info.scrolledHeadX, false);
-    iec.info.ticksAtX = iec.keyEditor.getTicksAt(
-      iec.info.clientX - iec.info.editorFrameOffsetX, false);
-    iec.info.snapTicksAtX = iec.keyEditor.getTicksAt(
-      iec.info.clientX - iec.info.editorFrameOffsetX, true);
-    iec.html.div_Info1.innerHTML =
-      `client: (${iec.info.clientX}, ${iec.info.clientY}')` +
-      `<br/>screen: (${iec.info.screenX}, ${iec.info.screenY})` +
-      '<br/>editor-scrl: (' + iec.info.editorScrollX + ', ' + iec.info.editorScrollY + ')' +
-      '<br/>page: (' + iec.info.pageX + ', ' + iec.info.pageY + ')' +
-      '<br/>ticks-at-mouse: ' + iec.info.ticksAtX.toFixed(1) +
-      '<br/>x Bar: ' + iec.info.mouseBarPos +
-      '<br/>x-head: ' + iec.info.headX.toFixed(2) +
-      '<br/>scrolled-x-head: ' + iec.info.scrolledHeadX.toFixed(2) +
-      '<br/>snap-ticks-head: ' + iec.info.snapTicksAtHead.toFixed(0) +
-      '<br/>ticks-head: ' + iec.info.ticksAtHead.toFixed(0);
-    ;
-    iec.info.mousePitchPos = iec.keyEditor.getPitchAt(iec.info.pageY - iec.html.div_Editor.offsetTop).number;
-    iec.html.div_Info2.innerHTML = 'y Pitch: ' + iec.info.mousePitchPos +
-      '\nframe-offset-y: ' + iec.info.editorFrameOffsetY;
-    // move part or note if selected
-    if (tmp_part !== undefined) {
-      iec.keyEditor.movePart(iec.info.pageX, iec.info.pageY);
-    }
-    if (tmp_note !== undefined) {
-      iec.keyEditor.moveNote(iec.info.pageX, iec.info.pageY - iec.info.editorFrameOffsetY);
-    }
-  },
-    false
-  );
-  /**
-   * Grid
-   */
-  iec.html.slct_Snap.addEventListener('change', () => {
-    iec.keyEditor.setSnapX(Number.parseInt(
-      iec.html.slct_Snap.options[iec.html.slct_Snap.selectedIndex].value));
-  }, false);
-  /**
-   * Buttons
-   */
-  iec.html.btn_Play.addEventListener('click', () => { iec.song.pause(); });
-  iec.html.btn_Record.addEventListener('click', () => { iec.song.startRecording(); });
-  iec.html.btn_Loop.addEventListener('click', () => { iec.song.loop = !iec.song.loop; });
-
-  iec.html.btn_Stop.addEventListener('click', () => { iec.song.stop(); });
-  iec.html.btn_Next.addEventListener('click', () => { iec.keyEditor.scroll('>'); });
-  iec.html.btn_Prev.addEventListener('click', () => { iec.keyEditor.scroll('<'); });
-  iec.html.btn_First.addEventListener('click', () => { iec.keyEditor.scroll('<<'); });
-  iec.html.btn_Last.addEventListener('click', () => { iec.keyEditor.scroll('>>'); });
-  iec.html.btn_AddPart.addEventListener('click', () => { addRandomPartAtPlayhead(iec); });
-  /**
-   * Sliders
-   */
-  iec.html.sldr_barsPerPage.addEventListener(
-    'change',
-    function (e) {
-      var tmp_bpp = parseFloat((e.target as HTMLInputElement).value);
-      iec.html.lbl_sldr_barsPerPage.innerHTML = '#bars ' + tmp_bpp;
-      iec.keyEditor.setBarsPerPage(tmp_bpp);
-    },
-    false
-  );
-  /**
-   * Keyboard Shortcuts
-   */
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Backspace') { iec.song.stop(); }
-    if (e.key === ' ') { iec.song.pause(); }
-    if (e.key === 'Delete') { }
-    //dumb hack: brings playhead to first displayed location from left if offscreen to the left
-    if (e.key === 'ArrowRight') { iec.keyEditor.setPlayheadToX(Math.max(iec.keyEditor.getPlayheadX(true) + 16, 0)); }
-    if (e.key === 'ArrowLeft') { iec.keyEditor.setPlayheadToX(Math.max(iec.keyEditor.getPlayheadX(true) - 16, 0)); }
-  });
-}
 /**
  * set generic element's value to val
  * @param ref_elmt
@@ -854,8 +792,6 @@ function drawHorizontalLine(ref_data) {
   div_HLine.innerHTML = ref_data.note.fullName;
   div_HLine.style.height = pitchHeight + 'px';
   div_HLine.style.top = ref_data.y + 'px';
-  // tmp_div_HLine.y = ref_data.y;
-  // if (iec !== null)
   InputEditorComponent.inpEdComp.html.div_PitchLines.appendChild(div_HLine);
 
 }
@@ -1050,22 +986,7 @@ function render() {
   }
   //update head values if playing
   if (iec.song.playing) {
-    iec.info.headX = iec.keyEditor.getPlayheadX();
-    iec.info.scrolledHeadX = iec.keyEditor.getPlayheadX(true);
-    iec.info.snapTicksAtHead = iec.keyEditor.getTicksAt(iec.info.headX);
-    iec.info.ticksAtHead = iec.keyEditor.getTicksAt(iec.info.headX, false);
-    iec.info.scrollTicksAtHead = iec.keyEditor.getTicksAt(iec.info.scrolledHeadX, false);
-    iec.html.div_Info1.innerHTML =
-      'client: (' + iec.info.clientX + ', ' + iec.info.clientY + ')' +
-      '<br/>screen: (' + iec.info.screenX + ', ' + iec.info.screenY + ')' +
-      '<br/>editor-scrl: (' + iec.info.editorScrollX + ', ' + iec.info.editorScrollY + ')' +
-      '<br/>page: (' + iec.info.pageX + ', ' + iec.info.pageY + ')' +
-      '<br/>ticks-at-mouse: ' + iec.info.ticksAtX.toFixed(1) +
-      '<br/>x Bar: ' + iec.info.mouseBarPos +
-      '<br/>x-head: ' + iec.info.headX.toFixed(2) +
-      '<br/>scrolled-x-head: ' + iec.info.scrolledHeadX.toFixed(2) +
-      '<br/>snap-ticks-head: ' + iec.info.snapTicksAtHead +
-      '<br/>ticks-head: ' + iec.info.ticksAtHead;
+    iec.info.UpdateInfo(null, iec.keyEditor);
   }
   requestAnimationFrame(render);
 }
@@ -1152,7 +1073,7 @@ function addPartAtMouse(iec: InputEditorComponent) {
     tmp_events.push(sequencer.createMidiEvent(tmp_ticks, InputEditorComponent.NOTE_OFF, tmp_pitch, 0));
     tmp_ticks += tmp_noteLength;
   }
-  tmp_ticks = iec.info.ticksAtHead;
+  tmp_ticks = iec.info.totalTicksAtHead;
 
   tmp_part.addEvents(tmp_events);
   if (!InputEditorComponent.inpEdComp.track) {
@@ -1259,6 +1180,9 @@ export class EditorInfo {
   clientY: number;
   screenX: number;
   screenY: number;
+  editorX: number;
+  editorY: number;
+
   headX: number;
   scrolledHeadX: number;
   mouseBarPos;
@@ -1270,9 +1194,10 @@ export class EditorInfo {
   editorScrollY;
   snapTicksAtX: number;
   ticksAtX: number;
-  snapTicksAtHead: number;
+  totalTicksAtHead: number;
+  snapTotalTicksAtHead: number;
   scrollTicksAtHead: number;
-  ticksAtHead: number;
+  snapScrollTicksAtHead: number;
   instruments: Instrument[];
   currNote = null;
   currPart = null;
@@ -1283,6 +1208,34 @@ export class EditorInfo {
   flattenTracksToSingleTrack = true;
   editorHeight = 480;
   edHTMLShell = new EditorHTMLShell();
+  UpdateInfo(me: MouseEvent, ke: KeyEditor) {
+    if (me !== null) {
+      this.screenX = me.screenX;
+      this.screenY = me.screenY;
+      this.pageX = me.pageX;
+      this.pageY = me.pageY;
+      this.clientX = me.clientX;
+      this.clientY = me.clientY;
+      this.editorX = me.pageX - this.editorFrameOffsetX;
+      this.editorY = me.pageY - this.editorFrameOffsetY;
+    }
+    this.mouseBarPos = ke.getPositionAt(this.pageX - this.editorFrameOffsetX).barsAsString;
+    this.editorScrollX = this.edHTMLShell.div_Editor.scrollLeft;
+    this.editorScrollY = this.edHTMLShell.div_Editor.scrollTop;
+    this.editorFrameOffsetY = this.edHTMLShell.div_Editor.offsetTop;
+    this.editorFrameOffsetX = this.edHTMLShell.div_Editor.offsetLeft;
+    this.headX = ke.getPlayheadX();
+    this.scrolledHeadX = ke.getPlayheadX(true);
+    this.totalTicksAtHead = ke.getTicksAt(this.headX, false);
+    this.snapTotalTicksAtHead = ke.getTicksAt(this.headX);
+    this.scrollTicksAtHead = ke.getTicksAt(this.scrolledHeadX, false);
+    this.snapScrollTicksAtHead = ke.getTicksAt(this.scrolledHeadX);
+    this.mousePitchPos = ke.getPitchAt(this.pageY - this.edHTMLShell.div_Editor.offsetTop).number;
+    this.ticksAtX = ke.getTicksAt(
+      this.clientX - this.editorFrameOffsetX, false);
+    this.snapTicksAtX = ke.getTicksAt(
+      this.clientX - this.editorFrameOffsetX, true);
+  }
 }
 /**
  * contains all the separate elements in the editor for quick and frequently necessary reference
@@ -1312,8 +1265,9 @@ export class EditorHTMLShell {
   div_Controls: HTMLDivElement;
   div_BarsBeats: HTMLDivElement;
   div_Seconds: HTMLDivElement;
-  div_Info1: HTMLDivElement;
-  div_Info2: HTMLDivElement;
+
+  tbl_DBGInfo: HTMLTableElement;
+
   div_currNote: HTMLDivElement;
   div_currPart: HTMLDivElement;
 
@@ -1353,8 +1307,7 @@ export class EditorHTMLShell {
       this.div_Controls = document.getElementById('editor-controls') as HTMLDivElement,
       this.div_BarsBeats = document.getElementById('time-bars-beats') as HTMLDivElement,
       this.div_Seconds = document.getElementById('time-seconds') as HTMLDivElement,
-      this.div_Info1 = document.getElementById('info-1') as HTMLDivElement,
-      this.div_Info2 = document.getElementById('info-2') as HTMLDivElement,
+      this.tbl_DBGInfo = document.getElementById('debug-info') as HTMLTableElement,
       this.div_PageNumbers = document.getElementById('page-numbers') as HTMLDivElement,
       this.div_Editor = document.getElementById('editor') as HTMLDivElement,
       this.div_Score = document.getElementById('score') as HTMLDivElement,

@@ -67,9 +67,9 @@ body{
 #scale-label{
 	color: #211E1E;
 }
-#info-1, #info-2{
+/* #info-1, #info-2{
 	color: #1BB2E0;
-}
+} */
 .pipe{
 	color: #eee;
 	margin-top: 0px;

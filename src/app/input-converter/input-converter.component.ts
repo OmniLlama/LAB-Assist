@@ -28,11 +28,12 @@ export class InputConverterComponent implements OnInit {
   midiOutPort;
   testPadObj: GamepadObject;
   midi;
-  inp;
   trackingNotes: boolean;
+  liveUpdateHeldNotes: boolean;
   recordingPrimed: boolean;
   trackedNotes: Array<[number, number, number]>; // startTicks, endTicks, pitch
 
+  heldNotes: Array<[MIDINote, number]>;
   stxHeld: Array<boolean>;
   stxHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
   stxInpStarts: Array<number>;
@@ -63,6 +64,7 @@ export class InputConverterComponent implements OnInit {
     console.warn(port.name);
   }
   ngAfterViewInit() {
+    this.heldNotes = new Array<[MIDINote, number]>();
     this.getSetHTMLElements(this);
     this.inpEdCmp = InputEditorComponent.inpEdComp;
     this.inpDispCmp = InputDisplayComponent.inpDispCmp;
@@ -122,7 +124,6 @@ export class InputConverterComponent implements OnInit {
     let idc = InputDisplayComponent.inpDispCmp;
     let iec = InputEditorComponent.inpEdComp;
     let padObj = icc.testPadObj;
-    let pad = getPad();
     // if(!this.recordingPrimed) return;
     if (iec.song.playing && !icc.trackingNotes) {
       icc.trackedNotes = new Array<[number, number, number]>();
@@ -136,57 +137,54 @@ export class InputConverterComponent implements OnInit {
     /**
      * Update Controller Axes */
     padObj.pad.axes.forEach((a, ind) => {
-      // pad.axes.forEach((a, ind) => {
-      let i1 = (ind * 2);
-      let i2 = (ind * 2) + 1;
+      let i = (ind * 2);
+      let j = (ind * 2) + 1;
       let pitchNum;
       if (a.valueOf() > icc.deadZone) {
         pitchNum = getDirectionPitchFromAxis(ind, a.valueOf());
-        if (!icc.stxHeld[i2]) {
-          icc.stxHeld[i2] = true;
-          icc.stxHeld[i1] = false;
+        if (!icc.stxHeld[j]) {
+          icc.stxHeld[j] = true;
+          icc.stxHeld[i] = false;
           if (icc.trackingNotes) {
-            icc.stxInpStarts[i2] = iec.info.ticksAtHead;
-            let thing = iec.createNote(iec,
-              icc.stxInpStarts[i2],
-              icc.stxInpStarts[i2] + 128,
+            icc.stxInpStarts[j] = iec.info.totalTicksAtHead;
+            let thing = iec.createNoteEvents(iec,
+              icc.stxInpStarts[j],
+              icc.stxInpStarts[j] + 128,
               pitchNum, a.valueOf() * 127);
-            icc.stxHeldNotes[i2] = [thing[0].midiNote, iec.info.ticksAtHead];
+            icc.stxHeldNotes[j] = [thing[0].midiNote, iec.info.totalTicksAtHead];
           }
         }
       } else if (a.valueOf() < -icc.deadZone) {
         pitchNum = getDirectionPitchFromAxis(ind, a.valueOf());
-        if (!icc.stxHeld[i1]) {
-          icc.stxHeld[i1] = true;
-          icc.stxHeld[i2] = false;
+        if (!icc.stxHeld[i]) {
+          icc.stxHeld[i] = true;
+          icc.stxHeld[j] = false;
           if (icc.trackingNotes) {
-            icc.stxInpStarts[i1] = iec.info.ticksAtHead;
-            let thing = iec.createNote(iec,
-              icc.stxInpStarts[i1],
-              icc.stxInpStarts[i1] + 128,
+            icc.stxInpStarts[i] = iec.info.totalTicksAtHead;
+            let thing = iec.createNoteEvents(iec,
+              icc.stxInpStarts[i],
+              icc.stxInpStarts[i] + 128,
               pitchNum, -a.valueOf() * 127);
-            icc.stxHeldNotes[i1] = [thing[0].midiNote, iec.info.ticksAtHead];
+            icc.stxHeldNotes[i] = [thing[0].midiNote, iec.info.totalTicksAtHead];
           }
         }
       } else {
-        icc.stxHeld[i1] = false;
-        icc.stxHeld[i2] = false;
+        icc.stxHeld[i] = false;
+        icc.stxHeld[j] = false;
       }
       if (icc.trackingNotes) {
-        if (icc.stxHeld[i2]) {
-          icc.stxHeldNotes[i2][0].part.moveEvent(icc.stxHeldNotes[i2][0].noteOff,
-            (iec.info.ticksAtHead - icc.stxHeldNotes[i2][1]));
-          icc.stxHeldNotes[i2][1] = iec.info.ticksAtHead;
-          iec.song.update();
-        } else if (icc.stxHeld[i1]) {
-          icc.stxHeldNotes[i1][0].part.moveEvent(icc.stxHeldNotes[i1][0].noteOff,
-            (iec.info.ticksAtHead - icc.stxHeldNotes[i1][1]));
-          icc.stxHeldNotes[i1][1] = iec.info.ticksAtHead;
-          iec.song.update();
-        } else if (!icc.stxHeld[i2] && icc.stxHeldNotes[i2] != null) {
-          icc.stxHeldNotes[i2] = null;
-        } else if (!icc.stxHeld[i1] && icc.stxHeldNotes[i1] != null) {
-          icc.stxHeldNotes[i1] = null;
+        if (icc.stxHeld[j]) {
+          icc.stxHeldNotes[j][0].part.moveEvent(icc.stxHeldNotes[j][0].noteOff,
+            (iec.info.totalTicksAtHead - icc.stxHeldNotes[j][1]));
+          icc.stxHeldNotes[j][1] = iec.info.totalTicksAtHead;
+        } else if (icc.stxHeld[i]) {
+          icc.stxHeldNotes[i][0].part.moveEvent(icc.stxHeldNotes[i][0].noteOff,
+            (iec.info.totalTicksAtHead - icc.stxHeldNotes[i][1]));
+          icc.stxHeldNotes[i][1] = iec.info.totalTicksAtHead;
+        } else if (!icc.stxHeld[j] && icc.stxHeldNotes[j] != null) {
+          icc.stxHeldNotes[j] = null;
+        } else if (!icc.stxHeld[i] && icc.stxHeldNotes[i] != null) {
+          icc.stxHeldNotes[i] = null;
         }
       }
     });
@@ -202,9 +200,10 @@ export class InputConverterComponent implements OnInit {
         icc.midiOutPort.noteOn(0, pitch, 127);
         //if RECORDING
         if (icc.trackingNotes) {
-          icc.dpadInpStarts[ind] = iec.info.ticksAtHead;
-          let thing = iec.createNote(iec, icc.dpadInpStarts[ind], icc.dpadInpStarts[ind] + 128, pitch);
-          icc.dpadHeldNotes[ind] = [thing[0].midiNote, iec.info.ticksAtHead];
+          icc.dpadInpStarts[ind] = iec.info.scrollTicksAtHead;
+          let noteEvts = iec.createNoteEvents(iec, icc.dpadInpStarts[ind], icc.dpadInpStarts[ind] + 128, pitch);
+          icc.dpadHeldNotes[ind] = [noteEvts[0].midiNote, iec.info.scrollTicksAtHead];
+          // icc.heldNotes.push(icc.dpadHeldNotes[ind]);
           console.log('hit button while playing');
         }
         //if RELEASED this frame
@@ -213,21 +212,17 @@ export class InputConverterComponent implements OnInit {
         icc.midiOutPort.noteOff(0, pitch, 127);
         //if RECORDING
         if (icc.trackingNotes) {
-          icc.dpadInpEnds[ind] = iec.info.ticksAtHead;
+          icc.dpadInpEnds[ind] = iec.info.scrollTicksAtHead;
           icc.trackedNotes.push([icc.dpadInpStarts[ind], icc.dpadInpEnds[ind], pitch]);
+          if (!icc.liveUpdateHeldNotes)
+            icc.dpadHeldNotes[ind][0].part.moveEvent(icc.dpadHeldNotes[ind][0].noteOff, (iec.info.scrollTicksAtHead - icc.dpadHeldNotes[ind][0].noteOff.ticks));
+          // icc.heldNotes.splice(icc.heldNotes.indexOf(icc.heldNotes[ind]), 1);
         }
+
       }
       // EXPERIMENTALISISISMZ
       if (icc.trackingNotes) {
-        if (icc.dpadHeld[ind]) {
-          icc.dpadHeldNotes[ind][0].part.moveEvent(icc.dpadHeldNotes[ind][0].noteOff,
-            (iec.info.scrollTicksAtHead - icc.dpadHeldNotes[ind][1]));
-          icc.dpadHeldNotes[ind][1] = iec.info.ticksAtHead;
-          iec.song.update();
-        }
-        else if (!icc.dpadHeld[ind] && icc.dpadHeldNotes[ind] != null) {
-          icc.dpadHeldNotes[ind] = null;
-        }
+        icc.updateHeldNote(icc.dpadHeld[ind], icc.dpadHeldNotes[ind], ind, iec.info.scrollTicksAtHead, icc.liveUpdateHeldNotes)
       }
       var btn = dpadIconDivs[ind] as HTMLDivElement;
       if (btn != undefined) {
@@ -244,68 +239,50 @@ export class InputConverterComponent implements OnInit {
           case 2: dirStr = 'left'; break;
           case 3: dirStr = 'right'; break;
         }
-        if (pressed) {
-          // If pressed, switches to the pressed version of the button's image
-          imageStr = `<img id="icon-img" src="assets/images/pressed_${dirStr}.png">`;
-          btn.innerHTML = imageStr;
-        } else {
-          // If released/not pressed, switches to the regular version of the button's image
-          imageStr = `<img id="icon-img" src="assets/images/${dirStr}.png" >`;
-          btn.innerHTML = imageStr;
-        }
+        imageStr = `<img id="icon-img" src="assets/images/${pressed ? 'pressed_' : ''}${dirStr}.png">`;
+        btn.innerHTML = imageStr;
       }
     });
-
     /**
      * Update Controller Buttons
      */
     let btnIconDivs = document.getElementsByClassName('editor-input-icon');
-    let btns: readonly GamepadButton[] = pad.buttons;
     let harmMinScaleArr: number[] = [0, 2, 3, 5, 7, 8, 11, 12]; //harmonic minor scale
     let majScaleArr: number[] = [0, 2, 4, 5, 7, 9, 11, 12]; //major scale
     let scale: number[] = harmMinScaleArr;
     let rootNote: number = 51;
     padObj.pad.buttons.forEach((b, ind) => {
-      // pad.buttons.forEach((b, ind) => {
       if (ind >= scale.length) return;
       let pitch: string = getPitchStringFromNumber(scale[ind] + rootNote);
       //if PRESSED this frame
       if (b.pressed && !icc.btnsHeld[ind]) {
         icc.btnsHeld[ind] = true;
-        if (dPadBtns.some((b) => b.pressed)) {
-          console.log('should be fuckin bending, idk');
-        }
-        else {
-        }
         icc.midiOutPort.noteOn(0, pitch, 127);
         //if RECORDING
         if (icc.trackingNotes) {
-          icc.btnInpStarts[ind] = iec.info.ticksAtHead;
-          let thing = iec.createNote(iec, icc.btnInpStarts[ind], icc.btnInpStarts[ind] + 128, getButtonPitch(ind));
-          icc.btnHeldNotes[ind] = [thing[0].midiNote, iec.info.ticksAtHead];
+          icc.btnInpStarts[ind] = iec.info.scrollTicksAtHead;
+          let thing = iec.createNoteEvents(iec, icc.btnInpStarts[ind], icc.btnInpStarts[ind] + 128, getButtonPitch(ind));
+          icc.btnHeldNotes[ind] = [thing[0].midiNote, iec.info.scrollTicksAtHead];
+          // icc.heldNotes.push(icc.dpadHeldNotes[ind]);
         }
         //if RELEASED this frame
       } else if (!b.pressed && icc.btnsHeld[ind]) {
         icc.btnsHeld[ind] = false;
         icc.midiOutPort.noteOff(0, pitch, 127);
+
         //if RECORDING
         if (icc.trackingNotes) {
-          icc.btnInpStarts[ind] = iec.info.ticksAtHead;
-          icc.btnInpEnds[ind] = iec.info.ticksAtHead;
+          icc.btnInpStarts[ind] = iec.info.scrollTicksAtHead;
+          icc.btnInpEnds[ind] = iec.info.scrollTicksAtHead;
           icc.trackedNotes.push([icc.btnInpStarts[ind], icc.btnInpEnds[ind], getButtonPitch(ind)]);
+          if (!icc.liveUpdateHeldNotes)
+            icc.btnHeldNotes[ind][0].part.moveEvent(icc.btnHeldNotes[ind][0].noteOff, (iec.info.scrollTicksAtHead - icc.btnHeldNotes[ind][0].noteOff.ticks));
+          // icc.heldNotes.splice(icc.heldNotes.indexOf(icc.heldNotes[ind]), 1);
         }
       }
       // EXPERIMENTALISISISMZ
       if (icc.trackingNotes) {
-        if (icc.btnsHeld[ind]) {
-          icc.btnHeldNotes[ind][0].part.moveEvent(icc.btnHeldNotes[ind][0].noteOff,
-            (iec.info.scrollTicksAtHead - icc.btnHeldNotes[ind][1]));
-          icc.btnHeldNotes[ind][1] = iec.info.ticksAtHead;
-          iec.song.update();
-        }
-        else if (!icc.btnsHeld[ind] && icc.btnHeldNotes[ind] != null) {
-          icc.btnHeldNotes[ind] = null;
-        }
+        icc.updateHeldNote(icc.btnsHeld[ind], icc.btnHeldNotes[ind], ind, iec.info.scrollTicksAtHead, icc.liveUpdateHeldNotes);
       }
       let btn = btnIconDivs[ind] as HTMLDivElement;
       if (btn != undefined) {
@@ -315,24 +292,32 @@ export class InputConverterComponent implements OnInit {
         }
         let pct = Math.round(b.value * 100) + '%';
         btn.style.backgroundSize = pct + ' ' + pct;
-        let imageString = 'a';
-        let buttonString;
-        if (pressed) {
-          // If pressed, switches to the pressed version of the button's image
-          buttonString = nameButton(ind);
-          imageString = `<img id="icon-img" src="assets/images/pressed_${buttonString}.png">`;
-          btn.innerHTML = imageString;
-        } else {
-          // If released/not pressed, switches to the regular version of the button's image
-          buttonString = nameButton(ind);
-          imageString = `<img id="icon-img" src="assets/images/${buttonString}.png" >`;
-          btn.innerHTML = imageString;
-        }
+        let btnStr = nameButton(ind);
+        let imgStr = `<img id="icon-img" src="assets/images/${pressed ? 'pressed_' : ''}${btnStr}.png">`;
+        btn.innerHTML = imgStr;
       }
     });
-
+    if (icc.trackingNotes) {
+      icc.heldNotes = icc.heldNotes.filter((x) => x !== undefined);
+      if (icc.liveUpdateHeldNotes) {
+        // icc.heldNotes.forEach((n) => { n[0].part.moveEvent(n[0].noteOff, (iec.info.scrollTicksAtHead - n[0].noteOff.ticks)); });
+        // icc.heldNotes.forEach((n, i) => { this.updateHeldNotes(()) });
+      }
+    }
+    iec.song.update();
     JZZ().refresh();
     rAF(icc.updateController);
+  }
+  updateHeldNote(held: boolean, arr: [MIDINote, number], ind: number, pos: number, liveUpdate: boolean) {
+    if (held) {
+      if (this.liveUpdateHeldNotes) {
+        arr[0].part.moveEvent(arr[0].noteOff, (pos - arr[1]));
+      }
+      arr[1] = pos;
+    }
+    else if (!held && arr != null) {
+      arr[ind] = null;
+    }
   }
   /**
    *  Initialize the html element properties

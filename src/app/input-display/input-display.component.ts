@@ -29,6 +29,7 @@ export class InputDisplayComponent implements OnInit {
   mntKeys = Object.keys(MovementNotationType);
   bntKeys = Object.keys(ButtonNotationType);
   btnDivs: Array<HTMLDivElement>;
+  axisDivs: Array<HTMLSpanElement>;
   div_leftStick: HTMLDivElement;
   haveWebkitEvents = "WebKitGamepadEvent" in window;
   haveEvents = "GamepadEvent" in window;
@@ -174,11 +175,14 @@ export class InputDisplayComponent implements OnInit {
     //Append Buttons to div
     div_cntrllr.appendChild(div_btns);
 
+    this.axisDivs = new Array<HTMLSpanElement>();
     // Create Axis Meters
     let div_axes: HTMLDivElement = document.createElement("div");
     div_axes.className = "axes";
     for (let i = 0; i < gamepad.axes.length / 4; i++) {
-      div_axes.appendChild(this.createAxisSpanElement(i));
+      let sp = this.createAxisSpanElement(i);
+      div_axes.appendChild(sp);
+      this.axisDivs.push(sp);
     }
     //Append Meters to div
     div_cntrllr.appendChild(div_axes);
@@ -186,8 +190,8 @@ export class InputDisplayComponent implements OnInit {
     padObjs[gamepad.index].html = new GamepadHTMLShell(
       div_cntrllr,
       title,
-      div_axes,
-      div_btns
+      this.axisDivs,
+      this.btnDivs
     );
     //Hide start message
     document.getElementById("start").style.display = "none";
@@ -238,15 +242,11 @@ export class InputDisplayComponent implements OnInit {
   updateStatus(): void {
     this.scangamepads();
     /**
-     * Controller Status Loop
-     */
+     * Controller Status Loop */
     padObjs.forEach((j, ind) => {
       j.pad = pads[j.pad.index];
-      // pads.forEach((j, ind) => {
-
-      var pad =  navigator.getGamepads()[j.pad.index];
+      var pad = navigator.getGamepads()[j.pad.index];
       var d = j.html.parent;
-      // var d = document.getElementById("controller" + pad.index);
       /**
        * Button Status Loop */
       for (let i of padObjs[ind].getArcadeLayoutButtonNumbers()) {
@@ -259,21 +259,11 @@ export class InputDisplayComponent implements OnInit {
         if (typeof val == "object") {
           pressed = val.pressed;
         }
-        var pct = Math.round(val.value * 100) + "%";
-        b.style.backgroundSize = pct + " " + pct;
-        let imageString = "a";
-        let buttonString = "a";
-        if (pressed) {
-          // If pressed, switches to the pressed version of the button's image
-          buttonString = nameButton(i);
-          imageString = `<img src="assets/images/pressed_${buttonString}.png">`;
-          b.innerHTML = imageString;
-        } else {
-          // If released/not pressed, switches to the regular version of the button's image
-          buttonString = nameButton(i);
-          imageString = `<img src="assets/images/${buttonString}.png">`;
-          b.innerHTML = imageString;
-        }
+        // var pct = Math.round(val.value * 100) + "%";
+        // b.style.backgroundSize = pct + " " + pct;
+        let buttonString = nameButton(i);
+        let imageString = `<img src="assets/images/${pressed ? 'pressed_' : ''}${buttonString}.png">`;
+        b.innerHTML = imageString;
       }
       /**
        * Get Axis Status */
@@ -311,24 +301,15 @@ export class InputDisplayComponent implements OnInit {
   }
   arrayIndexToDirection(i) {
     switch (i) {
-      case 0:
-        return `up_left`;
-      case 1:
-        return `up`;
-      case 2:
-        return `up_right`;
-      case 3:
-        return `left`;
-      case 4:
-        return `ls`;
-      case 5:
-        return `right`;
-      case 6:
-        return `down_left`;
-      case 7:
-        return `down`;
-      case 8:
-        return `down_right`;
+      case 0: return `up_left`;
+      case 1: return `up`;
+      case 2: return `up_right`;
+      case 3: return `left`;
+      case 4: return `ls`;
+      case 5: return `right`;
+      case 6: return `down_left`;
+      case 7: return `down`;
+      case 8: return `down_right`;
     }
   }
 }
@@ -345,65 +326,44 @@ export class InputDisplayComponent implements OnInit {
  */
 function getJoystickDirections(horiAxis, vertAxis, arrowsArray) {
   let idc = InputDisplayComponent.inpDispCmp;
+  let ddz = idc.diagDeadzone, odz = idc.orthoDeadzone;
   let preString = '<img src="assets/images/';
   let postString = `.png" ${dirIconWidth} ${dirIconHeight}>`;
   // let stick = idc.div_leftStick;
 
   // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
-  if (horiAxis < -idc.diagDeadzone && vertAxis < -idc.diagDeadzone) {
+  if (horiAxis < -ddz && vertAxis < -ddz) {
     arrowsArray[0].innerHTML = `${preString}pressed_up_left${postString}`;
-    let index = 0;
-    resetArrows(arrowsArray, index);
-  } else if (horiAxis < -idc.diagDeadzone && vertAxis > idc.diagDeadzone) {
+    resetArrows(arrowsArray,0);
+  } else if (horiAxis < -ddz && vertAxis > ddz) {
     arrowsArray[5].innerHTML = `${preString}pressed_down_left${postString}`;
-    let index = 5;
-    resetArrows(arrowsArray, index);
-  } else if (horiAxis > idc.diagDeadzone && vertAxis < -idc.diagDeadzone) {
+    resetArrows(arrowsArray, 5);
+  } else if (horiAxis > ddz && vertAxis < -ddz) {
     arrowsArray[2].innerHTML = `${preString}pressed_up_right${postString}`;
-    let index = 2;
-    resetArrows(arrowsArray, index);
-  } else if (horiAxis > idc.diagDeadzone && vertAxis > idc.diagDeadzone) {
+    resetArrows(arrowsArray,2);
+  } else if (horiAxis > ddz && vertAxis > ddz) {
     arrowsArray[7].innerHTML = `${preString}pressed_down_right${postString}`;
-    let index = 7;
-    resetArrows(arrowsArray, index);
+    resetArrows(arrowsArray,7);
   }
 
   // Now handle all the regular directions, if the constraints for diagonal directions are not met
-  else if (
-    horiAxis < -idc.orthoDeadzone &&
-    vertAxis < Math.abs(idc.diagDeadzone)
-  ) {
+  else if (horiAxis < -odz && Math.abs(vertAxis) < ddz) {
     arrowsArray[3].innerHTML = `${preString}pressed_left${postString}`;
-    let index = 3;
-    resetArrows(arrowsArray, index);
-  } else if (
-    vertAxis < -idc.orthoDeadzone &&
-    horiAxis < Math.abs(idc.diagDeadzone)
-  ) {
+    resetArrows(arrowsArray, 3);
+  } else if (vertAxis < -odz && Math.abs(horiAxis) < ddz) {
     arrowsArray[1].innerHTML = `${preString}pressed_up${postString}`;
-    let index = 1;
-    resetArrows(arrowsArray, index);
-  } else if (
-    horiAxis > idc.orthoDeadzone &&
-    vertAxis < Math.abs(idc.diagDeadzone)
-  ) {
+    resetArrows(arrowsArray,1);
+  } else if (horiAxis > odz && Math.abs(vertAxis) < ddz) {
     arrowsArray[4].innerHTML = `${preString}pressed_right${postString}`;
-    let index = 4;
-    resetArrows(arrowsArray, index);
-  } else if (
-    vertAxis > idc.orthoDeadzone &&
-    horiAxis < Math.abs(idc.diagDeadzone)
-  ) {
+    resetArrows(arrowsArray,4);
+  } else if (vertAxis > odz && Math.abs(horiAxis) < ddz) {
     arrowsArray[6].innerHTML = `${preString}pressed_down${postString}`;
-    let index = 6;
-    resetArrows(arrowsArray, index);
+    resetArrows(arrowsArray,6);
   } else {
     for (let i = 0; i < 9; i++) {
       let arrow = document.createElement("div");
       arrow.className = "directionalArrows";
-      arrowsArray[i].innerHTML = `${preString}${idc.arrayIndexToDirection(
-        i
-      )}${postString}`;
+      arrowsArray[i].innerHTML = `${preString}${idc.arrayIndexToDirection(i)}${postString}`;
     }
   }
 }

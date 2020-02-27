@@ -81,6 +81,7 @@ export interface Song {
   setLoop: (loop?: boolean) => void
   setLeftLocator: (type: string, bar: number, beat?: number, sixteenth?: number, tick?: number) => void
   setRightLocator: (type: string, bar: number, beat?: number, sixteenth?: number, tick?: number) => void
+  setPlaybackSpeed: (speed: number) => void
   addEvents: (events: Array<MIDIEvent>) => void
   addTimeEvents: (events: Array<MIDIEvent>) => void
   removeTimeEvents: () => void
@@ -337,6 +338,7 @@ export type KeyEditor = {
   noteIterator
   partIterator
   width
+  updateSong(a: any): void
 }
 
 export type SnapShot = {

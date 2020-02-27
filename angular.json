@@ -31,8 +31,7 @@
               "src/styles.sass"
             ],
             "scripts": [
-              "src/app/input-editor/hb-editor-main.ts",
-              "node_modules/heartbeat-sequencer/build/heartbeat.js"
+              "node_modules/heartbeat-sequencer/build/heartbeat.js",
             ],
             "es5BrowserSupport": true
           },
