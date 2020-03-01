@@ -5,6 +5,7 @@ import {
   GamepadTypeString,
   GamepadType
 } from "src/Enums";
+import { InputConverterComponent } from '../input-converter/input-converter.component';
 
 export let pads: Array<Gamepad>;
 export let padObjs: Array<GamepadObject>;
@@ -33,9 +34,10 @@ export class InputDisplayComponent implements OnInit {
   div_leftStick: HTMLDivElement;
   haveWebkitEvents = "WebKitGamepadEvent" in window;
   haveEvents = "GamepadEvent" in window;
-  diagDeadzone = 0.4;
-  orthoDeadzone = 0.75;
+  diagDeadzone: number = 0.4;
+  orthoDeadzone: number = 0.75;
 
+  useDPad: boolean = true;
   constructor() { }
 
   ngOnInit(): void {
@@ -243,10 +245,10 @@ export class InputDisplayComponent implements OnInit {
     this.scangamepads();
     /**
      * Controller Status Loop */
-    padObjs.forEach((j, ind) => {
-      j.pad = pads[j.pad.index];
-      var pad = navigator.getGamepads()[j.pad.index];
-      var d = j.html.parent;
+    padObjs.forEach((padObj, ind) => {
+      padObj.pad = pads[padObj.pad.index];
+      var pad = navigator.getGamepads()[padObj.pad.index];
+      var d = padObj.html.parent;
       /**
        * Button Status Loop */
       for (let i of padObjs[ind].getArcadeLayoutButtonNumbers()) {
@@ -268,15 +270,22 @@ export class InputDisplayComponent implements OnInit {
       /**
        * Get Axis Status */
 
-      var arrowsArray = d.getElementsByClassName("directionalArrows");
+      var divs_arrow = d.getElementsByClassName("directionalArrows");
 
       let normAxes = normalizeVector(pad.axes[0], pad.axes[1]);
 
       this.div_leftStick.style.left = Math.round(24 * pad.axes[0]) + "px";
       this.div_leftStick.style.top = Math.round(24 * pad.axes[1]) + "px";
-      if (normAxes[2] > this.orthoDeadzone) {
-        getJoystickDirections(normAxes[0], normAxes[1], arrowsArray);
-      } else resetArrows(arrowsArray);
+      if (this.useDPad && padObj.DPad().some(dir => dir.pressed)) {
+        let padArr = new Array<boolean>(4);
+        padObj.DPad().forEach((d, i) => {
+          padArr[i] = d.pressed;
+        });
+        processDirectionalInput(padArr, divs_arrow);
+      }
+      else if (normAxes[2] > this.orthoDeadzone) {
+        processJoystickDirections(normAxes[0], normAxes[1], divs_arrow);
+      } else resetArrows(divs_arrow);
     });
 
     InputDisplayComponent.rAF(cb => this.updateStatus());
@@ -314,6 +323,45 @@ export class InputDisplayComponent implements OnInit {
   }
 }
 
+function processDirectionalInput(dirArr: boolean[], arwArr) {
+  let idc = InputDisplayComponent.inpDispCmp;
+  let preString = '<img src="assets/images/';
+  let postString = `.png" ${dirIconWidth} ${dirIconHeight}>`;
+  // let stick = idc.div_leftStick;
+
+  // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
+  if (dirArr[2] && dirArr[0]) {
+    arwArr[0].innerHTML = `${preString}pressed_up_left${postString}`;
+    resetArrows(arwArr, 0);
+  } else if (dirArr[2] && dirArr[1]) {
+    arwArr[5].innerHTML = `${preString}pressed_down_left${postString}`;
+    resetArrows(arwArr, 5);
+  } else if (dirArr[3] && dirArr[0]) {
+    arwArr[2].innerHTML = `${preString}pressed_up_right${postString}`;
+    resetArrows(arwArr, 2);
+  } else if (dirArr[3] && dirArr[1]) {
+    arwArr[7].innerHTML = `${preString}pressed_down_right${postString}`;
+    resetArrows(arwArr, 7);
+  }
+
+  // Now handle all the regular directions, if the constraints for diagonal directions are not met
+  else if (dirArr[2]) {
+    arwArr[3].innerHTML = `${preString}pressed_left${postString}`;
+    resetArrows(arwArr, 3);
+  } else if (dirArr[0]) {
+    arwArr[1].innerHTML = `${preString}pressed_up${postString}`;
+    resetArrows(arwArr, 1);
+  } else if (dirArr[3]) {
+    arwArr[4].innerHTML = `${preString}pressed_right${postString}`;
+    resetArrows(arwArr, 4);
+  } else if (dirArr[1]) {
+    arwArr[6].innerHTML = `${preString}pressed_down${postString}`;
+    resetArrows(arwArr, 6);
+  }
+  else
+    resetArrows(arwArr);
+}
+
 /**
  * The getJoystickDirections function looks at the axes of the controller.
  * Based on current axes information [0, 0, 0, 0].
@@ -322,9 +370,9 @@ export class InputDisplayComponent implements OnInit {
  * If the joystick is currently not going in any direction, all the icons will be reset to their regular image.
  * @param pad
  * @param horiAxis
- * @param arrowsArray
+ * @param arwArr
  */
-function getJoystickDirections(horiAxis, vertAxis, arrowsArray) {
+function processJoystickDirections(horiAxis, vertAxis, arwArr) {
   let idc = InputDisplayComponent.inpDispCmp;
   let ddz = idc.diagDeadzone, odz = idc.orthoDeadzone;
   let preString = '<img src="assets/images/';
@@ -333,37 +381,37 @@ function getJoystickDirections(horiAxis, vertAxis, arrowsArray) {
 
   // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
   if (horiAxis < -ddz && vertAxis < -ddz) {
-    arrowsArray[0].innerHTML = `${preString}pressed_up_left${postString}`;
-    resetArrows(arrowsArray,0);
+    arwArr[0].innerHTML = `${preString}pressed_up_left${postString}`;
+    resetArrows(arwArr, 0);
   } else if (horiAxis < -ddz && vertAxis > ddz) {
-    arrowsArray[5].innerHTML = `${preString}pressed_down_left${postString}`;
-    resetArrows(arrowsArray, 5);
+    arwArr[5].innerHTML = `${preString}pressed_down_left${postString}`;
+    resetArrows(arwArr, 5);
   } else if (horiAxis > ddz && vertAxis < -ddz) {
-    arrowsArray[2].innerHTML = `${preString}pressed_up_right${postString}`;
-    resetArrows(arrowsArray,2);
+    arwArr[2].innerHTML = `${preString}pressed_up_right${postString}`;
+    resetArrows(arwArr, 2);
   } else if (horiAxis > ddz && vertAxis > ddz) {
-    arrowsArray[7].innerHTML = `${preString}pressed_down_right${postString}`;
-    resetArrows(arrowsArray,7);
+    arwArr[7].innerHTML = `${preString}pressed_down_right${postString}`;
+    resetArrows(arwArr, 7);
   }
 
   // Now handle all the regular directions, if the constraints for diagonal directions are not met
   else if (horiAxis < -odz && Math.abs(vertAxis) < ddz) {
-    arrowsArray[3].innerHTML = `${preString}pressed_left${postString}`;
-    resetArrows(arrowsArray, 3);
+    arwArr[3].innerHTML = `${preString}pressed_left${postString}`;
+    resetArrows(arwArr, 3);
   } else if (vertAxis < -odz && Math.abs(horiAxis) < ddz) {
-    arrowsArray[1].innerHTML = `${preString}pressed_up${postString}`;
-    resetArrows(arrowsArray,1);
+    arwArr[1].innerHTML = `${preString}pressed_up${postString}`;
+    resetArrows(arwArr, 1);
   } else if (horiAxis > odz && Math.abs(vertAxis) < ddz) {
-    arrowsArray[4].innerHTML = `${preString}pressed_right${postString}`;
-    resetArrows(arrowsArray,4);
+    arwArr[4].innerHTML = `${preString}pressed_right${postString}`;
+    resetArrows(arwArr, 4);
   } else if (vertAxis > odz && Math.abs(horiAxis) < ddz) {
-    arrowsArray[6].innerHTML = `${preString}pressed_down${postString}`;
-    resetArrows(arrowsArray,6);
+    arwArr[6].innerHTML = `${preString}pressed_down${postString}`;
+    resetArrows(arwArr, 6);
   } else {
     for (let i = 0; i < 9; i++) {
       let arrow = document.createElement("div");
       arrow.className = "directionalArrows";
-      arrowsArray[i].innerHTML = `${preString}${idc.arrayIndexToDirection(i)}${postString}`;
+      arwArr[i].innerHTML = `${preString}${idc.arrayIndexToDirection(i)}${postString}`;
     }
   }
 }
@@ -374,12 +422,12 @@ function getJoystickDirections(horiAxis, vertAxis, arrowsArray) {
  * You can tell what direction the joystick is going.
  * Based on the direction of the joystick, the correct image for that direction is chosen.
  *  If the joystick is currently not going in any direction, all the icons will be reset to their regular image.
- * @param arrowsArray
+ * @param arwArr
  * @param index  */
-function resetArrows(arrowsArray, index = -1) {
-  for (let i = 0; i < arrowsArray.length; i++) {
+function resetArrows(arwArr, index = -1) {
+  for (let i = 0; i < arwArr.length; i++) {
     if (i != index) {
-      arrowsArray[i].innerHTML = returnXboxArrowImgElmt(i);
+      arwArr[i].innerHTML = returnXboxArrowImgElmt(i);
     }
   }
 }

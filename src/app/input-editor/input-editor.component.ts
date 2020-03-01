@@ -1174,35 +1174,33 @@ export function createEdgeBBoxes(bbox, xPx: number): [BBox, BBox] {
  * holds many useful values needed to help make heartbeat-sequencer compatible with our solution
  */
 export class EditorInfo {
-  pageX: number;
-  pageY: number;
-  clientX: number;
-  clientY: number;
-  screenX: number;
-  screenY: number;
-  editorX: number;
-  editorY: number;
+  pageX: number= 0;
+  pageY: number= 0;
+  clientX: number= 0;
+  clientY: number= 0;
+  screenX: number= 0;
+  screenY: number= 0;
+  editorX: number= 0;
+  editorY: number= 0;
 
-  headX: number;
-  scrolledHeadX: number;
-  mouseBarPos;
-  mousePitchPos;
+  headX: number= 0;
+  scrolledHeadX: number= 0;
+  mouseBarPos: string;
+  mousePitchPos: number;
 
-  editorFrameOffsetY;
-  editorFrameOffsetX;
-  editorScrollX;
-  editorScrollY;
-  snapTicksAtX: number;
-  ticksAtX: number;
-  totalTicksAtHead: number;
-  snapTotalTicksAtHead: number;
-  scrollTicksAtHead: number;
-  snapScrollTicksAtHead: number;
+  editorFrameOffsetY= 0;
+  editorFrameOffsetX= 0;
+  editorScrollX= 0;
+  editorScrollY= 0;
+  snapTicksAtX: number = 0;
+  ticksAtX: number = 0;
+  totalTicksAtHead: number= 0;
+  snapTotalTicksAtHead: number= 0;
+  scrollTicksAtHead: number= 0;
+  snapScrollTicksAtHead: number= 0;
   instruments: Instrument[];
   currNote = null;
   currPart = null;
-  // pitchStart = 0;
-  // pitchEnd = 80;
   allNotes: Note[];
   allParts: Part[];
   flattenTracksToSingleTrack = true;
