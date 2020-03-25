@@ -21,7 +21,6 @@ const btnIconHeight = "height=72px";
 export class InputDisplayComponent implements OnInit {
   static rAF = window.requestAnimationFrame;
   static inpDispCmp: InputDisplayComponent;
-  // controllers: Array<Gamepad>;
   gamepadObjects: Array<GamepadObject>;
   mvNotTy: MovementNotationType;
   mvNotTypes = MovementNotationType;
