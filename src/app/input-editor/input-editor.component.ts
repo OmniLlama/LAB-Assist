@@ -367,18 +367,15 @@ export class InputEditorComponent implements OnInit {
   /*
     Note Edge Stuff
    */
-  /**
-   * Event: mouse over left note edge
+  /** Event: mouse over left note edge
    * @param e
    */
   evt_NoteEdge_Left_MouOver(e: MouseEvent): void { (e.target as HTMLDivElement).style.cursor = 'w-resize'; }
-  /**
-   * Event: mouse over right note edge
+  /** Event: mouse over right note edge
    * @param e
    */
   evt_NoteEdge_Right_MouOver(e: MouseEvent): void { (e.target as HTMLDivElement).style.cursor = 'e-resize'; }
-  /**
-   * Event: mouse left click on left note edge
+  /** Event: mouse left click on left note edge
    * @param e
    */
   evt_NoteEdge_Left_lMouDown(e: MouseEvent): void {
@@ -392,8 +389,7 @@ export class InputEditorComponent implements OnInit {
     document.addEventListener('mousemove', InputEditorComponent.inpEdComp.evt_NoteEdge_Left_MouMove, false);
     document.addEventListener('mouseup', InputEditorComponent.inpEdComp.evt_NoteEdge_Left_lMouUp);
   }
-  /**
-   * Event: mouse left click on right note edge
+  /** Event: mouse left click on right note edge
    * @param e
    */
   evt_NoteEdge_Right_lMouDown(e: MouseEvent) {
@@ -407,8 +403,7 @@ export class InputEditorComponent implements OnInit {
     document.addEventListener('mousemove', InputEditorComponent.inpEdComp.evt_NoteEdge_Right_MouMove, false);
     document.addEventListener('mouseup', InputEditorComponent.inpEdComp.evt_NoteEdge_Right_lMouUp);
   }
-  /**
-   * Event: mouse move over left note edge
+  /** Event: mouse move over left note edge
    * @param e
    */
   evt_NoteEdge_Left_MouMove(e: MouseEvent) {
@@ -430,8 +425,7 @@ export class InputEditorComponent implements OnInit {
     else {
     }
   }
-  /**
-   * Event: mouse move over right note edge
+  /** Event: mouse move over right note edge
    * @param e
    */
   evt_NoteEdge_Right_MouMove(e: MouseEvent) {
@@ -451,8 +445,7 @@ export class InputEditorComponent implements OnInit {
 
     }
   }
-  /**
-   * Event: left mouse click up on left note edge
+  /** Event: left mouse click up on left note edge
    * @param e
    */
   evt_NoteEdge_Left_lMouUp(e: MouseEvent) {
@@ -464,8 +457,7 @@ export class InputEditorComponent implements OnInit {
     InputEditorComponent.inpEdComp.song.update();
     (e.target as HTMLDivElement).style.cursor = 'default';
   }
-  /**
-   * Event: left mouse click up on right note edge
+  /** Event: left mouse click up on right note edge
    * @param e
    */
   evt_NoteEdge_Right_lMouUp(e: MouseEvent) {
@@ -483,8 +475,7 @@ export class InputEditorComponent implements OnInit {
 
   evt_Grid_lMouUp(e: MouseEvent) { }
 
-  /**
-   * Event: left mouse double click on editor grid
+  /** Event: left mouse double click on editor grid
    * @param e
    */
   evt_Grid_lMouDbl(e: MouseEvent) {
@@ -522,8 +513,7 @@ export class InputEditorComponent implements OnInit {
       return;
     }
   }
-  /**
-   * Event: left mouse click down on general editor space
+  /** Event: left mouse click down on general editor space
    * @param e
    */
   evt_Generic_lMouDown(e: MouseEvent) {
@@ -625,7 +615,6 @@ export class InputEditorComponent implements OnInit {
     /**
      * Score Mouse Movement Tracker
      */
-    // iec.html.div_Score.addEventListener('mousemove', (e) => {
     window.addEventListener('mousemove', (me) => {
       me.preventDefault();
       let tmp_part = iec.keyEditor.selectedPart;
@@ -688,7 +677,7 @@ export class InputEditorComponent implements OnInit {
  * @param iec
  */
   initWindowEvents(iec: InputEditorComponent) {
-    window.addEventListener('mouseover', (e) => { });
+    // window.addEventListener('mouseover', (e) => { });
     window.addEventListener('resize', (e) => { resize(); }, false);
   }
   /**
@@ -1174,30 +1163,30 @@ export function createEdgeBBoxes(bbox, xPx: number): [BBox, BBox] {
  * holds many useful values needed to help make heartbeat-sequencer compatible with our solution
  */
 export class EditorInfo {
-  pageX: number= 0;
-  pageY: number= 0;
-  clientX: number= 0;
-  clientY: number= 0;
-  screenX: number= 0;
-  screenY: number= 0;
-  editorX: number= 0;
-  editorY: number= 0;
+  pageX: number = 0;
+  pageY: number = 0;
+  clientX: number = 0;
+  clientY: number = 0;
+  screenX: number = 0;
+  screenY: number = 0;
+  editorX: number = 0;
+  editorY: number = 0;
 
-  headX: number= 0;
-  scrolledHeadX: number= 0;
+  headX: number = 0;
+  scrolledHeadX: number = 0;
   mouseBarPos: string;
   mousePitchPos: number;
 
-  editorFrameOffsetY= 0;
-  editorFrameOffsetX= 0;
-  editorScrollX= 0;
-  editorScrollY= 0;
+  editorFrameOffsetY = 0;
+  editorFrameOffsetX = 0;
+  editorScrollX = 0;
+  editorScrollY = 0;
   snapTicksAtX: number = 0;
   ticksAtX: number = 0;
-  totalTicksAtHead: number= 0;
-  snapTotalTicksAtHead: number= 0;
-  scrollTicksAtHead: number= 0;
-  snapScrollTicksAtHead: number= 0;
+  totalTicksAtHead: number = 0;
+  snapTotalTicksAtHead: number = 0;
+  scrollTicksAtHead: number = 0;
+  snapScrollTicksAtHead: number = 0;
   instruments: Instrument[];
   currNote = null;
   currPart = null;
@@ -1332,12 +1321,7 @@ class BBox {
   y: number;
   width: number;
   height: number;
-  // constructor(x, y, w, h) {
-  //   this.x = x;
-  //   this.y = y;
-  //   this.width = w;
-  //   this.height = h;
-  // }
+
   constructor(box: BBox = null, x, y, w, h) {
     if (box !== null) {
       this.x = box.x;

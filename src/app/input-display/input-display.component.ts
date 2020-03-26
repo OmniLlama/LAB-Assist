@@ -65,24 +65,7 @@ export class InputDisplayComponent implements OnInit {
   getControllers() {
     return pads;
   }
-  /**
-   * Names the axis based on the axis id number
-   * @param {*} i - the axis id number
-   */
-  nameAxis(i): string {
-    switch (i) {
-      case 0:
-        return "LS X";
-      case 1:
-        return "LS Y";
-      case 2:
-        return "RS X";
-      case 3:
-        return "RS Y";
-      default:
-        return null;
-    }
-  }
+
   /**
    * The createAxisMeter function gets passed one axis at a time, until there are 2 axes (x and y).
    * It then assigns each axis a default value of 0, min of -1, and max of 1 so that we can tell the direction of the joystick easily.
@@ -127,10 +110,7 @@ export class InputDisplayComponent implements OnInit {
     for (let i = 0; i < 9; i++) {
       let arrow = document.createElement("div");
       switch (i) {
-        case 1:
-        case 3:
-        case 5:
-        case 7:
+        case 1: case 3: case 5: case 7:
           arrow.className = "directionalArrows";
           arrow.id = "ortho";
           arrow.innerHTML = `<img src="assets/images/${this.arrayIndexToDirection(
@@ -138,10 +118,7 @@ export class InputDisplayComponent implements OnInit {
           )}.png"
           ${dirIconWidth} ${dirIconHeight}>`;
           break;
-        case 0:
-        case 2:
-        case 6:
-        case 8:
+        case 0: case 2: case 6: case 8:
           arrow.className = "directionalArrows";
           arrow.id = "diag";
           arrow.innerHTML = `<img src="assets/images/${this.arrayIndexToDirection(
@@ -213,17 +190,13 @@ export class InputDisplayComponent implements OnInit {
    * Handles the connecting event of a gamepad
    * @param e event
    */
-  connecthandler(e): void {
-    this.addHtmlGamepad(e.gamepad);
-  }
+  connecthandler(e): void { this.addHtmlGamepad(e.gamepad); }
 
   /**
    * Handles the disconnecting event of a gamepad
    * @param e event
    */
-  disconnecthandler(e): void {
-    this.removegamepad(e.gamepad);
-  }
+  disconnecthandler(e): void { this.removegamepad(e.gamepad); }
 
   /**
    * The scangamepads function scans for any gamepads that are connected.
@@ -320,6 +293,19 @@ export class InputDisplayComponent implements OnInit {
       case 8: return `down_right`;
     }
   }
+  /**
+   * Names the axis based on the axis id number
+   * @param {*} i - the axis id number
+   */
+  nameAxis(i): string {
+    switch (i) {
+      case 0: return "LS X";
+      case 1: return "LS Y";
+      case 2: return "RS X";
+      case 3: return "RS Y";
+      default: return null;
+    }
+  }
 }
 
 function processDirectionalInput(dirArr: boolean[], arwArr) {
@@ -413,6 +399,7 @@ function processJoystickDirections(horiAxis, vertAxis, arwArr) {
       arwArr[i].innerHTML = `${preString}${idc.arrayIndexToDirection(i)}${postString}`;
     }
   }
+
 }
 
 /**
@@ -447,34 +434,15 @@ export var snkBtns = ["B", "D", "A", "C"];
 function returnXboxArrowImgElmt(i: number): string {
   let s: string;
   switch (i) {
-    case 0:
-      s = `up_left`;
-      break;
-    case 1:
-      s = `up`;
-      break;
-    case 2:
-      s = `up_right`;
-      break;
-    case 3:
-      s = `left`;
-      break;
-    // case 4: s = `ls`; break;
-    case 4:
-      s = `right`;
-      break;
-    case 5:
-      s = `down_left`;
-      break;
-    case 6:
-      s = `down`;
-      break;
-    case 7:
-      s = `down_right`;
-      break;
-    default:
-      s = `up`;
-      break;
+    case 0: s = `up_left`; break;
+    case 1: s = `up`; break;
+    case 2: s = `up_right`; break;
+    case 3: s = `left`; break;
+    case 4: s = `right`; break;
+    case 5: s = `down_left`; break;
+    case 6: s = `down`; break;
+    case 7: s = `down_right`; break;
+    default: s = `up`; break;
   }
   return `<img src="assets/images/${s}.png" ${dirIconWidth} ${dirIconHeight}>`;
 }
