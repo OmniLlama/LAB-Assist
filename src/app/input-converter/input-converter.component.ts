@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { MIDIEvent, Note, MIDINote } from 'heartbeat-sequencer';
-import { InputEditorComponent, updateElementBBox, getEdgeDivs, createEdgeBBoxes } from '../input-editor/input-editor.component';
+import { InputEditorComponent,  getEdgeDivs } from '../input-editor/input-editor.component';
 import { InputDisplayComponent, GamepadObject, pads, padObjs, xbBtns, ggBtns, scBtns, tknBtns, snkBtns } from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
 import { GamepadType, ButtonNotationType } from 'src/Enums';
 import jzz = require('jzz');
 import jzzInpKbd = require('jzz-input-kbd');
 import jzzSynOSC = require('jzz-synth-osc');
+import { InputEditorFunctions } from '../input-editor/input-editor-functions';
 
 declare let sequencer: any;
 
@@ -147,7 +148,7 @@ export class InputConverterComponent implements OnInit {
           icc.stxHeld[i] = false;
           if (icc.trackingNotes) {
             icc.stxInpStarts[j] = iec.info.totalTicksAtHead;
-            let thing = iec.createNoteEvents(iec,
+            let thing = InputEditorFunctions.createNoteEvents(iec,
               icc.stxInpStarts[j],
               icc.stxInpStarts[j] + 128,
               pitchNum, a.valueOf() * 127);
@@ -161,7 +162,7 @@ export class InputConverterComponent implements OnInit {
           icc.stxHeld[j] = false;
           if (icc.trackingNotes) {
             icc.stxInpStarts[i] = iec.info.totalTicksAtHead;
-            let thing = iec.createNoteEvents(iec,
+            let thing = InputEditorFunctions.createNoteEvents(iec,
               icc.stxInpStarts[i],
               icc.stxInpStarts[i] + 128,
               pitchNum, -a.valueOf() * 127);
@@ -201,7 +202,7 @@ export class InputConverterComponent implements OnInit {
         //if RECORDING
         if (icc.trackingNotes) {
           icc.dpadInpStarts[ind] = iec.info.scrollTicksAtHead;
-          let noteEvts = iec.createNoteEvents(iec, icc.dpadInpStarts[ind], icc.dpadInpStarts[ind] + 128, pitch);
+          let noteEvts = InputEditorFunctions.createNoteEvents(iec, icc.dpadInpStarts[ind], icc.dpadInpStarts[ind] + 128, pitch);
           icc.dpadHeldNotes[ind] = [noteEvts[0].midiNote, iec.info.scrollTicksAtHead];
           // icc.heldNotes.push(icc.dpadHeldNotes[ind]);
           console.log('hit button while playing');
@@ -261,7 +262,7 @@ export class InputConverterComponent implements OnInit {
         //if RECORDING
         if (icc.trackingNotes) {
           icc.btnInpStarts[ind] = iec.info.scrollTicksAtHead;
-          let thing = iec.createNoteEvents(iec, icc.btnInpStarts[ind], icc.btnInpStarts[ind] + 128, getButtonPitch(ind));
+          let thing = InputEditorFunctions.createNoteEvents(iec, icc.btnInpStarts[ind], icc.btnInpStarts[ind] + 128, getButtonPitch(ind));
           icc.btnHeldNotes[ind] = [thing[0].midiNote, iec.info.scrollTicksAtHead];
           // icc.heldNotes.push(icc.dpadHeldNotes[ind]);
         }

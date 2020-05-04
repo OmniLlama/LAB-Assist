@@ -22,6 +22,7 @@
     "@angular/router": "^8.2.14",
     "@types/webmidi": "^2.0.4",
     "core-js": "^2.6.11",
+    "dependency-check": "^4.1.0",
     "firebase": "^7.7.0",
     "heartbeat-sequencer": "0.0.16",
     "html5-gamepad": "^1.1.0",
