@@ -6,13 +6,13 @@ import {
   GamepadType
 } from "src/Enums";
 import { InputConverterComponent } from '../input-converter/input-converter.component';
+import { InputDisplayFunctions } from './input-display-functions';
+import { InputDisplayVisuals } from './input-display-visuals';
+import { InputDisplayEvents } from './input-display-events';
 
 export let pads: Array<Gamepad>;
 export let padObjs: Array<GamepadObject>;
-const dirIconWidth = "width=60px";
-const dirIconHeight = "height=60px";
-const btnIconWidth = "width=72px";
-const btnIconHeight = "height=72px";
+
 @Component({
   selector: "app-input-display",
   templateUrl: "./input-display.component.html",
@@ -31,6 +31,7 @@ export class InputDisplayComponent implements OnInit {
   btnDivs: Array<HTMLDivElement>;
   axisDivs: Array<HTMLSpanElement>;
   div_leftStick: HTMLDivElement;
+  div_rightStick: HTMLDivElement;
   haveWebkitEvents = "WebKitGamepadEvent" in window;
   haveEvents = "GamepadEvent" in window;
   diagDeadzone: number = 0.4;
@@ -47,16 +48,16 @@ export class InputDisplayComponent implements OnInit {
      * EVENTS
      */
     if (this.haveEvents) {
-      window.addEventListener("gamepadconnected", e => this.connecthandler(e));
+      window.addEventListener("gamepadconnected", e => InputDisplayEvents.connecthandler(e, this));
       window.addEventListener("gamepaddisconnected", e =>
-        this.disconnecthandler(e)
+        InputDisplayEvents.disconnecthandler(e, this)
       );
     } else if (this.haveWebkitEvents) {
       window.addEventListener("webkitgamepadconnected", e =>
-        this.connecthandler(e)
+        InputDisplayEvents.connecthandler(e, this)
       );
       window.addEventListener("webkitgamepaddisconnected", e =>
-        this.disconnecthandler(e)
+        InputDisplayEvents.disconnecthandler(e, this)
       );
     } else {
       setInterval(() => this.scangamepads(), 500);
@@ -105,40 +106,15 @@ export class InputDisplayComponent implements OnInit {
     title.appendChild(document.createTextNode("gamepad: " + gamepad.id));
     div_info.appendChild(title);
     div_cntrllr.appendChild(div_info);
-    let div_arrows: HTMLDivElement = document.createElement("div");
-    div_arrows.className = "grid3x3";
-    for (let i = 0; i < 9; i++) {
-      let arrow = document.createElement("div");
-      switch (i) {
-        case 1: case 3: case 5: case 7:
-          arrow.className = "directionalArrows";
-          arrow.id = "ortho";
-          arrow.innerHTML = `<img src="assets/images/${this.arrayIndexToDirection(
-            i
-          )}.png"
-          ${dirIconWidth} ${dirIconHeight}>`;
-          break;
-        case 0: case 2: case 6: case 8:
-          arrow.className = "directionalArrows";
-          arrow.id = "diag";
-          arrow.innerHTML = `<img src="assets/images/${this.arrayIndexToDirection(
-            i
-          )}.png"
-          ${dirIconWidth} ${dirIconHeight}>`;
-          break;
-        case 4:
-          arrow.className = "stickSpace";
-          this.div_leftStick = document.createElement("div");
-          this.div_leftStick.id = "stick";
-          this.div_leftStick.innerHTML = `<img src="assets/images/ls.png" ${dirIconWidth} ${dirIconHeight}>`;
-          arrow.appendChild(this.div_leftStick);
-          break;
-      }
-      div_arrows.appendChild(arrow);
+
+
+    // div_cntrllr.appendChild(InputDisplayVisuals.CreateDirectionalArrows(this, 0));
+    let arwSets = new Array<HTMLDivElement>();
+    for (let i = 0; i < gamepad.axes.length / 2; i++) {
+
+      arwSets[i] = InputDisplayVisuals.CreateDirectionalArrows(this, i);
+      div_cntrllr.appendChild(arwSets[i]);
     }
-
-    div_cntrllr.appendChild(div_arrows);
-
     //Create Button Icons
     let div_btns: HTMLDivElement = document.createElement("div");
     div_btns.className = "grid4x2";
@@ -169,7 +145,8 @@ export class InputDisplayComponent implements OnInit {
       div_cntrllr,
       title,
       this.axisDivs,
-      this.btnDivs
+      this.btnDivs,
+      arwSets
     );
     //Hide start message
     document.getElementById("start").style.display = "none";
@@ -186,17 +163,7 @@ export class InputDisplayComponent implements OnInit {
     document.body.removeChild(d);
     delete pads[gamepad.index];
   }
-  /**
-   * Handles the connecting event of a gamepad
-   * @param e event
-   */
-  connecthandler(e): void { this.addHtmlGamepad(e.gamepad); }
 
-  /**
-   * Handles the disconnecting event of a gamepad
-   * @param e event
-   */
-  disconnecthandler(e): void { this.removegamepad(e.gamepad); }
 
   /**
    * The scangamepads function scans for any gamepads that are connected.
@@ -242,22 +209,32 @@ export class InputDisplayComponent implements OnInit {
       /**
        * Get Axis Status */
 
-      var divs_arrow = d.getElementsByClassName("directionalArrows");
+      // var divs_arrows = d.getElementsByClassName("directionalArrows");
+      var divs_arrowL = padObj.html.dirArrowSets[0];
+      var divs_arrowR = padObj.html.dirArrowSets[1];
 
-      let normAxes = normalizeVector(pad.axes[0], pad.axes[1]);
+      let normAxesL = normalizeVector(pad.axes[0], pad.axes[1]);
+      let normAxesR = normalizeVector(pad.axes[2], pad.axes[3]);
 
-      this.div_leftStick.style.left = Math.round(24 * pad.axes[0]) + "px";
-      this.div_leftStick.style.top = Math.round(24 * pad.axes[1]) + "px";
+      // this.div_leftStick.style.left = Math.round(24 * pad.axes[0]) + "px";
+      // this.div_leftStick.style.top = Math.round(24 * pad.axes[1]) + "px";
+      // this.div_rightStick.style.left = Math.round(24 * pad.axes[2]) + "px";
+      // this.div_rightStick.style.top = Math.round(24 * pad.axes[3]) + "px";
       if (this.useDPad && padObj.DPad().some(dir => dir.pressed)) {
         let padArr = new Array<boolean>(4);
         padObj.DPad().forEach((d, i) => {
           padArr[i] = d.pressed;
         });
-        processDirectionalInput(padArr, divs_arrow);
+        processDirectionalInput(padArr, divs_arrowL);
       }
-      else if (normAxes[2] > this.orthoDeadzone) {
-        processJoystickDirections(normAxes[0], normAxes[1], divs_arrow);
-      } else resetArrows(divs_arrow);
+      if (normAxesL[0] > this.orthoDeadzone) {
+        InputDisplayFunctions.processJoystickDirections(normAxesL[0], normAxesL[1], divs_arrowL.children);
+      }
+      else InputDisplayVisuals.resetArrows(divs_arrowL);
+      if (normAxesR[0] > this.orthoDeadzone) {
+        InputDisplayFunctions.processJoystickDirections(normAxesR[0], normAxesR[1], divs_arrowR.children);
+      }
+      else InputDisplayVisuals.resetArrows(divs_arrowL);
     });
 
     InputDisplayComponent.rAF(cb => this.updateStatus());
@@ -280,19 +257,7 @@ export class InputDisplayComponent implements OnInit {
     }
     return e;
   }
-  arrayIndexToDirection(i) {
-    switch (i) {
-      case 0: return `up_left`;
-      case 1: return `up`;
-      case 2: return `up_right`;
-      case 3: return `left`;
-      case 4: return `ls`;
-      case 5: return `right`;
-      case 6: return `down_left`;
-      case 7: return `down`;
-      case 8: return `down_right`;
-    }
-  }
+
   /**
    * Names the axis based on the axis id number
    * @param {*} i - the axis id number
@@ -311,112 +276,44 @@ export class InputDisplayComponent implements OnInit {
 function processDirectionalInput(dirArr: boolean[], arwArr) {
   let idc = InputDisplayComponent.inpDispCmp;
   let preString = '<img src="assets/images/';
-  let postString = `.png" ${dirIconWidth} ${dirIconHeight}>`;
-  // let stick = idc.div_leftStick;
+  let postString = `.png">`;
 
   // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
   if (dirArr[2] && dirArr[0]) {
     arwArr[0].innerHTML = `${preString}pressed_up_left${postString}`;
-    resetArrows(arwArr, 0);
+    InputDisplayVisuals.resetArrows(arwArr, 0);
   } else if (dirArr[2] && dirArr[1]) {
     arwArr[5].innerHTML = `${preString}pressed_down_left${postString}`;
-    resetArrows(arwArr, 5);
+    InputDisplayVisuals.resetArrows(arwArr, 5);
   } else if (dirArr[3] && dirArr[0]) {
     arwArr[2].innerHTML = `${preString}pressed_up_right${postString}`;
-    resetArrows(arwArr, 2);
+    InputDisplayVisuals.resetArrows(arwArr, 2);
   } else if (dirArr[3] && dirArr[1]) {
     arwArr[7].innerHTML = `${preString}pressed_down_right${postString}`;
-    resetArrows(arwArr, 7);
+    InputDisplayVisuals.resetArrows(arwArr, 7);
   }
 
   // Now handle all the regular directions, if the constraints for diagonal directions are not met
   else if (dirArr[2]) {
     arwArr[3].innerHTML = `${preString}pressed_left${postString}`;
-    resetArrows(arwArr, 3);
+    InputDisplayVisuals.resetArrows(arwArr, 3);
   } else if (dirArr[0]) {
     arwArr[1].innerHTML = `${preString}pressed_up${postString}`;
-    resetArrows(arwArr, 1);
+    InputDisplayVisuals.resetArrows(arwArr, 1);
   } else if (dirArr[3]) {
     arwArr[4].innerHTML = `${preString}pressed_right${postString}`;
-    resetArrows(arwArr, 4);
+    InputDisplayVisuals.resetArrows(arwArr, 4);
   } else if (dirArr[1]) {
     arwArr[6].innerHTML = `${preString}pressed_down${postString}`;
-    resetArrows(arwArr, 6);
+    InputDisplayVisuals.resetArrows(arwArr, 6);
   }
   else
-    resetArrows(arwArr);
+    InputDisplayVisuals.resetArrows(arwArr);
 }
 
-/**
- * The getJoystickDirections function looks at the axes of the controller.
- * Based on current axes information [0, 0, 0, 0].
- * You can tell what direction the joystick is going.
- * Based on the direction of the joystick, the correct image for that direction is chosen.
- * If the joystick is currently not going in any direction, all the icons will be reset to their regular image.
- * @param pad
- * @param horiAxis
- * @param arwArr
- */
-function processJoystickDirections(horiAxis, vertAxis, arwArr) {
-  let idc = InputDisplayComponent.inpDispCmp;
-  let ddz = idc.diagDeadzone, odz = idc.orthoDeadzone;
-  let preString = '<img src="assets/images/';
-  let postString = `.png" ${dirIconWidth} ${dirIconHeight}>`;
-  // let stick = idc.div_leftStick;
 
-  // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
-  if (horiAxis < -ddz && vertAxis < -ddz) {
-    arwArr[0].innerHTML = `${preString}pressed_up_left${postString}`;
-    resetArrows(arwArr, 0);
-  } else if (horiAxis < -ddz && vertAxis > ddz) {
-    arwArr[5].innerHTML = `${preString}pressed_down_left${postString}`;
-    resetArrows(arwArr, 5);
-  } else if (horiAxis > ddz && vertAxis < -ddz) {
-    arwArr[2].innerHTML = `${preString}pressed_up_right${postString}`;
-    resetArrows(arwArr, 2);
-  } else if (horiAxis > ddz && vertAxis > ddz) {
-    arwArr[7].innerHTML = `${preString}pressed_down_right${postString}`;
-    resetArrows(arwArr, 7);
-  }
 
-  // Now handle all the regular directions, if the constraints for diagonal directions are not met
-  else if (horiAxis < -odz && Math.abs(vertAxis) < ddz) {
-    arwArr[3].innerHTML = `${preString}pressed_left${postString}`;
-    resetArrows(arwArr, 3);
-  } else if (vertAxis < -odz && Math.abs(horiAxis) < ddz) {
-    arwArr[1].innerHTML = `${preString}pressed_up${postString}`;
-    resetArrows(arwArr, 1);
-  } else if (horiAxis > odz && Math.abs(vertAxis) < ddz) {
-    arwArr[4].innerHTML = `${preString}pressed_right${postString}`;
-    resetArrows(arwArr, 4);
-  } else if (vertAxis > odz && Math.abs(horiAxis) < ddz) {
-    arwArr[6].innerHTML = `${preString}pressed_down${postString}`;
-    resetArrows(arwArr, 6);
-  } else {
-    for (let i = 0; i < 9; i++) {
-      let arrow = document.createElement("div");
-      arrow.className = "directionalArrows";
-      arwArr[i].innerHTML = `${preString}${idc.arrayIndexToDirection(i)}${postString}`;
-    }
-  }
 
-}
-
-/**
- * The getJoystickDirections function looks at the axes of the controller.
- * Based on current axes information [0, 0, 0, 0].
- * You can tell what direction the joystick is going.
- * Based on the direction of the joystick, the correct image for that direction is chosen.
- *  If the joystick is currently not going in any direction, all the icons will be reset to their regular image.
- * @param arwArr
- * @param index  */
-function resetArrows(arwArr, index = -1) {
-  for (let i = 0; i < arwArr.length; i++) {
-    if (i != index) {
-      arwArr[i].innerHTML = returnXboxArrowImgElmt(i);
-    }
-  }
-}
 
 export var xbBtns = ["a", "b", "x", "y", "lb", "rb", "lt", "rt"];
 export var psBtns = ["X", "O", "[]", "^", "l1", "r1", "l2", "r2"];
@@ -426,26 +323,7 @@ export var tknBtns = ["LK", "RK", "LP", "RP"];
 export var scBtns = ["G", "K", "A", "B"];
 export var snkBtns = ["B", "D", "A", "C"];
 
-/**
- * The returnXboxArrows function gets passed a button index.
- * If the index is found in the list, the image tag string for that joystick direction will get returned.
- * This function is used to make all the other arrows look "non-pressed" when the user changes the joystick direction.
- * @param i */
-function returnXboxArrowImgElmt(i: number): string {
-  let s: string;
-  switch (i) {
-    case 0: s = `up_left`; break;
-    case 1: s = `up`; break;
-    case 2: s = `up_right`; break;
-    case 3: s = `left`; break;
-    case 4: s = `right`; break;
-    case 5: s = `down_left`; break;
-    case 6: s = `down`; break;
-    case 7: s = `down_right`; break;
-    default: s = `up`; break;
-  }
-  return `<img src="assets/images/${s}.png" ${dirIconWidth} ${dirIconHeight}>`;
-}
+
 
 /**
  * Names the button with the proper designation based on button notation selection
@@ -465,19 +343,27 @@ export function nameButton(i: number): any {
   }
   return i;
 }
-
+export function vectorMagnitude(v1, v2): number {
+  return Math.sqrt(v1 ** 2 + v2 ** 2);
+}
+export function normalizeVector(v1, v2): Array<number> {
+  let v = vectorMagnitude(v1, v2);
+  return [v1 / v, v2 / v, v];
+}
 /**
  * not used much, but still necessary collection of elements for each controller */
 class GamepadHTMLShell {
   parent: HTMLElement;
   padTitle: HTMLHeadElement;
+  dirArrowSets: HTMLDivElement[];
   padAxes: HTMLDivElement[];
   padButtons: HTMLDivElement[];
-  constructor(rent, title, axes, buttons) {
+  constructor(rent, title, axes, buttons, arwSets) {
     this.parent = rent;
     this.padTitle = title;
     this.padAxes = axes;
     this.padButtons = buttons;
+    this.dirArrowSets = arwSets;
   }
 }
 /**
@@ -547,10 +433,4 @@ export class GamepadObject {
     }
   }
 }
-export function vectorMagnitude(v1, v2): number {
-  return Math.sqrt(v1 ** 2 + v2 ** 2);
-}
-export function normalizeVector(v1, v2): Array<number> {
-  let v = vectorMagnitude(v1, v2);
-  return [v1 / v, v2 / v, v];
-}
+

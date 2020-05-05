@@ -302,6 +302,13 @@ export class InputEditorFunctions {
   }
 
 
+  static UpdateTrack(iec: InputEditorComponent) {
+    iec.track.update();
+  }
+  static UpdateSong(iec: InputEditorComponent) {
+    iec.song.update();
+  }
+
   static numToPitch(i: number): string {
     switch (i) {
       case 43: return 'G2';
@@ -331,7 +338,9 @@ export class InputEditorFunctions {
       case 0: return 'C-2';
     }
   }
+
 }
+
 export class BBox {
   x: number;
   y: number;

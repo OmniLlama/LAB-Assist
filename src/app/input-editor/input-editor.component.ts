@@ -72,27 +72,27 @@ export class InputEditorComponent implements OnInit {
     if (this.song.tracks.length == 0) {
       let tr = sequencer.createTrack('AutoTrack');
       this.song.addTrack(tr);
-      this.song.update();
+      InputEditorFunctions.UpdateSong(this);
     }
     if (this.track == undefined) {
       this.track = this.song.tracks[0];
     }
     this.track.recordEnabled = 'midi';
     this.track.setMidiInput('all');
-    this.track.update();
-    this.song.update();
+    InputEditorFunctions.UpdateTrack(this);
+    InputEditorFunctions.UpdateSong(this);
   }
   /**
    * Initialize Critical Components
    * @param iec
    */
   init(iec: InputEditorComponent): void {
-    this.info.edHTMLShell = this.html;
-    this.enableGUI(false);
+    iec.info.edHTMLShell = this.html;
+    iec.enableGUI(false);
 
 
-    this.song = InputEditorFunctions.initSong();
-    if (iec.flattenTracksToSingleTrack) { this.flattenTracks(iec.song); }
+    iec.song = InputEditorFunctions.initSong();
+    if (iec.flattenTracksToSingleTrack) { InputEditorFunctions.flattenTracks(iec.song); }
     iec.keyEditor = InputEditorFunctions.createKeyEditor(iec);
 
     iec.instruments = sequencer.getInstruments();
@@ -100,15 +100,15 @@ export class InputEditorComponent implements OnInit {
     //set editor element values to editor defaults
     setElementValue(iec.html.txt_KeyRangeStart, iec.keyEditor.lowestNote);
     setElementValue(iec.html.txt_KeyRangeEnd, iec.keyEditor.highestNote);
-    iec.html.txt_BPM.value = this.song.bpm.toString();
-    setSliderValues(iec.html.sldr_barsPerPage, this.bppStart, 1, 32, 1);
+    iec.html.txt_BPM.value = iec.song.bpm.toString();
+    setSliderValues(iec.html.sldr_barsPerPage, iec.bppStart, 1, 32, 1);
 
     InputEditorVisuals.resize();
     InputEditorEvents.initContextEvents();
     InputEditorEvents.initInputEvents();
     InputEditorEvents.initWindowEvents(iec);
 
-    this.enableGUI(true);
+    iec.enableGUI(true);
 
     iec.html.slct_Snap.selectedIndex = 4;
 
@@ -143,19 +143,7 @@ export class InputEditorComponent implements OnInit {
       tmp_element.disabled = !flag;
     }
   }
-  /**
-   * UTILITY - needed for sequencer compatability
-   * @param song
-   */
-  flattenTracks(song: Song) {
-    song.tracks.forEach(
-      (track) => {
-        track.setInstrument('sinewave');
-        track.monitor = true;
-        track.setMidiInput('all', true);
-      }
-    );
-  }
+
   /**
    * Set Element value to val
    * @param elmt HTML Element

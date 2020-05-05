@@ -104,9 +104,9 @@ export class InputEditorVisuals {
     img_Note_leftEdge.src = 'assets/images/Editor-Arrow-Left-Transparent.png';
     img_Note_rightEdge.src = 'assets/images/Editor-Arrow-Right-Transparent.png';
 
-    this.updateElementBBox(div_Note, bbox);
-    this.updateElementBBox(img_Note_leftEdge, edgeBBoxes[0]);
-    this.updateElementBBox(img_Note_rightEdge, edgeBBoxes[1]);
+    InputEditorVisuals.updateElementBBox(div_Note, bbox);
+    InputEditorVisuals.updateElementBBox(img_Note_leftEdge, edgeBBoxes[0]);
+    InputEditorVisuals.updateElementBBox(img_Note_rightEdge, edgeBBoxes[1]);
 
     // store note and div
     InputEditorComponent.inpEdComp.allNotes[ref_note.id] = ref_note;
