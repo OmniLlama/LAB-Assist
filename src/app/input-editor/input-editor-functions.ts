@@ -122,15 +122,15 @@ export class InputEditorFunctions {
     tmp_ticks = iec.info.totalTicksAtHead;
 
     tmp_part.addEvents(tmp_events);
-    if (!InputEditorComponent.inpEdComp.track) {
-      InputEditorComponent.inpEdComp.track = iec.song.tracks[0];
+    if (!iec.track) {
+      iec.track = iec.song.tracks[0];
     }
-    if (!InputEditorComponent.inpEdComp.track) {
-      InputEditorComponent.inpEdComp.track = sequencer.createTrack("forcedTrack");
-      iec.song.addTrack(InputEditorComponent.inpEdComp.track);
+    if (!iec.track) {
+      iec.track = sequencer.createTrack("forcedTrack");
+      iec.song.addTrack(iec.track);
     }
-    InputEditorComponent.inpEdComp.track.addPartAt(tmp_part, ['ticks', tmp_ticks]);
-    InputEditorComponent.inpEdComp.track.update();
+    iec.track.addPartAt(tmp_part, ['ticks', tmp_ticks]);
+    iec.track.update();
     iec.song.update();
   }
   //#endregion
@@ -170,7 +170,7 @@ export class InputEditorFunctions {
     tmp_ticks += tmp_noteLength;
     tmp_noteOff = sequencer.createMidiEvent(tmp_ticks, InputEditorComponent.NOTE_OFF, tmp_pitch, 0);
     tmp_events.push(tmp_noteOn, tmp_noteOff);
-    tmp_ticks = InputEditorComponent.inpEdComp.keyEditor.getTicksAt(InputEditorComponent.inpEdComp.info.screenX);
+    tmp_ticks = iec.keyEditor.getTicksAt(InputEditorComponent.inpEdComp.info.screenX);
     console.log('added new note: \n ' +
       'pitch: ' + tmp_pitch + '\n' +
       'at ticks: ' + tmp_ticks + '\n' +

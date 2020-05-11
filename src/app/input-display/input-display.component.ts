@@ -212,6 +212,7 @@ export class InputDisplayComponent implements OnInit {
       // var divs_arrows = d.getElementsByClassName("directionalArrows");
       var divs_arrowL = padObj.html.dirArrowSets[0];
       var divs_arrowR = padObj.html.dirArrowSets[1];
+      var divs_arrowDP = padObj.html.dirArrowSets[2];
 
       let normAxesL = normalizeVector(pad.axes[0], pad.axes[1]);
       let normAxesR = normalizeVector(pad.axes[2], pad.axes[3]);
@@ -225,16 +226,19 @@ export class InputDisplayComponent implements OnInit {
         padObj.DPad().forEach((d, i) => {
           padArr[i] = d.pressed;
         });
-        processDirectionalInput(padArr, divs_arrowL);
+        InputDisplayFunctions.processDigitalDirectionalInput(padArr, divs_arrowL.children);
       }
-      if (normAxesL[0] > this.orthoDeadzone) {
-        InputDisplayFunctions.processJoystickDirections(normAxesL[0], normAxesL[1], divs_arrowL.children);
-      }
-      else InputDisplayVisuals.resetArrows(divs_arrowL);
-      if (normAxesR[0] > this.orthoDeadzone) {
-        InputDisplayFunctions.processJoystickDirections(normAxesR[0], normAxesR[1], divs_arrowR.children);
-      }
-      else InputDisplayVisuals.resetArrows(divs_arrowL);
+
+      // if (normAxesL[0] > this.orthoDeadzone) {
+        InputDisplayFunctions.processJoystickDirections(normAxesL[0], normAxesL[1], this.orthoDeadzone, this.diagDeadzone, divs_arrowL.children);
+      // }
+      // else
+       InputDisplayVisuals.resetArrows(divs_arrowL);
+      // if (normAxesR[0] > this.orthoDeadzone) {
+        InputDisplayFunctions.processJoystickDirections(normAxesR[0], normAxesR[1], this.orthoDeadzone, this.diagDeadzone, divs_arrowR.children);
+      // }
+      // else
+       InputDisplayVisuals.resetArrows(divs_arrowR);
     });
 
     InputDisplayComponent.rAF(cb => this.updateStatus());
@@ -273,43 +277,7 @@ export class InputDisplayComponent implements OnInit {
   }
 }
 
-function processDirectionalInput(dirArr: boolean[], arwArr) {
-  let idc = InputDisplayComponent.inpDispCmp;
-  let preString = '<img src="assets/images/';
-  let postString = `.png">`;
 
-  // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
-  if (dirArr[2] && dirArr[0]) {
-    arwArr[0].innerHTML = `${preString}pressed_up_left${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 0);
-  } else if (dirArr[2] && dirArr[1]) {
-    arwArr[5].innerHTML = `${preString}pressed_down_left${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 5);
-  } else if (dirArr[3] && dirArr[0]) {
-    arwArr[2].innerHTML = `${preString}pressed_up_right${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 2);
-  } else if (dirArr[3] && dirArr[1]) {
-    arwArr[7].innerHTML = `${preString}pressed_down_right${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 7);
-  }
-
-  // Now handle all the regular directions, if the constraints for diagonal directions are not met
-  else if (dirArr[2]) {
-    arwArr[3].innerHTML = `${preString}pressed_left${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 3);
-  } else if (dirArr[0]) {
-    arwArr[1].innerHTML = `${preString}pressed_up${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 1);
-  } else if (dirArr[3]) {
-    arwArr[4].innerHTML = `${preString}pressed_right${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 4);
-  } else if (dirArr[1]) {
-    arwArr[6].innerHTML = `${preString}pressed_down${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 6);
-  }
-  else
-    InputDisplayVisuals.resetArrows(arwArr);
-}
 
 
 

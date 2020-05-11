@@ -21,53 +21,80 @@ export class InputDisplayFunctions {
  * You can tell what direction the joystick is going.
  * Based on the direction of the joystick, the correct image for that direction is chosen.
  * If the joystick is currently not going in any direction, all the icons will be reset to their regular image.
- * @param pad
  * @param horiAxis
+ * @param vertAxis
+ * @param ddz diagonal deadzone
+ * @param odz orthogonal deadzone
  * @param arwArr
  */
-static processJoystickDirections(horiAxis, vertAxis, arwArr) {
-  let idc = InputDisplayComponent.inpDispCmp;
-  let ddz = idc.diagDeadzone, odz = idc.orthoDeadzone;
-  let preString = '<img src="assets/images/';
-  let postString = `.png">`;
-  // let postString = `.png" ${dirIconWidth} ${dirIconHeight}>`;
-  // let stick = idc.div_leftStick;
+  static processJoystickDirections(horiAxis, vertAxis, odz, ddz, arwArr) {
+    let idc = InputDisplayComponent.inpDispCmp;
+    // let ddz = idc.diagDeadzone, odz = idc.orthoDeadzone;
+    let preString = '<img src="assets/images/';
+    let postString = `.png">`;
+    // let postString = `.png" ${dirIconWidth} ${dirIconHeight}>`;
+    // let stick = idc.div_leftStick;
 
-  // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
-  if (horiAxis < -ddz && vertAxis < -ddz) {
-    arwArr[0].innerHTML = `${preString}pressed_up_left${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 0);
-  } else if (horiAxis < -ddz && vertAxis > ddz) {
-    arwArr[5].innerHTML = `${preString}pressed_down_left${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 5);
-  } else if (horiAxis > ddz && vertAxis < -ddz) {
-    arwArr[2].innerHTML = `${preString}pressed_up_right${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 2);
-  } else if (horiAxis > ddz && vertAxis > ddz) {
-    arwArr[7].innerHTML = `${preString}pressed_down_right${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 7);
-  }
+    // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
+    if (horiAxis < -ddz && vertAxis < -ddz) {
+      InputDisplayVisuals.resetArrows(arwArr, 0);
+    } else if (horiAxis < -ddz && vertAxis > ddz) {
+      arwArr[5].innerHTML = `${preString}pressed_down_left${postString}`;
+      InputDisplayVisuals.resetArrows(arwArr, 5);
+    } else if (horiAxis > ddz && vertAxis < -ddz) {
+      arwArr[2].innerHTML = `${preString}pressed_up_right${postString}`;
+      InputDisplayVisuals.resetArrows(arwArr, 2);
+    } else if (horiAxis > ddz && vertAxis > ddz) {
+      arwArr[7].innerHTML = `${preString}pressed_down_right${postString}`;
+      InputDisplayVisuals.resetArrows(arwArr, 7);
+    }
 
-  // Now handle all the regular directions, if the constraints for diagonal directions are not met
-  else if (horiAxis < -odz && Math.abs(vertAxis) < ddz) {
-    arwArr[3].innerHTML = `${preString}pressed_left${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 3);
-  } else if (vertAxis < -odz && Math.abs(horiAxis) < ddz) {
-    arwArr[1].innerHTML = `${preString}pressed_up${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 1);
-  } else if (horiAxis > odz && Math.abs(vertAxis) < ddz) {
-    arwArr[4].innerHTML = `${preString}pressed_right${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 4);
-  } else if (vertAxis > odz && Math.abs(horiAxis) < ddz) {
-    arwArr[6].innerHTML = `${preString}pressed_down${postString}`;
-    InputDisplayVisuals.resetArrows(arwArr, 6);
-  } else {
-    for (let i = 0; i < 9; i++) {
-      let arrow = document.createElement("div");
-      arrow.className = "directionalArrows";
-      arwArr[i].innerHTML = `${preString}${InputDisplayFunctions.arrayIndexToDirection(i)}${postString}`;
+    // Now handle all the regular directions, if the constraints for diagonal directions are not met
+    else if (horiAxis < -odz && Math.abs(vertAxis) < ddz) {
+      arwArr[3].innerHTML = `${preString}pressed_left${postString}`;
+      InputDisplayVisuals.resetArrows(arwArr, 3);
+    } else if (vertAxis < -odz && Math.abs(horiAxis) < ddz) {
+      arwArr[1].innerHTML = `${preString}pressed_up${postString}`;
+      InputDisplayVisuals.resetArrows(arwArr, 1);
+    } else if (horiAxis > odz && Math.abs(vertAxis) < ddz) {
+      arwArr[4].innerHTML = `${preString}pressed_right${postString}`;
+      InputDisplayVisuals.resetArrows(arwArr, 4);
+    } else if (vertAxis > odz && Math.abs(horiAxis) < ddz) {
+      arwArr[6].innerHTML = `${preString}pressed_down${postString}`;
+      InputDisplayVisuals.resetArrows(arwArr, 6);
+    } else {
+      for (let i = 0; i < 9; i++) {
+        let arrow = document.createElement("div");
+        arrow.className = "directionalArrows";
+        arwArr[i].innerHTML = `${preString}${InputDisplayFunctions.arrayIndexToDirection(i)}${postString}`;
+      }
     }
   }
+  static processDigitalDirectionalInput(dirArr: boolean[], arwArr) {
 
-}
+
+    // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
+    if (dirArr[2] && dirArr[0]) {
+      InputDisplayVisuals.resetArrows(arwArr, 0);
+    } else if (dirArr[2] && dirArr[1]) {
+      InputDisplayVisuals.resetArrows(arwArr, 5);
+    } else if (dirArr[3] && dirArr[0]) {
+      InputDisplayVisuals.resetArrows(arwArr, 2);
+    } else if (dirArr[3] && dirArr[1]) {
+      InputDisplayVisuals.resetArrows(arwArr, 7);
+    }
+
+    // Now handle all the regular directions, if the constraints for diagonal directions are not met
+    else if (dirArr[2]) {
+      InputDisplayVisuals.resetArrows(arwArr, 3);
+    } else if (dirArr[0]) {
+      InputDisplayVisuals.resetArrows(arwArr, 1);
+    } else if (dirArr[3]) {
+      InputDisplayVisuals.resetArrows(arwArr, 4);
+    } else if (dirArr[1]) {
+      InputDisplayVisuals.resetArrows(arwArr, 6);
+    }
+    else
+      InputDisplayVisuals.resetArrows(arwArr);
+  }
 }

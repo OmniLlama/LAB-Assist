@@ -13,8 +13,8 @@ export class InputEditorVisuals {
     iec.allParts = new Array<Part>();
     iec.html.divs_AllNotes = new Array<HTMLDivElement>();
     iec.html.divs_AllParts = new Array<HTMLDivElement>();
-    iec.html.div_Parts.innerHTML = '';
-    iec.html.div_Notes.innerHTML = '';
+    // iec.html.div_Parts.innerHTML = '';
+    // iec.html.div_Notes.innerHTML = '';
     iec.html.div_PitchLines.innerHTML = '';
     iec.html.div_BarLines.innerHTML = '';
     iec.html.div_BeatLines.innerHTML = '';

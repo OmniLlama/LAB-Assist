@@ -7,7 +7,7 @@ const btnIconWidth = "width=72px";
 const btnIconHeight = "height=72px";
 export class InputDisplayVisuals {
 
-  static CreateDirectionalArrows(idc: InputDisplayComponent, n: number): HTMLDivElement{
+  static CreateDirectionalArrows(idc: InputDisplayComponent, n: number): HTMLDivElement {
     let div_arrows: HTMLDivElement = document.createElement("div");
     div_arrows.className = "grid3x3";
     div_arrows.id = `${n == 0 ? 'left' : 'right'}`;
@@ -45,17 +45,27 @@ export class InputDisplayVisuals {
     return div_arrows;
   }
   /**
-   * The getJoystickDirections function looks at the axes of the controller.
-   * Based on current axes information [0, 0, 0, 0].
-   * You can tell what direction the joystick is going.
-   * Based on the direction of the joystick, the correct image for that direction is chosen.
-   *  If the joystick is currently not going in any direction, all the icons will be reset to their regular image.
+   * All the icons will be reset to their regular image, save for a single arrow element if any.
    * @param arwArr
    * @param index  */
   static resetArrows(arwArr, index = -1) {
+    let preString = '<img src="assets/images/';
+    let postString = `.png">`;
     for (let i = 0; i < arwArr.length; i++) {
       if (i != index) {
         arwArr[i].innerHTML = this.returnXboxArrowImgElmt(i);
+      }
+      switch (index) {
+        case 0: arwArr[0].innerHTML = `${preString}pressed_up_left${postString}`; break;
+        case 1: arwArr[1].innerHTML = `${preString}pressed_up${postString}`; break;
+        case 2: arwArr[2].innerHTML = `${preString}pressed_up_right${postString}`; break;
+        case 3: arwArr[3].innerHTML = `${preString}pressed_left${postString}`; break;
+        case 4: arwArr[4].innerHTML = `${preString}pressed_right${postString}`; break;
+        case 5: arwArr[5].innerHTML = `${preString}pressed_down_left${postString}`; break;
+        case 6: arwArr[6].innerHTML = `${preString}pressed_down${postString}`; break;
+        case 7: arwArr[7].innerHTML = `${preString}pressed_down_right${postString}`; break;
+        default:
+          break;
       }
     }
   }
@@ -77,6 +87,7 @@ export class InputDisplayVisuals {
       case 7: s = `down_right`; break;
       default: s = `up`; break;
     }
-    return `<img src="assets/images/${s}.png" ${dirIconWidth} ${dirIconHeight}>`;
+    // return `<img src="assets/images/${s}.png" ${dirIconWidth} ${dirIconHeight}>`;
+    return `<img src="assets/images/${s}.png">`;
   }
 }
