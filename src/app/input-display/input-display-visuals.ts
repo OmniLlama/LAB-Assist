@@ -9,12 +9,15 @@ export class InputDisplayVisuals {
 
   static CreateDirectionalArrows(idc: InputDisplayComponent, n: number): HTMLDivElement {
     let div_arrows: HTMLDivElement = document.createElement("div");
+    // let div_stick: HTMLDivElement = document.createElement("div");
+    let div_stickSpace: HTMLDivElement = document.createElement("div");
     div_arrows.className = "grid3x3";
     div_arrows.id = `${n == 0 ? 'left' : 'right'}`;
-    for (let i = 0; i < 9; i++) {
+    // for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 8; i++) {
       let arrow = document.createElement("div");
       switch (i) {
-        case 1: case 3: case 5: case 7:
+        case 1: case 3: case 4: case 6:
           arrow.className = `directionalArrows`;
           arrow.id = `${div_arrows.id}-ortho`;
           arrow.innerHTML = `<img src="assets/images/${InputDisplayFunctions.arrayIndexToDirection(
@@ -22,7 +25,7 @@ export class InputDisplayVisuals {
           )}.png"
           ${dirIconWidth} ${dirIconHeight}>`;
           break;
-        case 0: case 2: case 6: case 8:
+        case 0: case 2: case 5: case 7:
           arrow.className = `directionalArrows`;
           arrow.id = `${div_arrows.id}-diag`;
           arrow.innerHTML = `<img src="assets/images/${InputDisplayFunctions.arrayIndexToDirection(
@@ -30,18 +33,17 @@ export class InputDisplayVisuals {
           )}.png"
           ${dirIconWidth} ${dirIconHeight}>`;
           break;
-        case 4:
-          arrow.className = "stickSpace";
-          let stick = (n == 0 ? idc.div_leftStick : idc.div_rightStick);
-          let tempStick = document.createElement("div");
-          tempStick.id = `${div_arrows.id}-stick`;
-          tempStick.innerHTML = `<img src="assets/images/${n == 0 ? 'ls' : 'rs'}.png" ${dirIconWidth} ${dirIconHeight}>`;
-          stick = tempStick;
-          arrow.appendChild(stick);
-          break;
       }
       div_arrows.appendChild(arrow);
     }
+    div_stickSpace.className = "stickSpace";
+    let div_stick = (n == 0 ? idc.div_leftStick : idc.div_rightStick);
+    let div_tempStick = document.createElement("div");
+    div_tempStick.id = `${div_arrows.id}-stick`;
+    div_tempStick.innerHTML = `<img src="assets/images/${n == 0 ? 'ls' : 'rs'}.png" ${dirIconWidth} ${dirIconHeight}>`;
+    div_stick = div_tempStick;
+    div_stickSpace.appendChild(div_stick);
+    div_arrows.appendChild(div_stickSpace);
     return div_arrows;
   }
   /**
