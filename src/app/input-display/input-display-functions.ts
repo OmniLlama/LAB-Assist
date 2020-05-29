@@ -29,11 +29,8 @@ export class InputDisplayFunctions {
  */
   static processJoystickDirections(horiAxis, vertAxis, odz, ddz, arwArr) {
     let idc = InputDisplayComponent.inpDispCmp;
-    // let ddz = idc.diagDeadzone, odz = idc.orthoDeadzone;
     let preString = '<img src="assets/images/';
     let postString = `.png">`;
-    // let postString = `.png" ${dirIconWidth} ${dirIconHeight}>`;
-    // let stick = idc.div_leftStick;
 
     // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
     if (horiAxis < -ddz && vertAxis < -ddz) {

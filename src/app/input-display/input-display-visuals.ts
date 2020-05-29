@@ -9,31 +9,46 @@ export class InputDisplayVisuals {
 
   static CreateDirectionalArrows(idc: InputDisplayComponent, n: number): HTMLDivElement {
     let div_arrows: HTMLDivElement = document.createElement("div");
-    // let div_stick: HTMLDivElement = document.createElement("div");
     let div_stickSpace: HTMLDivElement = document.createElement("div");
     div_arrows.className = "grid3x3";
     div_arrows.id = `${n == 0 ? 'left' : 'right'}`;
-    // for (let i = 0; i < 9; i++) {
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 9; i++) {
+    // for (let i = 0; i < 8; i++) {
       let arrow = document.createElement("div");
       switch (i) {
-        case 1: case 3: case 4: case 6:
+        case 1: case 3: case 5: case 7:
           arrow.className = `directionalArrows`;
           arrow.id = `${div_arrows.id}-ortho`;
-          arrow.innerHTML = `<img src="assets/images/${InputDisplayFunctions.arrayIndexToDirection(
-            i
-          )}.png"
-          ${dirIconWidth} ${dirIconHeight}>`;
+          // arrow.innerHTML = `<img src="assets/images/${InputDisplayFunctions.arrayIndexToDirection(
+          //   i
+          // )}.png"
+          // ${dirIconWidth} ${dirIconHeight}>`;
           break;
-        case 0: case 2: case 5: case 7:
+        case 0: case 2: case 6: case 8:
           arrow.className = `directionalArrows`;
           arrow.id = `${div_arrows.id}-diag`;
-          arrow.innerHTML = `<img src="assets/images/${InputDisplayFunctions.arrayIndexToDirection(
-            i
-          )}.png"
-          ${dirIconWidth} ${dirIconHeight}>`;
+          // arrow.innerHTML = `<img src="assets/images/${InputDisplayFunctions.arrayIndexToDirection(
+          //   i
+          // )}.png"
+          // ${dirIconWidth} ${dirIconHeight}>`;
           break;
       }
+      let img_dir: HTMLImageElement = document.createElement("img");
+      let dir: string;
+      switch (i) {
+        case 0: dir = 'down-left';
+        case 1: dir = 'down';
+        case 2: dir = 'down-right';
+        case 3: dir = 'left';
+        case 4: dir = 'center';
+        case 5: dir = 'right';
+        case 6: dir = 'up-left';
+        case 7: dir = 'up';
+        case 8: dir = 'up-right';
+      }
+      img_dir.id = dir;
+      img_dir.src = `assets/images/${InputDisplayFunctions.arrayIndexToDirection(i)}.png`;
+      arrow.appendChild(img_dir);
       div_arrows.appendChild(arrow);
     }
     div_stickSpace.className = "stickSpace";
@@ -63,9 +78,10 @@ export class InputDisplayVisuals {
         case 2: arwArr[2].innerHTML = `${preString}pressed_up_right${postString}`; break;
         case 3: arwArr[3].innerHTML = `${preString}pressed_left${postString}`; break;
         case 4: arwArr[4].innerHTML = `${preString}pressed_right${postString}`; break;
-        case 5: arwArr[5].innerHTML = `${preString}pressed_down_left${postString}`; break;
-        case 6: arwArr[6].innerHTML = `${preString}pressed_down${postString}`; break;
-        case 7: arwArr[7].innerHTML = `${preString}pressed_down_right${postString}`; break;
+        case 5: arwArr[5].innerHTML = `${preString}pressed_right${postString}`; break;
+        case 6: arwArr[6].innerHTML = `${preString}pressed_down_left${postString}`; break;
+        case 7: arwArr[7].innerHTML = `${preString}pressed_down${postString}`; break;
+        case 8: arwArr[8].innerHTML = `${preString}pressed_down_right${postString}`; break;
         default:
           break;
       }
