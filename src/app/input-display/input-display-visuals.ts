@@ -13,24 +13,15 @@ export class InputDisplayVisuals {
     div_arrows.className = "grid3x3";
     div_arrows.id = `${n == 0 ? 'left' : 'right'}`;
     for (let i = 0; i < 9; i++) {
-    // for (let i = 0; i < 8; i++) {
       let arrow = document.createElement("div");
       switch (i) {
         case 1: case 3: case 5: case 7:
           arrow.className = `directionalArrows`;
           arrow.id = `${div_arrows.id}-ortho`;
-          // arrow.innerHTML = `<img src="assets/images/${InputDisplayFunctions.arrayIndexToDirection(
-          //   i
-          // )}.png"
-          // ${dirIconWidth} ${dirIconHeight}>`;
           break;
         case 0: case 2: case 6: case 8:
           arrow.className = `directionalArrows`;
           arrow.id = `${div_arrows.id}-diag`;
-          // arrow.innerHTML = `<img src="assets/images/${InputDisplayFunctions.arrayIndexToDirection(
-          //   i
-          // )}.png"
-          // ${dirIconWidth} ${dirIconHeight}>`;
           break;
       }
       let img_dir: HTMLImageElement = document.createElement("img");
@@ -64,20 +55,20 @@ export class InputDisplayVisuals {
   /**
    * All the icons will be reset to their regular image, save for a single arrow element if any.
    * @param arwArr
-   * @param index  */
-  static resetArrows(arwArr, index = -1) {
+   * @param idx  */
+  static resetArrows(arwArr, idx = -1) {
     let preString = '<img src="assets/images/';
     let postString = `.png">`;
     for (let i = 0; i < arwArr.length; i++) {
-      if (i != index) {
+      if (i != idx) {
         arwArr[i].innerHTML = this.returnXboxArrowImgElmt(i);
       }
-      switch (index) {
+      switch (idx) {
         case 0: arwArr[0].innerHTML = `${preString}pressed_up_left${postString}`; break;
         case 1: arwArr[1].innerHTML = `${preString}pressed_up${postString}`; break;
         case 2: arwArr[2].innerHTML = `${preString}pressed_up_right${postString}`; break;
         case 3: arwArr[3].innerHTML = `${preString}pressed_left${postString}`; break;
-        case 4: arwArr[4].innerHTML = `${preString}pressed_right${postString}`; break;
+        // case 4: arwArr[4].innerHTML = `${preString}pressed_right${postString}`; break;
         case 5: arwArr[5].innerHTML = `${preString}pressed_right${postString}`; break;
         case 6: arwArr[6].innerHTML = `${preString}pressed_down_left${postString}`; break;
         case 7: arwArr[7].innerHTML = `${preString}pressed_down${postString}`; break;
@@ -99,13 +90,13 @@ export class InputDisplayVisuals {
       case 1: s = `up`; break;
       case 2: s = `up_right`; break;
       case 3: s = `left`; break;
-      case 4: s = `right`; break;
-      case 5: s = `down_left`; break;
-      case 6: s = `down`; break;
-      case 7: s = `down_right`; break;
+      case 4: s = `ls`; break;
+      case 5: s = `right`; break;
+      case 6: s = `down_left`; break;
+      case 7: s = `down`; break;
+      case 8: s = `down_right`; break;
       default: s = `up`; break;
     }
-    // return `<img src="assets/images/${s}.png" ${dirIconWidth} ${dirIconHeight}>`;
     return `<img src="assets/images/${s}.png">`;
   }
 }
