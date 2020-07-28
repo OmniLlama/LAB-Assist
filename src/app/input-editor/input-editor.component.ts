@@ -15,9 +15,9 @@ declare let sequencer: any;
 })
 export class InputEditorComponent implements OnInit {
   static seq = sequencer;
-  static NOTE_OFF = 0x80;
-  static NOTE_ON = 0x90;
-  static MIDI_HEARTBEAT = 0xFE;
+  // static NOTE_OFF = 0x80;
+  // static NOTE_ON = 0x90;
+  // static MIDI_HEARTBEAT = 0xFE;
   static inpEdComp: InputEditorComponent;
   static inpEdEvts: InputEditorEvents;
   testMethod = 1;
@@ -162,9 +162,6 @@ export class InputEditorComponent implements OnInit {
 }
 
 
-
-
-
 /**
  * Returns the two edge HtmlDivElements of a given note
  * @param note
@@ -199,6 +196,9 @@ export function setSliderValues(ref_elmt, val, min, max, step) {
 }
 //#region [rgba(120, 120, 0 ,0.15)] Draw Functions
 
+export let NOTE_OFF = 0x80;
+export let NOTE_ON = 0x80;
+export let MIDI_HEARTBEAT = 0x80;
 
 
 

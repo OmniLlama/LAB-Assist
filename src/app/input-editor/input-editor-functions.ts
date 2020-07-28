@@ -1,6 +1,9 @@
 import { Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song } from 'heartbeat-sequencer';
 import { InputEditorComponent } from "./input-editor.component";;
 declare let sequencer: any;
+let NOTE_OFF = 0x80;
+let NOTE_ON = 0x90;
+let MIDI_HEARTBEAT = 0xFE;
 export class InputEditorFunctions {
   // iec: InputEditorComponent = InputEditorComponent.inpEdComp;
   //#region [ rgba(200, 200, 200, 0.1) ] Random Generation Functions
@@ -28,8 +31,8 @@ export class InputEditorFunctions {
   static createNewNoteEvents(start: number, end: number, pitch: number, velocity?: number): [MIDIEvent, MIDIEvent] {
     let tmp_velocity = (velocity == undefined ? 127 : velocity);
     let tmp_events = [];
-    let tmp_noteOn = sequencer.createMidiEvent(start, InputEditorComponent.NOTE_ON, pitch, tmp_velocity);
-    let tmp_noteOff = sequencer.createMidiEvent(end, InputEditorComponent.NOTE_OFF, pitch, 0);
+    let tmp_noteOn = sequencer.createMidiEvent(start, NOTE_ON, pitch, tmp_velocity);
+    let tmp_noteOff = sequencer.createMidiEvent(end, NOTE_OFF, pitch, 0);
     tmp_events.push(tmp_noteOn, tmp_noteOff);
     return [tmp_noteOn, tmp_noteOff];
   }
@@ -46,7 +49,6 @@ export class InputEditorFunctions {
     }
     else {
       iec.currPart = sequencer.createPart('GeneratedPart');
-      // this.currPart.addEvents(createNewNote(this.currPart, iec, start, end, pitch));
       iec.track.addPartAt(iec.currPart, ['ticks', start]);
       iec.track.update();
     }
@@ -61,13 +63,12 @@ export class InputEditorFunctions {
    * @param iec
    */
   static addRandomPartAtPlayhead(iec: InputEditorComponent) {
-    let i,
-      tmp_ticks = 0,
+    let tmp_ticks = 0,
       tmp_numNotes = this.getRandom(4, 8, true),
       tmp_spread = 5,
       tmp_basePitch = this.getRandom(
-        InputEditorComponent.inpEdComp.keyEditor.lowestNote + tmp_spread,
-        InputEditorComponent.inpEdComp.keyEditor.highestNote - tmp_spread,
+        iec.keyEditor.lowestNote + tmp_spread,
+        iec.keyEditor.highestNote - tmp_spread,
         true
       ),
       tmp_part = sequencer.createPart(),
@@ -76,21 +77,21 @@ export class InputEditorFunctions {
       tmp_pitch,
       tmp_velocity;
 
-    for (i = 0; i < tmp_numNotes; i++) {
+    for (let i = 0; i < tmp_numNotes; i++) {
       tmp_pitch = tmp_basePitch + this.getRandom(-tmp_spread, tmp_spread, true);
       tmp_velocity = this.getRandom(50, 127, true);
 
-      tmp_events.push(sequencer.createMidiEvent(tmp_ticks, InputEditorComponent.NOTE_ON, tmp_pitch, tmp_velocity));
+      tmp_events.push(sequencer.createMidiEvent(tmp_ticks, NOTE_ON, tmp_pitch, tmp_velocity));
       tmp_ticks += tmp_noteLength;
-      tmp_events.push(sequencer.createMidiEvent(tmp_ticks, InputEditorComponent.NOTE_OFF, tmp_pitch, 0));
+      tmp_events.push(sequencer.createMidiEvent(tmp_ticks, NOTE_OFF, tmp_pitch, 0));
       tmp_ticks += tmp_noteLength;
     }
-    tmp_ticks = InputEditorComponent.inpEdComp.keyEditor.getTicksAt(InputEditorComponent.inpEdComp.keyEditor.getPlayheadX());
+    tmp_ticks = iec.keyEditor.getTicksAt(iec.keyEditor.getPlayheadX());
 
     tmp_part.addEvents(tmp_events);
     if (!iec.track) { iec.track = iec.song.tracks[0]; }
     if (!iec.track) { iec.track = sequencer.createTrack("forcedTrack"); }
-    InputEditorComponent.inpEdComp.track.addPartAt(tmp_part, ['ticks', tmp_ticks]);
+    iec.track.addPartAt(tmp_part, ['ticks', tmp_ticks]);
     iec.song.update();
   }
   /**
@@ -114,9 +115,9 @@ export class InputEditorFunctions {
       tmp_pitch = tmp_basePitch;
       tmp_velocity = this.getRandom(50, 127, true);
 
-      tmp_events.push(sequencer.createMidiEvent(tmp_ticks, InputEditorComponent.NOTE_ON, tmp_pitch, tmp_velocity));
+      tmp_events.push(sequencer.createMidiEvent(tmp_ticks, NOTE_ON, tmp_pitch, tmp_velocity));
       tmp_ticks += tmp_noteLength;
-      tmp_events.push(sequencer.createMidiEvent(tmp_ticks, InputEditorComponent.NOTE_OFF, tmp_pitch, 0));
+      tmp_events.push(sequencer.createMidiEvent(tmp_ticks, NOTE_OFF, tmp_pitch, 0));
       tmp_ticks += tmp_noteLength;
     }
     tmp_ticks = iec.info.totalTicksAtHead;
@@ -145,8 +146,8 @@ export class InputEditorFunctions {
    */
   static createNewMIDINote(start: number, end: number, pitch: number): MIDINote {
     let tmp_velocity = 127;
-    let tmp_noteOn = sequencer.createMidiEvent(start, InputEditorComponent.NOTE_ON, pitch, tmp_velocity);
-    let tmp_noteOff = sequencer.createMidiEvent(end, InputEditorComponent.NOTE_OFF, pitch, 0);
+    let tmp_noteOn = sequencer.createMidiEvent(start, NOTE_ON, pitch, tmp_velocity);
+    let tmp_noteOff = sequencer.createMidiEvent(end, NOTE_OFF, pitch, 0);
     let tmp_midiNote = sequencer.createMidiNote(tmp_noteOn, tmp_noteOff);
     return tmp_midiNote;
   }
@@ -166,11 +167,11 @@ export class InputEditorFunctions {
     let tmp_noteOff;
     let tmp_note;
     // tmp_note = sequencer.createNote(pitch.number);
-    tmp_noteOn = sequencer.createMidiEvent(tmp_ticks, InputEditorComponent.NOTE_ON, tmp_pitch, tmp_velocity);
+    tmp_noteOn = sequencer.createMidiEvent(tmp_ticks, NOTE_ON, tmp_pitch, tmp_velocity);
     tmp_ticks += tmp_noteLength;
-    tmp_noteOff = sequencer.createMidiEvent(tmp_ticks, InputEditorComponent.NOTE_OFF, tmp_pitch, 0);
+    tmp_noteOff = sequencer.createMidiEvent(tmp_ticks, NOTE_OFF, tmp_pitch, 0);
     tmp_events.push(tmp_noteOn, tmp_noteOff);
-    tmp_ticks = iec.keyEditor.getTicksAt(InputEditorComponent.inpEdComp.info.screenX);
+    tmp_ticks = iec.keyEditor.getTicksAt(iec.info.screenX);
     console.log('added new note: \n ' +
       'pitch: ' + tmp_pitch + '\n' +
       'at ticks: ' + tmp_ticks + '\n' +
@@ -518,3 +519,4 @@ export class EditorHTMLShell {
     return this;
   }
 }
+
