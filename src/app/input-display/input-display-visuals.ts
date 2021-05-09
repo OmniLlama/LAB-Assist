@@ -1,19 +1,19 @@
 import { InputDisplayFunctions } from './input-display-functions';
 import { InputDisplayComponent } from './input-display.component';
 
-const dirIconWidth = "width=60px";
-const dirIconHeight = "height=60px";
-const btnIconWidth = "width=72px";
-const btnIconHeight = "height=72px";
+const dirIconWidth = 'width=60px';
+const dirIconHeight = 'height=60px';
+const btnIconWidth = 'width=72px';
+const btnIconHeight = 'height=72px';
 export class InputDisplayVisuals {
 
   static CreateDirectionalArrows(idc: InputDisplayComponent, n: number): HTMLDivElement {
-    let div_arrows: HTMLDivElement = document.createElement("div");
-    let div_stickSpace: HTMLDivElement = document.createElement("div");
-    div_arrows.className = "grid3x3";
-    div_arrows.id = `${n == 0 ? 'left' : 'right'}`;
+    const div_arrows: HTMLDivElement = document.createElement('div');
+    const div_stickSpace: HTMLDivElement = document.createElement('div');
+    div_arrows.className = 'grid3x3';
+    div_arrows.id = `${n === 0 ? 'left' : 'right'}`;
     for (let i = 0; i < 9; i++) {
-      let arrow = document.createElement("div");
+      let arrow = document.createElement('div');
       switch (i) {
         case 1: case 3: case 5: case 7:
           arrow.className = `directionalArrows`;
@@ -24,7 +24,7 @@ export class InputDisplayVisuals {
           arrow.id = `${div_arrows.id}-diag`;
           break;
       }
-      let img_dir: HTMLImageElement = document.createElement("img");
+      let img_dir: HTMLImageElement = document.createElement('img');
       let dir: string;
       switch (i) {
         case 0: dir = 'down-left';

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
 import { MIDIEvent, Note, MIDINote } from 'heartbeat-sequencer';
 import { InputEditorComponent, getEdgeDivs } from '../input-editor/input-editor.component';
 import { InputDisplayComponent, GamepadObject, pads, padObjs, xbBtns, ggBtns, scBtns, tknBtns, snkBtns } from '../input-display/input-display.component';
@@ -20,7 +20,7 @@ declare let sequencer: any;
   styleUrls: ['./input-converter.component.sass']
 })
 
-export class InputConverterComponent implements OnInit {
+export class InputConverterComponent implements OnInit, AfterViewInit {
   static inpConvComp: InputConverterComponent;
   events: MIDIEvent[];
   div_Editor: HTMLDivElement;
@@ -57,13 +57,13 @@ export class InputConverterComponent implements OnInit {
   /**
    * DEBUG
    */
-  playJingles: boolean = false;
+  playJingles = false;
 
   constructor() { }
 
   ngOnInit() {
     InputConverterComponent.inpConvComp = this;
-    let port = JZZ().openMidiIn(1).or('MIDI-In: Cannot open!');
+    const port = JZZ().openMidiIn(1).or('MIDI-In: Cannot open!');
     this.midi = JZZ.MIDI;
     console.warn(port.name);
   }
@@ -87,9 +87,9 @@ export class InputConverterComponent implements OnInit {
    * Initializes arrays that hold the various inputs and their respective notes
    */
   getController() {
-    let idc = InputDisplayComponent.inpDispCmp;
-    let icc = InputConverterComponent.inpConvComp;
-    if (pads !== undefined && pads.length != 0 && icc.testPadObj == null) {
+    const idc = InputDisplayComponent.inpDispCmp;
+    const icc = InputConverterComponent.inpConvComp;
+    if (pads !== undefined && pads.length !== 0 && icc.testPadObj == null) {
       let pad = (pads[0] !== undefined ? pads[0] : pads[1]);
       let padObj = (padObjs[0] !== undefined ? padObjs[0] : padObjs[1]);
       icc.testPadObj = padObj;
@@ -144,8 +144,8 @@ export class InputConverterComponent implements OnInit {
    * Boot Jingle
    */
   playStartJingle() {
-    if (!this.playJingles) return;
-    let mtop = InputConverterComponent.inpConvComp.midiOutPort;
+    if (!this.playJingles) { return; }
+    const mtop = InputConverterComponent.inpConvComp.midiOutPort;
     mtop
       .wait(200)
       .note(0, 'C5', 127, 100).wait(66)
@@ -161,8 +161,8 @@ export class InputConverterComponent implements OnInit {
    * Controller Connected Jingle
    */
   playControllerConnectedJingle() {
-    if (!this.playJingles) return;
-    let mtop = InputConverterComponent.inpConvComp.midiOutPort;
+    if (!this.playJingles) { return; }
+    const mtop = InputConverterComponent.inpConvComp.midiOutPort;
     mtop
       .note(0, 'A4', 127, 100).wait(33)
       .note(0, 'C#5', 127, 100).wait(33)
