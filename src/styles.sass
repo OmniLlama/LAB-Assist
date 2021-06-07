@@ -90,10 +90,21 @@ $clr-part-active-border: #98f86bb6
 $clr-part-selected-bg: #d15cff28
 $clr-part-selected-border: #a863aa8f
 
-$clr-gs1:#8069e7ce //up
-$clr-g1: #680b1fce  //down
-$clr-fs1: #3a1996ce //left
-$clr-f1: #e44a85ce //right
+$clr-e2: rgba(0, 14, 35, 0.81)      //up ls
+$clr-ds2: rgba(1, 30, 113, 0.81)    //right ls
+$clr-d2: rgba(28, 1, 215, 0.81)     //left ls
+$clr-cs2: rgba(48, 76, 252, 0.81)   //down ls
+
+$clr-c2: rgba(52, 0, 16, 0.81)      //up rs
+$clr-b1: rgba(127, 0, 41, 0.81)     //right rs
+$clr-as1: rgba(248, 33, 84, 0.88)   //left rs
+$clr-a1: rgba(246, 169, 177, 0.81)  //down rs
+
+$clr-gs1: rgba(13, 54, 0, 0.81)     //up dpad
+$clr-g1: rgba(12, 125, 0, 0.81)     //down dpad
+$clr-fs1: rgba(48, 238, 25, 0.81)   //left dpad
+$clr-f1: rgba(132, 239, 120, 0.81)  //right dpad
+
 $clr-e1: #2dc46c9f //b0
 $clr-ds1: #d80606e1 //b1
 $clr-d1: #2a53dbd2 //b2
@@ -103,6 +114,22 @@ $clr-b0: #7c7c7ca6 //b5
 $clr-as0: #333333ad //b6
 $clr-a0: #111111bb //b7
 
+.note[pitch='E2']
+  background-color: $clr-e2
+.note[pitch='D#2']
+  background-color: $clr-ds2
+.note[pitch='D2']
+  background-color: $clr-d2
+.note[pitch='C#2']
+  background-color: $clr-cs2
+.note[pitch='C2']
+  background-color: $clr-c2
+.note[pitch='B1']
+  background-color: $clr-b1
+.note[pitch='A#1']
+  background-color: $clr-as1
+.note[pitch='A1']
+  background-color: $clr-a1
 .note[pitch='G#1']
   background-color: $clr-gs1
 .note[pitch='G1']
@@ -228,22 +255,22 @@ $dir-width: 60px
 $dir-height: 60px
 $btn-width: 72px
 $btn-height: 72px
-.directionalArrows
-  // div
-  float: left
-  height: $dir-height
-  line-height: $dir-height
-  text-align: center
-  width: $dir-width
+
 .grid3x3
   display: inline-block
   height: $dir-height * 3
   width: $dir-width * 3
-
-  .stickSpace
-    // float: left
+  .directionalArrows
+    // div
+    float: left
     height: $dir-height
     line-height: $dir-height
+    text-align: center
+    width: $dir-width
+  .stickSpace
+    position: relative
+    height: $dir-height
+    //line-height: $dir-height
     text-align: center
     width: $dir-width
 

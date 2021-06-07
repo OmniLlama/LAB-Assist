@@ -33,7 +33,7 @@ export class InputDisplayComponent implements OnInit {
   div_leftStick: HTMLDivElement;
   div_rightStick: HTMLDivElement;
   haveWebkitEvents = 'WebKitGamepadEvent' in  window;
-  haveEvents = 'GamepadEvent' in window;
+  haveEvents = 'GamepadEvent'  in  window;
   diagDeadzone = 0.4;
   orthoDeadzone = 0.75;
 
@@ -221,7 +221,6 @@ export class InputDisplayComponent implements OnInit {
       /**
        * Get Axis Status */
 
-        // var divs_arrows = d.getElementsByClassName("directionalArrows");
       const divs_arrowL = padObj.html.dirArrowSets[0];
       const divs_arrowR = padObj.html.dirArrowSets[1];
       const divs_arrowDP = padObj.html.dirArrowSets[2];
@@ -238,19 +237,10 @@ export class InputDisplayComponent implements OnInit {
         padObj.DPad().forEach((d, i) => {
           padArr[i] = d.pressed;
         });
-        InputDisplayFunctions.processDigitalDirectionalInput(padArr, divs_arrowL.children);
+        // InputDisplayFunctions.processDigitalDirectionalInput(padArr, divs_arrowDP.children);
       }
-
-      // if (normAxesL[0] > this.orthoDeadzone) {
-      InputDisplayFunctions.processJoystickDirections(normAxesL[0], normAxesL[1], this.orthoDeadzone, this.diagDeadzone, divs_arrowL.children);
-      // }
-      // else
-      InputDisplayVisuals.resetArrows(divs_arrowL);
-      // if (normAxesR[0] > this.orthoDeadzone) {
-      InputDisplayFunctions.processJoystickDirections(normAxesR[0], normAxesR[1], this.orthoDeadzone, this.diagDeadzone, divs_arrowR.children);
-      // }
-      // else
-      InputDisplayVisuals.resetArrows(divs_arrowR);
+      InputDisplayFunctions.processJoystickDirections(pad.axes[0], pad.axes[1], this.orthoDeadzone, this.diagDeadzone, divs_arrowL.children);
+      InputDisplayFunctions.processJoystickDirections(pad.axes[2], pad.axes[3], this.orthoDeadzone, this.diagDeadzone, divs_arrowR.children);
     });
 
     InputDisplayComponent.rAF(cb => this.updateStatus());
@@ -382,6 +372,12 @@ export class GamepadObject {
     this.getDPadButtonNumbers().forEach((b, i) => {
       bs[i] = this.pad.buttons[b];
     });
+    return bs;
+  }
+
+  DPadURLD(): readonly GamepadButton[] {
+    const bns = this.getDPadButtonNumbers();
+    const bs = [this.pad.buttons[bns[0]], this.pad.buttons[bns[3]], this.pad.buttons[bns[2]], this.pad.buttons[bns[1]]];
     return bs;
   }
 

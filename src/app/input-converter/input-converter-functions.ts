@@ -1,7 +1,7 @@
 export class InputConverterFunctions {
   static getPitchStringFromNumber(n: number): string {
-    let noteLetter = n % 12;
-    let noteOctave = (n / 12);
+    const noteLetter = n % 12;
+    const noteOctave = (n / 12);
     let str = '';
     switch (noteLetter) {
       case 0: str = 'C'; break;

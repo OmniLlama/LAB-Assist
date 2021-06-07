@@ -1,9 +1,12 @@
-import { Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song } from 'heartbeat-sequencer';
-import { InputEditorComponent } from "./input-editor.component";;
+import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song} from 'heartbeat-sequencer';
+import {InputEditorComponent} from './input-editor.component';
+
+;
 declare let sequencer: any;
 let NOTE_OFF = 0x80;
 let NOTE_ON = 0x90;
 let MIDI_HEARTBEAT = 0xFE;
+
 export class InputEditorFunctions {
   // iec: InputEditorComponent = InputEditorComponent.inpEdComp;
   //#region [ rgba(200, 200, 200, 0.1) ] Random Generation Functions
@@ -21,13 +24,14 @@ export class InputEditorFunctions {
       return tmp_r;
     }
   }
+
   /**
-* alternate to createNewMIDINote
-* @param start
-* @param end
-* @param pitch
-* @param velocity
-*/
+   * alternate to createNewMIDINote
+   * @param start
+   * @param end
+   * @param pitch
+   * @param velocity
+   */
   static createNewNoteEvents(start: number, end: number, pitch: number, velocity?: number): [MIDIEvent, MIDIEvent] {
     let tmp_velocity = (velocity == undefined ? 127 : velocity);
     let tmp_events = [];
@@ -36,6 +40,7 @@ export class InputEditorFunctions {
     tmp_events.push(tmp_noteOn, tmp_noteOff);
     return [tmp_noteOn, tmp_noteOff];
   }
+
   /**
    * Creates and returns the two events that compose a MIDINote in the sequencer,
    * @param iec - static singleton
@@ -44,10 +49,12 @@ export class InputEditorFunctions {
    * @param pitch - pitch to assign note
    * @param vel - velocity to assign note
    */
-  static createNoteEvents(iec: InputEditorComponent, start: number, end: number, pitch: number, vel?: number): [MIDIEvent, MIDIEvent] {
-    if (iec.currPart != null && iec.currPart != undefined) {
+  static createNoteEvents(start: number, end: number, pitch: number, vel?: number, iec?: InputEditorComponent): [MIDIEvent, MIDIEvent] {
+    if (iec == null) {
+      iec = InputEditorComponent.inpEdComp;
     }
-    else {
+    if (iec.currPart != null && iec.currPart != undefined) {
+    } else {
       iec.currPart = sequencer.createPart('GeneratedPart');
       iec.track.addPartAt(iec.currPart, ['ticks', start]);
       iec.track.update();
@@ -58,6 +65,7 @@ export class InputEditorFunctions {
     iec.song.update();
     return noteEvts;
   }
+
   /**
    * DEBUG - makes a random part for debug purposes
    * @param iec
@@ -89,11 +97,16 @@ export class InputEditorFunctions {
     tmp_ticks = iec.keyEditor.getTicksAt(iec.keyEditor.getPlayheadX());
 
     tmp_part.addEvents(tmp_events);
-    if (!iec.track) { iec.track = iec.song.tracks[0]; }
-    if (!iec.track) { iec.track = sequencer.createTrack("forcedTrack"); }
+    if (!iec.track) {
+      iec.track = iec.song.tracks[0];
+    }
+    if (!iec.track) {
+      iec.track = sequencer.createTrack('forcedTrack');
+    }
     iec.track.addPartAt(tmp_part, ['ticks', tmp_ticks]);
     iec.song.update();
   }
+
   /**
    * inits a part with two notes at the pitch and ticks of the mouse's coordinates
    * @param iec
@@ -127,15 +140,15 @@ export class InputEditorFunctions {
       iec.track = iec.song.tracks[0];
     }
     if (!iec.track) {
-      iec.track = sequencer.createTrack("forcedTrack");
+      iec.track = sequencer.createTrack('forcedTrack');
       iec.song.addTrack(iec.track);
     }
     iec.track.addPartAt(tmp_part, ['ticks', tmp_ticks]);
     iec.track.update();
     iec.song.update();
   }
-  //#endregion
 
+  //#endregion
 
 
   /**
@@ -180,13 +193,14 @@ export class InputEditorFunctions {
     );
     return tmp_events;
   }
+
   /**
    *  Compacts all song tracks onto single track, set to monitor, and set instrument to piano
    * @param ref_song
    */
   static flattenTracks(ref_song) {
     ref_song.tracks.forEach(
-      function (track) {
+      function(track) {
         track.setInstrument('piano');
         track.monitor = true;
         track.setMidiInput('all');
@@ -203,10 +217,14 @@ export class InputEditorFunctions {
   static setNoteActiveState(note: Note, div_Note) {
     div_Note = document.getElementById(note.id);
     if (div_Note !== null && note.part.mute === false && note.mute !== true) {
-      if (note.active) { div_Note.className = 'note note-active'; } else
-        if (note.active === false) { div_Note.className = 'note'; }
+      if (note.active) {
+        div_Note.className = 'note note-active';
+      } else if (note.active === false) {
+        div_Note.className = 'note';
+      }
     }
   }
+
   /**
    * set properties in note required for selected state
    * @param note
@@ -217,16 +235,18 @@ export class InputEditorFunctions {
       div_Note.className = 'note note-selected';
     }
   }
+
   /**
- * set properties in note required for unselected state
- * @param note
- */
+   * set properties in note required for unselected state
+   * @param note
+   */
   static unselectNote(note: Note) {
     let div_Note = document.getElementById(note.id);
     if (note.part.mute === false && note.mute !== true && div_Note !== null) {
       div_Note.className = 'note';
     }
   }
+
   /**
    * set properties in part required for active state
    * @param part
@@ -242,6 +262,7 @@ export class InputEditorFunctions {
       }
     }
   }
+
   /**
    *  set properties in part required for selected state
    * @param part
@@ -252,6 +273,7 @@ export class InputEditorFunctions {
       div_Part.className = 'part part-selected';
     }
   }
+
   /**
    *  set properties in part required for unselected state
    * @param part
@@ -264,6 +286,7 @@ export class InputEditorFunctions {
       }
     }
   }
+
   //#endregion
   /**
    * Initializes Song and its properties in the editor
@@ -274,10 +297,11 @@ export class InputEditorFunctions {
       iec = InputEditorComponent.inpEdComp,
       tmp_midiFiles = sequencer.getMidiFiles(),
       tmp_midiFile = tmp_midiFiles[0];
-    if (tmp_midiFile !== undefined) { song = sequencer.createSong(tmp_midiFile); }
-    else {
+    if (tmp_midiFile !== undefined) {
+      song = sequencer.createSong(tmp_midiFile);
+    } else {
       song = sequencer.createSong({
-        bpm: 153,
+        bpm: 150,
         nominator: 3,
         denominator: 4,
         useMetronome: true
@@ -286,17 +310,18 @@ export class InputEditorFunctions {
     iec.track = song.tracks[0];
     return song;
   }
+
   static createKeyEditor(iec: InputEditorComponent): KeyEditor {
     let tmp_icons_w = 128;
     let tmp_w = window.innerWidth - tmp_icons_w;
-    let tmp_h = iec.editorHeight;
+    let tmp_h = iec.info.editorHeight;
     let keyEditor = sequencer.createKeyEditor(iec.song, {
       // keyListener: true,
       viewportHeight: tmp_h,
       viewportWidth: tmp_w,
-      pitchHeight: iec.pitchHeight,
-      lowestNote: iec.pitchStart,
-      highestNote: iec.pitchEnd,
+      pitchHeight: iec.info.pitchHeight,
+      lowestNote: iec.info.pitchStart,
+      highestNote: iec.info.pitchEnd,
       barsPerPage: iec.bppStart
     });
     return keyEditor;
@@ -306,37 +331,63 @@ export class InputEditorFunctions {
   static UpdateTrack(iec: InputEditorComponent) {
     iec.track.update();
   }
+
   static UpdateSong(iec: InputEditorComponent) {
     iec.song.update();
   }
 
   static numToPitch(i: number): string {
     switch (i) {
-      case 43: return 'G2';
-      case 42: return 'F#2';
-      case 41: return 'F2';
-      case 40: return 'E2';
-      case 39: return 'D#2';
-      case 38: return 'D2';
-      case 37: return 'C#2';
-      case 36: return 'C2';
-      case 35: return 'B1';
-      case 34: return 'A#1';
-      case 33: return 'A1';
-      case 32: return 'G#1';
-      case 31: return 'G1';
-      case 30: return 'F#1';
-      case 29: return 'F1';
-      case 28: return 'E1';
-      case 27: return 'D#1';
-      case 26: return 'D1';
-      case 25: return 'C#1';
-      case 24: return 'C1';
-      case 23: return 'B0';
-      case 22: return 'A#0';
-      case 21: return 'A0';
-      case 12: return 'C-1';
-      case 0: return 'C-2';
+      case 43:
+        return 'G2';
+      case 42:
+        return 'F#2';
+      case 41:
+        return 'F2';
+      case 40:
+        return 'E2';
+      case 39:
+        return 'D#2';
+      case 38:
+        return 'D2';
+      case 37:
+        return 'C#2';
+      case 36:
+        return 'C2';
+      case 35:
+        return 'B1';
+      case 34:
+        return 'A#1';
+      case 33:
+        return 'A1';
+      case 32:
+        return 'G#1';
+      case 31:
+        return 'G1';
+      case 30:
+        return 'F#1';
+      case 29:
+        return 'F1';
+      case 28:
+        return 'E1';
+      case 27:
+        return 'D#1';
+      case 26:
+        return 'D1';
+      case 25:
+        return 'C#1';
+      case 24:
+        return 'C1';
+      case 23:
+        return 'B0';
+      case 22:
+        return 'A#0';
+      case 21:
+        return 'A0';
+      case 12:
+        return 'C-1';
+      case 0:
+        return 'C-2';
     }
   }
 
@@ -354,8 +405,7 @@ export class BBox {
       this.y = box.y;
       this.width = box.width;
       this.height = box.height;
-    }
-    else {
+    } else {
       this.x = x;
       this.y = y;
       this.width = w;
@@ -364,6 +414,7 @@ export class BBox {
     return this;
   }
 }
+
 /**
  * holds many useful values needed to help make heartbeat-sequencer compatible with our solution
  */
@@ -398,8 +449,15 @@ export class EditorInfo {
   allNotes: Note[];
   allParts: Part[];
   flattenTracksToSingleTrack = true;
-  editorHeight = 480;
   edHTMLShell = new EditorHTMLShell();
+
+  pitchStart = 21;
+  pitchEnd = 40;
+  pitchHeight = 28;
+  timeSigNom = 3;
+  timeSigDenom = 4;
+  editorHeight = ((this.pitchEnd - this.pitchStart + 2) * this.pitchHeight);
+
   UpdateInfo(me: MouseEvent, ke: KeyEditor) {
     if (me !== null) {
       this.screenX = me.screenX;
@@ -411,7 +469,7 @@ export class EditorInfo {
       this.editorX = me.pageX - this.editorFrameOffsetX;
       this.editorY = me.pageY - this.editorFrameOffsetY;
     }
-    this.mouseBarPos = ke.getPositionAt(this.pageX - this.editorFrameOffsetX).barsAsString;
+    this.mouseBarPos = ke.getPositionAt(this.pageX - (this.editorFrameOffsetX)).barsAsString;
     this.editorScrollX = this.edHTMLShell.div_Editor.scrollLeft;
     this.editorScrollY = this.edHTMLShell.div_Editor.scrollTop;
     this.editorFrameOffsetY = this.edHTMLShell.div_Editor.offsetTop;
@@ -422,7 +480,7 @@ export class EditorInfo {
     this.snapTotalTicksAtHead = ke.getTicksAt(this.headX);
     this.scrollTicksAtHead = ke.getTicksAt(this.scrolledHeadX, false);
     this.snapScrollTicksAtHead = ke.getTicksAt(this.scrolledHeadX);
-    this.mousePitchPos = ke.getPitchAt(this.pageY - this.edHTMLShell.div_Editor.offsetTop).number;
+    this.mousePitchPos = ke.getPitchAt(this.pageY - this.edHTMLShell.div_Editor.offsetTop - (this.pitchHeight / 2)).number;
     this.ticksAtX = ke.getTicksAt(
       this.clientX - this.editorFrameOffsetX, false);
     this.snapTicksAtX = ke.getTicksAt(
@@ -430,6 +488,7 @@ export class EditorInfo {
   }
 
 }
+
 /**
  * contains all the separate elements in the editor for quick and frequently necessary reference
  */
@@ -481,6 +540,7 @@ export class EditorHTMLShell {
 
   gridHoriMargin: number;
   gridVertMargin: number;
+
   constructor() {
     this.btn_Play = document.getElementById('play') as HTMLButtonElement,
       this.btn_Stop = document.getElementById('stop') as HTMLButtonElement,
@@ -516,6 +576,8 @@ export class EditorHTMLShell {
       this.div_currPart = document.getElementById('dbg-curr-part') as HTMLDivElement,
       this.gridHoriMargin = 24,
       this.gridVertMargin = 24;
+    this.divs_AllNotes = new Array<HTMLDivElement>(),
+      this.divs_AllParts = new Array<HTMLDivElement>();
     return this;
   }
 }

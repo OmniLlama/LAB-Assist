@@ -1,16 +1,26 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import { MIDIEvent, Note, MIDINote } from 'heartbeat-sequencer';
-import { InputEditorComponent, getEdgeDivs } from '../input-editor/input-editor.component';
-import { InputDisplayComponent, GamepadObject, pads, padObjs, xbBtns, ggBtns, scBtns, tknBtns, snkBtns } from '../input-display/input-display.component';
+import {MIDIEvent, Note, MIDINote, Track} from 'heartbeat-sequencer';
+import {InputEditorComponent, getEdgeDivs} from '../input-editor/input-editor.component';
+import {
+  InputDisplayComponent,
+  GamepadObject,
+  pads,
+  padObjs,
+  xbBtns,
+  ggBtns,
+  scBtns,
+  tknBtns,
+  snkBtns
+} from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
-import { GamepadType, ButtonNotationType } from 'src/Enums';
+import {GamepadType, ButtonNotationType} from 'src/Enums';
 import jzz = require('jzz');
 import jzzInpKbd = require('jzz-input-kbd');
 import jzzSynOSC = require('jzz-synth-osc');
-import { InputEditorFunctions } from '../input-editor/input-editor-functions';
-import { InputDisplayEvents } from '../input-display/input-display-events';
-import { InputConverterEvents } from './input-converter-events';
-import { InputConverterVisuals } from './input-converter-visuals';
+import {InputEditorFunctions} from '../input-editor/input-editor-functions';
+import {InputDisplayEvents} from '../input-display/input-display-events';
+import {InputConverterEvents} from './input-converter-events';
+import {InputConverterVisuals} from './input-converter-visuals';
 
 declare let sequencer: any;
 
@@ -32,24 +42,28 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   midiOutPort;
   testPadObj: GamepadObject;
   midi;
-  trackingNotes: boolean;
+  trackNotes: boolean;
   liveUpdateHeldNotes: boolean;
   recordingPrimed: boolean;
   trackedNotes: Array<[number, number, number]>; // startTicks, endTicks, pitch
 
   heldNotes: Array<[MIDINote, number]>;
+  stxTrackGroup: Array<Tracker>;
   stxHeld: Array<boolean>;
   stxHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
   stxInpStarts: Array<number>;
   stxInpEnds: Array<number>;
 
+  dpadTrackGroup: Array<Tracker>;
   dpadHeld: Array<boolean>;
-  dpadHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
+  // dpadHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
   dpadInpStarts: Array<number>;
   dpadInpEnds: Array<number>;
 
+  btnTrackGroup: Array<Tracker>;
   btnsHeld: Array<boolean>;
-  btnHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
+  // btnHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
+  // btnHeldNotes: [MIDINote, number]; // heldNote, currentTicks
   btnInpStarts: Array<number>;
   btnInpEnds: Array<number>;
   deadZone = .5;
@@ -59,7 +73,8 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
    */
   playJingles = false;
 
-  constructor() { }
+  constructor() {
+  }
 
   ngOnInit() {
     InputConverterComponent.inpConvComp = this;
@@ -67,6 +82,7 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
     this.midi = JZZ.MIDI;
     console.warn(port.name);
   }
+
   ngAfterViewInit() {
     this.heldNotes = new Array<[MIDINote, number]>();
     this.getSetHTMLElements(this);
@@ -76,12 +92,15 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
     this.midiOutPort =
       JZZ().or('Cannot start MIDI engine!')
         .openMidiOut().or('Cannot open MIDI Out port!')
-        .and(function () { console.log('MIDI-Out:', this.name()); });
+        .and(function() {
+          console.log('MIDI-Out:', this.name());
+        });
     this.midiWidget = JZZ.Widget();
     this.playStartJingle();
     JZZ().refresh();
     InputConverterVisuals.rAF((cb) => this.getController());
   }
+
   /**
    * Waits for, then receives the first controller that is added to the display component,
    * Initializes arrays that hold the various inputs and their respective notes
@@ -98,40 +117,31 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
 
       icc.playControllerConnectedJingle();
 
+      icc.stxTrackGroup = createTrackerGroup(getPad().axes.length * 2);
       icc.stxHeld = new Array<boolean>(getPad().axes.length * 2);
       icc.stxInpStarts = new Array<number>((getPad().axes.length * 2));
       icc.stxInpEnds = new Array<number>((getPad().axes.length * 2));
       icc.stxHeldNotes = new Array<[MIDINote, number]>((getPad().axes.length * 2));
 
+      icc.dpadTrackGroup = createTrackerGroup(4);
       icc.dpadHeld = new Array<boolean>(4);
       icc.dpadInpStarts = new Array<number>(4);
       icc.dpadInpEnds = new Array<number>(4);
-      icc.dpadHeldNotes = new Array<[MIDINote, number]>(4);
+      // icc.dpadHeldNotes = new Array<[MIDINote, number]>(4);
 
+      icc.btnTrackGroup = createTrackerGroup(getPad().buttons.length);
       icc.btnsHeld = new Array<boolean>(getPad().buttons.length);
       icc.btnInpStarts = new Array<number>(getPad().buttons.length);
       icc.btnInpEnds = new Array<number>(getPad().buttons.length);
-      icc.btnHeldNotes = new Array<[MIDINote, number]>(getPad().buttons.length);
-      if (getPad() != null && getPad() != undefined) {
+      // icc.btnHeldNotes = new Array<[MIDINote, number]>(getPad().buttons.length);
+      if (getPad()) {
         InputConverterVisuals.rAF((cb) => InputConverterEvents.updateController());
-
       }
-    }
-    else {
+    } else {
       InputConverterVisuals.rAF((cb) => icc.getController());
     }
   }
-  updateHeldNote(held: boolean, arr: [MIDINote, number], ind: number, pos: number, liveUpdate: boolean) {
-    if (held) {
-      if (this.liveUpdateHeldNotes) {
-        arr[0].part.moveEvent(arr[0].noteOff, (pos - arr[1]));
-      }
-      arr[1] = pos;
-    }
-    else if (!held && arr != null) {
-      arr[ind] = null;
-    }
-  }
+
   /**
    *  Initialize the html element properties
    * @param icc
@@ -140,11 +150,14 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
     icc.div_Editor = document.getElementById('editor') as HTMLDivElement;
     icc.div_editInputIcons = document.getElementById('editor-input-icons') as HTMLDivElement;
   }
+
   /**
    * Boot Jingle
    */
   playStartJingle() {
-    if (!this.playJingles) { return; }
+    if (!this.playJingles) {
+      return;
+    }
     const mtop = InputConverterComponent.inpConvComp.midiOutPort;
     mtop
       .wait(200)
@@ -157,11 +170,14 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
     // .note(0, 'G#7', 127, 100).wait(83)
     // .note(0, 'C#8', 127, 100);
   }
+
   /**
    * Controller Connected Jingle
    */
   playControllerConnectedJingle() {
-    if (!this.playJingles) { return; }
+    if (!this.playJingles) {
+      return;
+    }
     const mtop = InputConverterComponent.inpConvComp.midiOutPort;
     mtop
       .note(0, 'A4', 127, 100).wait(33)
@@ -174,22 +190,33 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   }
 
 }
+
+export class Tracker {
+  held = false;
+  heldNote: MIDINote; // heldNote, currentTicks
+  inpStart: number;
+  inpEnd: number;
+
+}
+
 /**
  * returns first likely instance of a controller to act as main interface
  */
-export function getPad() { return pads[0] !== undefined ? pads[0] : pads[1]; }
-
+export function getPad() {
+  return pads[0] !== undefined ? pads[0] : pads[1];
+}
 
 
 let midiAccess;
 let inputs;
 let outputs;
 if (JZZ.requestMIDIAccess) {
-  JZZ.requestMIDIAccess({ sysex: false }).then(onMIDISuccess, onMIDIFailure);
+  JZZ.requestMIDIAccess({sysex: false}).then(onMIDISuccess, onMIDIFailure);
   console.log('There totally is MIDI support in your browser');
 } else {
   console.warn('No MIDI support in your browser');
 }
+
 /**
  * MIDI success procedures
  * @param mAcc
@@ -200,11 +227,13 @@ function onMIDISuccess(mAcc) {
   outputs = midiAccess.outputs;
   midiAccess.onstatechange += JZZ().onChange;
 }
+
 /**
  * MIDI Failure procedures
  * @param data
  */
-function onMIDIFailure(data) { }
+function onMIDIFailure(data) {
+}
 
 /**
  * returns the button name, based on the components selected notation type
@@ -212,13 +241,26 @@ function onMIDIFailure(data) { }
  */
 export function nameButton(i) {
   switch (InputDisplayComponent.inpDispCmp.butNotTy) {
-    case ButtonNotationType.StreetFighter: return (xbBtns[i] !== undefined ? xbBtns[i] : i);
-    case ButtonNotationType.GuiltyGear: return (ggBtns[i] !== undefined ? ggBtns[i] : i);
-    case ButtonNotationType.SoulCalibur: return (scBtns[i] !== undefined ? scBtns[i] : i);
-    case ButtonNotationType.Tekken: return (tknBtns[i] !== undefined ? tknBtns[i] : i);
-    case ButtonNotationType.SNK: return (snkBtns[i] !== undefined ? snkBtns[i] : i);
+    case ButtonNotationType.StreetFighter:
+      return (xbBtns[i] !== undefined ? xbBtns[i] : i);
+    case ButtonNotationType.GuiltyGear:
+      return (ggBtns[i] !== undefined ? ggBtns[i] : i);
+    case ButtonNotationType.SoulCalibur:
+      return (scBtns[i] !== undefined ? scBtns[i] : i);
+    case ButtonNotationType.Tekken:
+      return (tknBtns[i] !== undefined ? tknBtns[i] : i);
+    case ButtonNotationType.SNK:
+      return (snkBtns[i] !== undefined ? snkBtns[i] : i);
   }
   return i;
+}
+
+export function createTrackerGroup(cnt: number): Array<Tracker> {
+  const arr = new Array<Tracker>();
+  for (let i = 0; i < cnt; i++) {
+    arr.push(new Tracker());
+  }
+  return arr;
 }
 
 

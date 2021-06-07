@@ -9,12 +9,12 @@ export class InputEditorVisuals {
    */
   static draw(iec: InputEditorComponent) {
     //Initialize all Grid HTML elements to blank
-    iec.allNotes = new Array<Note>();
-    iec.allParts = new Array<Part>();
-    iec.html.divs_AllNotes = new Array<HTMLDivElement>();
-    iec.html.divs_AllParts = new Array<HTMLDivElement>();
-    // iec.html.div_Parts.innerHTML = '';
-    // iec.html.div_Notes.innerHTML = '';
+    // iec.allNotes = new Array<Note>();
+    // iec.allParts = new Array<Part>();
+    // iec.html.divs_AllNotes = new Array<HTMLDivElement>();
+    // iec.html.divs_AllParts = new Array<HTMLDivElement>();
+    iec.html.div_Parts.innerHTML = '';
+    iec.html.div_Notes.innerHTML = '';
     iec.html.div_PitchLines.innerHTML = '';
     iec.html.div_BarLines.innerHTML = '';
     iec.html.div_BeatLines.innerHTML = '';
@@ -68,7 +68,7 @@ export class InputEditorVisuals {
 
     switch (tmp_type) {
       case 'bar':
-        div_VLine.innerHTML = ref_data.position.barsAsString;
+        div_VLine.innerHTML = ref_data.position.bar;
         div_VLine.style.height = html.div_Score.scrollHeight.toString() + 'px';
         html.div_BarLines.appendChild(div_VLine);
         break;
@@ -164,7 +164,7 @@ export class InputEditorVisuals {
     let tmp_icons_w = 64;
     let tmp_c = iec.html.div_Controls.getBoundingClientRect().height;
     let tmp_w = window.innerWidth - tmp_icons_w;
-    let tmp_h = iec.editorHeight;
+    let tmp_h = iec.info.editorHeight;
 
     // tell the key editor that the viewport has canged, necessary for auto scroll during playback
     iec.keyEditor.setViewport(tmp_w, tmp_h);
