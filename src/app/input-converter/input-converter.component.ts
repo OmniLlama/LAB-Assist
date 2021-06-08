@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {MIDIEvent, Note, MIDINote, Track} from 'heartbeat-sequencer';
+import {MIDIEvent, Note, MIDINote, Track, Part} from 'heartbeat-sequencer';
 import {InputEditorComponent, getEdgeDivs} from '../input-editor/input-editor.component';
 import {
   InputDisplayComponent,
@@ -47,20 +47,22 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   recordingPrimed: boolean;
   trackedNotes: Array<[number, number, number]>; // startTicks, endTicks, pitch
 
-  heldNotes: Array<[MIDINote, number]>;
-  stxTrackGroup: Array<Tracker>;
+  stxPart: Part;
+  stxTrackerGroup: Array<Tracker>;
   stxHeld: Array<boolean>;
   stxHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
   stxInpStarts: Array<number>;
   stxInpEnds: Array<number>;
 
-  dpadTrackGroup: Array<Tracker>;
+  dpadPart: Part;
+  dpadTrackerGroup: Array<Tracker>;
   dpadHeld: Array<boolean>;
   // dpadHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
   dpadInpStarts: Array<number>;
   dpadInpEnds: Array<number>;
 
-  btnTrackGroup: Array<Tracker>;
+  btnPart: Part;
+  btnTrackerGroup: Array<Tracker>;
   btnsHeld: Array<boolean>;
   // btnHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
   // btnHeldNotes: [MIDINote, number]; // heldNote, currentTicks
@@ -84,7 +86,6 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.heldNotes = new Array<[MIDINote, number]>();
     this.getSetHTMLElements(this);
     this.inpEdCmp = InputEditorComponent.inpEdComp;
     this.inpDispCmp = InputDisplayComponent.inpDispCmp;
@@ -117,23 +118,21 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
 
       icc.playControllerConnectedJingle();
 
-      icc.stxTrackGroup = createTrackerGroup(getPad().axes.length * 2);
+      icc.stxTrackerGroup = createTrackerGroup(getPad().axes.length * 2);
       icc.stxHeld = new Array<boolean>(getPad().axes.length * 2);
       icc.stxInpStarts = new Array<number>((getPad().axes.length * 2));
       icc.stxInpEnds = new Array<number>((getPad().axes.length * 2));
       icc.stxHeldNotes = new Array<[MIDINote, number]>((getPad().axes.length * 2));
 
-      icc.dpadTrackGroup = createTrackerGroup(4);
+      icc.dpadTrackerGroup = createTrackerGroup(4);
       icc.dpadHeld = new Array<boolean>(4);
       icc.dpadInpStarts = new Array<number>(4);
       icc.dpadInpEnds = new Array<number>(4);
-      // icc.dpadHeldNotes = new Array<[MIDINote, number]>(4);
 
-      icc.btnTrackGroup = createTrackerGroup(getPad().buttons.length);
+      icc.btnTrackerGroup = createTrackerGroup(getPad().buttons.length);
       icc.btnsHeld = new Array<boolean>(getPad().buttons.length);
       icc.btnInpStarts = new Array<number>(getPad().buttons.length);
       icc.btnInpEnds = new Array<number>(getPad().buttons.length);
-      // icc.btnHeldNotes = new Array<[MIDINote, number]>(getPad().buttons.length);
       if (getPad()) {
         InputConverterVisuals.rAF((cb) => InputConverterEvents.updateController());
       }

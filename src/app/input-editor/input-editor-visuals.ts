@@ -208,7 +208,7 @@ export class InputEditorVisuals {
     // events.changed, notes.changed, parts.changed contain elements that have been moved or transposed
     snapshot.notes.changed.forEach((note) => {
       let elmt = iec.html.divs_AllNotes[note.id] as HTMLElement;
-      elmt.setAttribute('pitch', note.name);
+      // elmt.setAttribute('pitch', note.name);
       iev.updateElementBBox(elmt, note.bbox);
     });
 
@@ -255,8 +255,8 @@ export class InputEditorVisuals {
    * @param xPx Width of bounding box in pixels
    */
   static createEdgeBBoxes(bbox, xPx: number): [BBox, BBox] {
-    let tmp_bbox_l = new BBox(null, 0 - xPx, 0, xPx, bbox.height);
-    let tmp_bbox_r = new BBox(null, bbox.width, 0, xPx, bbox.height);
+    const tmp_bbox_l = new BBox(null, 0 - xPx, 0, xPx, bbox.height);
+    const tmp_bbox_r = new BBox(null, bbox.width, 0, xPx, bbox.height);
     return [tmp_bbox_l, tmp_bbox_r];
   }
   //#endregion

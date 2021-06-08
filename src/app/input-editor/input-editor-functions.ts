@@ -36,7 +36,7 @@ export class InputEditorFunctions {
     let tmp_velocity = (velocity == undefined ? 127 : velocity);
     let tmp_events = [];
     let tmp_noteOn = sequencer.createMidiEvent(start, NOTE_ON, pitch, tmp_velocity);
-    let tmp_noteOff = sequencer.createMidiEvent(end, NOTE_OFF, pitch, 0);
+    let tmp_noteOff = sequencer.createMidiEvent(end, NOTE_OFF, pitch, tmp_velocity);
     tmp_events.push(tmp_noteOn, tmp_noteOff);
     return [tmp_noteOn, tmp_noteOff];
   }
@@ -49,18 +49,21 @@ export class InputEditorFunctions {
    * @param pitch - pitch to assign note
    * @param vel - velocity to assign note
    */
-  static createNoteEvents(start: number, end: number, pitch: number, vel?: number, iec?: InputEditorComponent): [MIDIEvent, MIDIEvent] {
-    if (iec == null) {
-      iec = InputEditorComponent.inpEdComp;
-    }
-    if (iec.currPart != null && iec.currPart != undefined) {
+  static createNoteFromTicks(start: number, end: number, pitch: number, vel?: number, part?: Part): [MIDIEvent, MIDIEvent] {
+    const iec = InputEditorComponent.inpEdComp;
+    const noteEvts = this.createNewNoteEvents(start, end, pitch, vel);
+    if (part) {
+      part.addEvents(noteEvts);
     } else {
-      iec.currPart = sequencer.createPart('GeneratedPart');
-      iec.track.addPartAt(iec.currPart, ['ticks', start]);
-      iec.track.update();
+      if (iec.currPart != null && iec.currPart != undefined) {
+      } else {
+        iec.currPart = sequencer.createPart('GeneratedPart');
+        iec.track.addPartAt(iec.currPart, ['ticks', start]);
+        iec.track.update();
+      }
+      iec.currPart.addEvents(noteEvts);
     }
-    let noteEvts = this.createNewNoteEvents(start, end, pitch, vel);
-    iec.currPart.addEvents(noteEvts);
+
     iec.track.update();
     iec.song.update();
     return noteEvts;

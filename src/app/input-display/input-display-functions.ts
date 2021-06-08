@@ -28,41 +28,40 @@ export class InputDisplayFunctions {
  * @param arwArr
  */
   static processJoystickDirections(horiAxis: number, vertAxis: number, odz: number, ddz: number, arwArr) {
-    let idc = InputDisplayComponent.inpDispCmp;
-    let preString = '<img src="assets/images/';
-    let postString = `.png">`;
-
     // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
+    let dirIdx = -1;
     if (horiAxis < -ddz && vertAxis < -ddz) {
-      InputDisplayVisuals.resetArrows(arwArr, 0);
+      dirIdx = 0;
+      // InputDisplayVisuals.resetArrows(arwArr, 0);
     } else if (horiAxis < -ddz && vertAxis > ddz) {
-      // arwArr[5].innerHTML = `${preString}pressed_down_left${postString}`;
-      InputDisplayVisuals.resetArrows(arwArr, 6);
+      dirIdx = 6;
+      // InputDisplayVisuals.resetArrows(arwArr, 6);
     } else if (horiAxis > ddz && vertAxis < -ddz) {
-      // arwArr[2].innerHTML = `${preString}pressed_up_right${postString}`;
-      InputDisplayVisuals.resetArrows(arwArr, 2);
+      dirIdx = 2;
+      // InputDisplayVisuals.resetArrows(arwArr, 2);
     } else if (horiAxis > ddz && vertAxis > ddz) {
-      // arwArr[7].innerHTML = `${preString}pressed_down_right${postString}`;
-      InputDisplayVisuals.resetArrows(arwArr, 8);
+      dirIdx = 8;
+      // InputDisplayVisuals.resetArrows(arwArr, 8);
     }
 
     // Now handle all the regular directions, if the constraints for diagonal directions are not met
     else if (horiAxis < -odz && Math.abs(vertAxis) < ddz) {
-      // arwArr[3].innerHTML = `${preString}pressed_left${postString}`;
-      InputDisplayVisuals.resetArrows(arwArr, 3);
+      dirIdx = 3;
+      // InputDisplayVisuals.resetArrows(arwArr, 3);
     } else if (vertAxis < -odz && Math.abs(horiAxis) < ddz) {
-      // arwArr[1].innerHTML = `${preString}pressed_up${postString}`;
-      InputDisplayVisuals.resetArrows(arwArr, 1);
+      dirIdx = 1;
+      // InputDisplayVisuals.resetArrows(arwArr, 1);
     } else if (horiAxis > odz && Math.abs(vertAxis) < ddz) {
-      // arwArr[4].innerHTML = `${preString}pressed_right${postString}`;
-      InputDisplayVisuals.resetArrows(arwArr, 5);
+      dirIdx = 5;
+      // InputDisplayVisuals.resetArrows(arwArr, 5);
     } else if (vertAxis > odz && Math.abs(horiAxis) < ddz) {
-      // arwArr[6].innerHTML = `${preString}pressed_down${postString}`;
-      InputDisplayVisuals.resetArrows(arwArr, 7);
+      dirIdx = 7;
+      // InputDisplayVisuals.resetArrows(arwArr, 7);
     } else {
-      InputDisplayVisuals.resetArrows(arwArr, -1);
+      dirIdx = -1;
     }
-    arwArr[4].style.width = horiAxis * 128;
+    InputDisplayVisuals.resetArrows(arwArr, dirIdx);
+    // arwArr[4].style.width = horiAxis * 128;
     // arwArr[4].children[0].style.top = vertAxis * 128;
     // arwArr[4].style.offsetX = horiAxis * 128;
     // arwArr[4].style.offsetY = vertAxis * 128;

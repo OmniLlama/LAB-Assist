@@ -51,23 +51,23 @@ export class InputDisplayVisuals {
    * @param arwArr
    * @param idx  */
   static resetArrows(arwArr, idx = -1) {
-    let preString = '<img src="assets/images/';
-    let postString = `.png">`;
+    let preString = 'assets/images/';
+    let postString = `.png`;
     for (let i = 0; i < arwArr.length; i++) {
       if (i !== idx) {
         arwArr[i].innerHTML = this.returnXboxArrowImgElmt(i);
         continue;
       }
       switch (idx) {
-        case 0: arwArr[0].innerHTML = `${preString}pressed_up_left${postString}`; break;
-        case 1: arwArr[1].innerHTML = `${preString}pressed_up${postString}`; break;
-        case 2: arwArr[2].innerHTML = `${preString}pressed_up_right${postString}`; break;
-        case 3: arwArr[3].innerHTML = `${preString}pressed_left${postString}`; break;
+        case 0: arwArr[0].firstChild.src = `${preString}pressed_up_left${postString}`; break;
+        case 1: arwArr[1].firstChild.src = `${preString}pressed_up${postString}`; break;
+        case 2: arwArr[2].firstChild.src = `${preString}pressed_up_right${postString}`; break;
+        case 3: arwArr[3].firstChild.src = `${preString}pressed_left${postString}`; break;
         // case 4: arwArr[4].innerHTML = `${preString}pressed_right${postString}`; break;
-        case 5: arwArr[5].innerHTML = `${preString}pressed_right${postString}`; break;
-        case 6: arwArr[6].innerHTML = `${preString}pressed_down_left${postString}`; break;
-        case 7: arwArr[7].innerHTML = `${preString}pressed_down${postString}`; break;
-        case 8: arwArr[8].innerHTML = `${preString}pressed_down_right${postString}`; break;
+        case 5: arwArr[5].firstChild.src = `${preString}pressed_right${postString}`; break;
+        case 6: arwArr[6].firstChild.src = `${preString}pressed_down_left${postString}`; break;
+        case 7: arwArr[7].firstChild.src = `${preString}pressed_down${postString}`; break;
+        case 8: arwArr[8].firstChild.src = `${preString}pressed_down_right${postString}`; break;
         default:
           break;
       }

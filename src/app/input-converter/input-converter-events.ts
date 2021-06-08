@@ -5,7 +5,9 @@ import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {InputConverterFunctions} from './input-converter-functions';
 import * as JZZ from 'jzz';
 import {InputConverterVisuals} from './input-converter-visuals';
-import {MIDINote} from 'heartbeat-sequencer';
+import {MIDINote, Part} from 'heartbeat-sequencer';
+
+declare let sequencer: any;
 
 export class InputConverterEvents {
   /**
@@ -17,6 +19,12 @@ export class InputConverterEvents {
     let iec = InputEditorComponent.inpEdComp;
     let padObj = icc.testPadObj;
     if (iec.song.playing && !icc.trackNotes) {
+      icc.stxPart = sequencer.createPart(),
+        icc.dpadPart = sequencer.createPart(),
+        icc.btnPart = sequencer.createPart();
+      iec.song.tracks[0].addPartAt(icc.stxPart, ['ticks', iec.info.scrollTicksAtHead]);
+      iec.song.tracks[0].addPartAt(icc.dpadPart, ['ticks', iec.info.scrollTicksAtHead]);
+      iec.song.tracks[0].addPartAt(icc.btnPart, ['ticks', iec.info.scrollTicksAtHead]);
       icc.trackedNotes = new Array<[number, number, number]>();
       icc.trackNotes = true;
     } else if (!iec.song.playing && icc.trackNotes) {
@@ -29,53 +37,60 @@ export class InputConverterEvents {
     padObj.pad.axes.forEach((a, ind) => {
       const i = (ind * 2);
       const j = (ind * 2) + 1;
+      const neg = icc.stxTrackerGroup[i];
+      const pos = icc.stxTrackerGroup[j];
       let pitchNum;
       if (a.valueOf() > icc.deadZone) {
         pitchNum = InputConverterEvents.getDirectionPitchFromAxis(ind, a.valueOf());
-        if (!icc.stxHeld[j]) {
-          icc.stxHeld[j] = true;
-          icc.stxHeld[i] = false;
+        if (!pos.held) {
+          pos.held = true;
+          neg.held = false;
           if (icc.trackNotes) {
-            icc.stxInpStarts[j] = iec.info.scrollTicksAtHead;
-            let thing = InputEditorFunctions.createNoteEvents(
-              icc.stxInpStarts[j],
-              icc.stxInpStarts[j] + 128,
+            pos.inpStart = iec.info.scrollTicksAtHead;
+            let thing = InputEditorFunctions.createNoteFromTicks(
+              pos.inpStart,
+              pos.inpStart + 128,
               pitchNum,
-              a.valueOf() * 127);
-            icc.stxHeldNotes[j] = [thing[0].midiNote, iec.info.scrollTicksAtHead];
+              a.valueOf() * 127,
+              icc.stxPart);
+            pos.heldNote = thing[0].midiNote;
           }
         }
       } else if (a.valueOf() < -icc.deadZone) {
         pitchNum = InputConverterEvents.getDirectionPitchFromAxis(ind, a.valueOf());
-        if (!icc.stxHeld[i]) {
-          icc.stxHeld[i] = true;
-          icc.stxHeld[j] = false;
+        if (!neg.held) {
+          pos.held = false;
+          neg.held = true;
           if (icc.trackNotes) {
-            icc.stxInpStarts[i] = iec.info.scrollTicksAtHead;
-            let thing = InputEditorFunctions.createNoteEvents(
-              icc.stxInpStarts[i],
-              icc.stxInpStarts[i] + 128,
-              pitchNum, -a.valueOf() * 127);
-            icc.stxHeldNotes[i] = [thing[0].midiNote, iec.info.scrollTicksAtHead];
+            neg.inpStart = iec.info.scrollTicksAtHead;
+            let thing = InputEditorFunctions.createNoteFromTicks(
+              neg.inpStart,
+              neg.inpStart + 128,
+              pitchNum,
+              -a.valueOf() * 127,
+              icc.stxPart
+            );
+            neg.heldNote = thing[0].midiNote;
           }
         }
       } else {
-        icc.stxHeld[i] = false;
-        icc.stxHeld[j] = false;
+        neg.held  = false;
+        pos.held = false;
       }
       if (icc.trackNotes) {
-        if (icc.stxHeld[j]) {
-          icc.stxHeldNotes[j][0].part.moveEvent(icc.stxHeldNotes[j][0].noteOff,
-            (iec.info.scrollTicksAtHead - icc.stxHeldNotes[j][1]));
-          icc.stxHeldNotes[j][1] = iec.info.scrollTicksAtHead;
-        } else if (icc.stxHeld[i]) {
-          icc.stxHeldNotes[i][0].part.moveEvent(icc.stxHeldNotes[i][0].noteOff,
-            (iec.info.scrollTicksAtHead - icc.stxHeldNotes[i][1]));
-          icc.stxHeldNotes[i][1] = iec.info.scrollTicksAtHead;
-        } else if (!icc.stxHeld[j] && icc.stxHeldNotes[j] != null) {
-          icc.stxHeldNotes[j] = null;
-        } else if (!icc.stxHeld[i] && icc.stxHeldNotes[i] != null) {
-          icc.stxHeldNotes[i] = null;
+        if (pos.held) {
+          pos.heldNote.part.moveEvent(pos.heldNote.noteOff,
+            (iec.info.scrollTicksAtHead - pos.heldNote.noteOff.ticks));
+          pos.inpEnd = iec.info.scrollTicksAtHead;
+        } else if (neg.held) {
+          neg.heldNote.part.moveEvent(neg.heldNote.noteOff,
+            (iec.info.scrollTicksAtHead - neg.heldNote.noteOff.ticks)
+          );
+          neg.inpEnd = iec.info.scrollTicksAtHead;
+        } else if (!pos.held && pos.heldNote != null) {
+          pos.heldNote = null;
+        } else if (!neg.held && neg.heldNote != null) {
+          neg.heldNote = null;
         }
       }
     });
@@ -87,14 +102,18 @@ export class InputConverterEvents {
     // let dpadIconDivs = document.getElementsByClassName('editor-input-icon-direction');
     let dpadIconDivs = Array.from(document.getElementById('editor-input-icons-dir').querySelectorAll('div'));
     dPadBtns.forEach((b, idx) => {
-      let trkr = icc.dpadTrackGroup[idx];
+      let trkr = icc.dpadTrackerGroup[idx];
       let pitch = InputConverterFunctions.getDirectionPitchFromDPad(idx);
       if (b.pressed && !trkr.held) {
         trkr.held = true;
         icc.midiOutPort.noteOn(0, pitch, 127);
         //if RECORDING
         if (icc.trackNotes) {
-          InputConverterEvents.startTracker(trkr, iec.info.scrollTicksAtHead, pitch);
+          InputConverterEvents.startTracker(trkr,
+            iec.info.scrollTicksAtHead,
+            pitch,
+            icc.dpadPart
+          );
         }
         //if RELEASED this frame
       } else if (!b.pressed && trkr.held) {
@@ -120,21 +139,15 @@ export class InputConverterEvents {
         btn.style.backgroundSize = pct + ' ' + pct;
         let imageStr = 'a', dirStr: string;
         switch (idx) {
-          case 0:
-            dirStr = 'up';
-            break;
-          case 1:
-            dirStr = 'down';
-            break;
-          case 2:
-            dirStr = 'left';
-            break;
-          case 3:
-            dirStr = 'right';
-            break;
+          case 0: dirStr = 'up'; break;
+          case 1: dirStr = 'down'; break;
+          case 2: dirStr = 'left'; break;
+          case 3: dirStr = 'right'; break;
         }
-        imageStr = `<img id="icon-img" src="assets/images/${pressed ? 'pressed_' : ''}${dirStr}.png">`;
-        btn.innerHTML = imageStr;
+        imageStr = `assets/images/${pressed ? 'pressed_' : ''}${dirStr}.png`;
+        const img = (btn.firstChild as HTMLImageElement);
+        img.id = 'icon-img';
+        img.src = imageStr;
       }
     });
     /**
@@ -149,7 +162,7 @@ export class InputConverterEvents {
       if (idx >= scale.length) {
         return;
       }
-      let trkr = icc.btnTrackGroup[idx];
+      let trkr = icc.btnTrackerGroup[idx];
       let pitch: string = InputConverterFunctions.getPitchStringFromNumber(scale[idx] + rootNote);
       //if PRESSED this frame
       if (b.pressed && !trkr.held) {
@@ -159,7 +172,8 @@ export class InputConverterEvents {
         if (icc.trackNotes) {
           InputConverterEvents.startTracker(trkr,
             iec.info.scrollTicksAtHead,
-            InputConverterFunctions.getButtonPitch(idx));
+            InputConverterFunctions.getButtonPitch(idx),
+            icc.btnPart);
         }
         //if RELEASED this frame
       } else if (!b.pressed && trkr.held) {
@@ -188,8 +202,8 @@ export class InputConverterEvents {
         let pct = Math.round(b.value * 100) + '%';
         btn.style.backgroundSize = pct + ' ' + pct;
         let btnStr = nameButton(idx);
-        let imgStr = `<img id="icon-img" src="assets/images/${pressed ? 'pressed_' : ''}${btnStr}.png">`;
-        btn.innerHTML = imgStr;
+        let imgStr = `assets/images/${pressed ? 'pressed_' : ''}${btnStr}.png`;;
+        (btn.firstChild as HTMLImageElement).src = imgStr;
       }
     });
     if (icc.trackNotes) {
@@ -242,7 +256,7 @@ export class InputConverterEvents {
 
   static startTrackedNote(ticks: number, pitch: number, starts: number[], heldNotes: Array<[MIDINote, number]>, i: number) {
     starts[i] = ticks;
-    let noteEvts = InputEditorFunctions.createNoteEvents(starts[i], starts[i] + 128, pitch);
+    let noteEvts = InputEditorFunctions.createNoteFromTicks(starts[i], starts[i] + 128, pitch);
     heldNotes[i] = [noteEvts[0].midiNote, ticks];
     // console.log('hit button while playing');
   }
@@ -269,9 +283,9 @@ export class InputConverterEvents {
     }
   }
 
-  static startTracker(trkr: Tracker, ticks: number, pitch: number) {
+  static startTracker(trkr: Tracker, ticks: number, pitch: number, part?: Part) {
     trkr.inpStart = ticks;
-    let noteEvts = InputEditorFunctions.createNoteEvents(trkr.inpStart, trkr.inpStart + 128, pitch);
+    let noteEvts = InputEditorFunctions.createNoteFromTicks(trkr.inpStart, trkr.inpStart + 128, pitch, null, part);
     trkr.heldNote = noteEvts[0].midiNote;
   }
 
@@ -280,7 +294,9 @@ export class InputConverterEvents {
     trkr.inpEnd = ticks;
     trackedNotes.push([trkr.inpStart, trkr.inpEnd, pitch]);
     if (!liveUpdate) {
-      trkr.heldNote.part.moveEvent(trkr.heldNote.noteOff, (ticks - trkr.heldNote.noteOff.ticks + 128));
+      trkr.heldNote.part.moveEvent(trkr.heldNote.noteOff, (ticks - trkr.heldNote.noteOff.ticks
+        // + 128
+      ));
     }
   }
 }

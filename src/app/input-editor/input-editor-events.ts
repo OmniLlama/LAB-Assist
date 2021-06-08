@@ -17,10 +17,10 @@ export class InputEditorEvents {
    */
   static Part_lMouDown(e): void {
     let iec = InputEditorComponent.inpEdComp;
-    let tmp_part = iec.allParts[e.target.id];
+    let part = iec.allParts[e.target.id];
     if (e.ctrlKey) {
-      iec.keyEditor.removePart(tmp_part);
-      InputEditorFunctions.unselectPart(tmp_part);
+      iec.keyEditor.removePart(part);
+      InputEditorFunctions.unselectPart(part);
       iec.currPart = null;
       if (iec.currNote !== null) {
         InputEditorFunctions.unselectNote(iec.currNote);
@@ -28,9 +28,13 @@ export class InputEditorEvents {
       iec.currNote = null;
     } else {
       // iec.keyEditor.startMovePart(tmp_part, iec.edtrInfo.screenX, iec.edtrInfo.screenY);
-      iec.keyEditor.startMovePart(tmp_part,
-        iec.info.clientX + InputEditorComponent.inpEdComp.html.div_Editor.scrollLeft,
+      iec.keyEditor.startMovePart(part,
+        iec.info.clientX + iec.info.editorScrollX,
         iec.info.pageY);
+      part.notes.forEach((n) => {
+        const noteDiv = iec.html.divs_AllNotes[n.id];
+        noteDiv.setAttribute('pitch', '00');
+      });
       document.addEventListener('mouseup', InputEditorEvents.Part_lMouUp, false);
     }
   }
@@ -42,9 +46,9 @@ export class InputEditorEvents {
   static Part_lMouUp(e): void {
     let iec = InputEditorComponent.inpEdComp;
     iec.keyEditor.stopMovePart();
-    let thing = iec.allParts[iec.currPart.id] as Part;
-    thing.notes.forEach((n) => {
-      let noteDiv = iec.html.divs_AllNotes[n.id];
+    let part = iec.allParts[iec.currPart.id] as Part;
+    part.notes.forEach((n) => {
+      const noteDiv = iec.html.divs_AllNotes[n.id];
       noteDiv.setAttribute('pitch', InputEditorFunctions.numToPitch(n.number));
     });
     document.removeEventListener('mouseup', InputEditorEvents.Part_lMouUp);
@@ -73,10 +77,10 @@ export class InputEditorEvents {
         InputEditorComponent.inpEdComp.currNote = null;
       } else {
         InputEditorComponent.inpEdComp.keyEditor.startMoveNote(tmp_note,
-          e.clientX + iec.html.div_Editor.scrollLeft,
+          e.clientX + iec.info.editorScrollX,
           0
         );
-
+        e.target.setAttribute('pitch', '00');
         document.addEventListener('mouseup', InputEditorEvents.Note_lMouUp, false);
       }
     }

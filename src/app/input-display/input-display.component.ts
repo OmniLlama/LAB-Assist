@@ -199,6 +199,8 @@ export class InputDisplayComponent implements OnInit {
       padObj.pad = pads[padObj.pad.index];
       const pad = navigator.getGamepads()[padObj.pad.index];
       const d = padObj.html.parent;
+      const prestring = 'assets/images/';
+      const poststring = '.png';
       /**
        * Button Status Loop
        */
@@ -215,8 +217,8 @@ export class InputDisplayComponent implements OnInit {
         // var pct = Math.round(val.value * 100) + "%";
         // b.style.backgroundSize = pct + " " + pct;
         const buttonString = nameButton(i);
-        const imageString = `<img src="assets/images/${pressed ? 'pressed_' : ''}${buttonString}.png">`;
-        b.innerHTML = imageString;
+        const imageString = `${prestring + (pressed ? 'pressed_' : '') + buttonString + poststring}`;
+        (b.firstChild as HTMLImageElement).src = imageString;
       }
       /**
        * Get Axis Status */
