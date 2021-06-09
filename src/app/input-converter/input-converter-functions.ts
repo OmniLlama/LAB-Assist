@@ -64,4 +64,17 @@ export class InputConverterFunctions {
       case 3: return 29;
     }
   }
+  static nameDPadDirection(i): string {
+    switch (i) {
+      case 0:
+        return 'up';
+      case 1:
+        return 'right';
+      case 2:
+        return 'left';
+      case 3:
+        return 'down';
+    }
+    return i;
+  }
 }

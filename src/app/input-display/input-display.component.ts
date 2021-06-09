@@ -73,7 +73,6 @@ export class InputDisplayComponent implements OnInit {
   /**
    * The createAxisMeter function gets passed one axis at a time, until there are 2 axes (x and y).
    * It then assigns each axis a default value of 0, min of -1, and max of 1 so that we can tell the direction of the joystick easily.
-   * @param ind
    */
   createAxisSpanElement(ind): HTMLSpanElement {
     const axisName = this.nameAxis(ind);
@@ -112,7 +111,6 @@ export class InputDisplayComponent implements OnInit {
     div_cntrllr.appendChild(div_info);
 
 
-    // div_cntrllr.appendChild(InputDisplayVisuals.CreateDirectionalArrows(this, 0));
     const arwSets = new Array<HTMLDivElement>();
     for (let i = 0; i < gamepad.axes.length / 2; i++) {
 

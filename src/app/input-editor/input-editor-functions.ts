@@ -33,39 +33,36 @@ export class InputEditorFunctions {
    * @param velocity
    */
   static createNewNoteEvents(start: number, end: number, pitch: number, velocity?: number): [MIDIEvent, MIDIEvent] {
-    let tmp_velocity = (velocity == undefined ? 127 : velocity);
-    let tmp_events = [];
-    let tmp_noteOn = sequencer.createMidiEvent(start, NOTE_ON, pitch, tmp_velocity);
-    let tmp_noteOff = sequencer.createMidiEvent(end, NOTE_OFF, pitch, tmp_velocity);
-    tmp_events.push(tmp_noteOn, tmp_noteOff);
+    const tmp_velocity = (velocity == undefined ? 127 : velocity);
+    const tmp_noteOn = sequencer.createMidiEvent(start, NOTE_ON, pitch, tmp_velocity);
+    const tmp_noteOff = sequencer.createMidiEvent(end, NOTE_OFF, pitch, tmp_velocity);
     return [tmp_noteOn, tmp_noteOff];
   }
 
   /**
    * Creates and returns the two events that compose a MIDINote in the sequencer,
-   * @param iec - static singleton
    * @param start - ticks to begin note
    * @param end - ticks to end note
    * @param pitch - pitch to assign note
    * @param vel - velocity to assign note
    */
-  static createNoteFromTicks(start: number, end: number, pitch: number, vel?: number, part?: Part): [MIDIEvent, MIDIEvent] {
+  // static createNoteFromTicks(start: number, end: number, pitch: number, vel: number, part: Part): MIDINote {
+  static createNoteFromTicks(start: number, end: number, pitch: number, vel: number, part: Part): [MIDIEvent, MIDIEvent] {
     const iec = InputEditorComponent.inpEdComp;
+    if (!iec.song.getPart(part.id)) {
+      iec.track.addPartAt(part, ['ticks', start]);
+    }
     const noteEvts = this.createNewNoteEvents(start, end, pitch, vel);
     if (part) {
       part.addEvents(noteEvts);
     } else {
-      if (iec.currPart != null && iec.currPart != undefined) {
-      } else {
-        iec.currPart = sequencer.createPart('GeneratedPart');
-        iec.track.addPartAt(iec.currPart, ['ticks', start]);
-        iec.track.update();
-      }
-      iec.currPart.addEvents(noteEvts);
+      part = sequencer.createPart();
+      part.addEvents(noteEvts);
     }
-
-    iec.track.update();
-    iec.song.update();
+    iec.currPart = part;
+    // InputEditorFunctions.UpdateTrack(iec);
+    // InputEditorFunctions.UpdateSong(iec);
+    // return sequencer.createNote(noteEvts[0], noteEvts[1]);
     return noteEvts;
   }
 
@@ -100,14 +97,14 @@ export class InputEditorFunctions {
     tmp_ticks = iec.keyEditor.getTicksAt(iec.keyEditor.getPlayheadX());
 
     tmp_part.addEvents(tmp_events);
-    if (!iec.track) {
-      iec.track = iec.song.tracks[0];
-    }
-    if (!iec.track) {
-      iec.track = sequencer.createTrack('forcedTrack');
-    }
+    // if (!iec.track) {
+    //   iec.track = iec.song.tracks[0];
+    // }
+    // if (!iec.track) {
+    //   iec.track = sequencer.createTrack('forcedTrack');
+    // }
     iec.track.addPartAt(tmp_part, ['ticks', tmp_ticks]);
-    iec.song.update();
+    InputEditorFunctions.UpdateSong(iec);
   }
 
   /**
@@ -139,16 +136,9 @@ export class InputEditorFunctions {
     tmp_ticks = iec.info.totalTicksAtHead;
 
     tmp_part.addEvents(tmp_events);
-    if (!iec.track) {
-      iec.track = iec.song.tracks[0];
-    }
-    if (!iec.track) {
-      iec.track = sequencer.createTrack('forcedTrack');
-      iec.song.addTrack(iec.track);
-    }
     iec.track.addPartAt(tmp_part, ['ticks', tmp_ticks]);
-    iec.track.update();
-    iec.song.update();
+    InputEditorFunctions.UpdateTrack(iec);
+    InputEditorFunctions.UpdateSong(iec);
   }
 
   //#endregion
@@ -310,7 +300,13 @@ export class InputEditorFunctions {
         useMetronome: true
       });
     }
-    iec.track = song.tracks[0];
+    if (song.tracks[0]) {
+      iec.track = song.tracks[0];
+    } else {
+      iec.track = sequencer.createTrack('newTrack');
+      song.addTrack(iec.track);
+    }
+    song.update();
     return song;
   }
 

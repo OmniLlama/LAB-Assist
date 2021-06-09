@@ -47,27 +47,16 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   recordingPrimed: boolean;
   trackedNotes: Array<[number, number, number]>; // startTicks, endTicks, pitch
 
+  backupPart: Part;
   stxPart: Part;
   stxTrackerGroup: Array<Tracker>;
-  stxHeld: Array<boolean>;
-  stxHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
-  stxInpStarts: Array<number>;
-  stxInpEnds: Array<number>;
 
   dpadPart: Part;
   dpadTrackerGroup: Array<Tracker>;
-  dpadHeld: Array<boolean>;
-  // dpadHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
-  dpadInpStarts: Array<number>;
-  dpadInpEnds: Array<number>;
 
   btnPart: Part;
   btnTrackerGroup: Array<Tracker>;
-  btnsHeld: Array<boolean>;
-  // btnHeldNotes: Array<[MIDINote, number]>; // heldNote, currentTicks
-  // btnHeldNotes: [MIDINote, number]; // heldNote, currentTicks
-  btnInpStarts: Array<number>;
-  btnInpEnds: Array<number>;
+
   deadZone = .5;
 
   /**
@@ -119,20 +108,9 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
       icc.playControllerConnectedJingle();
 
       icc.stxTrackerGroup = createTrackerGroup(getPad().axes.length * 2);
-      icc.stxHeld = new Array<boolean>(getPad().axes.length * 2);
-      icc.stxInpStarts = new Array<number>((getPad().axes.length * 2));
-      icc.stxInpEnds = new Array<number>((getPad().axes.length * 2));
-      icc.stxHeldNotes = new Array<[MIDINote, number]>((getPad().axes.length * 2));
-
       icc.dpadTrackerGroup = createTrackerGroup(4);
-      icc.dpadHeld = new Array<boolean>(4);
-      icc.dpadInpStarts = new Array<number>(4);
-      icc.dpadInpEnds = new Array<number>(4);
-
       icc.btnTrackerGroup = createTrackerGroup(getPad().buttons.length);
-      icc.btnsHeld = new Array<boolean>(getPad().buttons.length);
-      icc.btnInpStarts = new Array<number>(getPad().buttons.length);
-      icc.btnInpEnds = new Array<number>(getPad().buttons.length);
+
       if (getPad()) {
         InputConverterVisuals.rAF((cb) => InputConverterEvents.updateController());
       }

@@ -2,6 +2,7 @@ import {InputEditorComponent, setElementValue} from './input-editor.component';
 import {InputEditorFunctions} from './input-editor-functions';
 import {Part} from 'heartbeat-sequencer';
 import {InputEditorVisuals} from './input-editor-visuals';
+import {InputConverterFunctions} from '../input-converter/input-converter-functions';
 
 declare let sequencer: any;
 
@@ -95,9 +96,10 @@ export class InputEditorEvents {
     iec.keyEditor.stopMoveNote();
     let elmt = iec.html.divs_AllNotes[iec.currNote.id];
     let tmp_note = iec.allNotes[elmt.id];
-    let pitch = InputEditorFunctions.createNewMIDINote(0, 0, iec.info.mousePitchPos);
+    // let pitch = InputEditorFunctions.createNewMIDINote(0, 0, iec.info.mousePitchPos);
+    let pitch = InputEditorFunctions.numToPitch(iec.info.mousePitchPos);
     iec.changingNote = null;
-    elmt.setAttribute('pitch', pitch.name);
+    elmt.setAttribute('pitch', pitch);
     document.removeEventListener('mouseup', InputEditorEvents.Note_lMouUp);
   }
 
@@ -141,7 +143,7 @@ export class InputEditorEvents {
    * @param e
    */
   static NoteEdge_Right_lMouDown(e: MouseEvent) {
-    let iec = InputEditorComponent.inpEdComp,
+    const iec = InputEditorComponent.inpEdComp,
       tmp_note = InputEditorComponent.inpEdComp.allNotes[(e.target as HTMLDivElement).id];
     iec.holdingEdge = true;
     (e.target as HTMLDivElement).style.cursor = 'e-resize';
@@ -169,10 +171,7 @@ export class InputEditorEvents {
 
     if (iec.changingNote !== null && tmp_ticks <= iec.changingNote.noteOff.ticks) {
       iec.changingNote.part.moveEvent(iec.changingNote.noteOn, tmp_ticks - iec.changingNote.noteOn.ticks);
-      // changingNote.part.moveEvent(changingNote.noteOn, );
-      // iec.changingNote.part.moveEvent(iec.changingNote.noteOff, -(tmp_ticks - iec.changingNote.noteOn.ticks));
-
-      InputEditorComponent.inpEdComp.song.update();
+      InputEditorFunctions.UpdateSong(iec);
       let edgeBBoxes = InputEditorVisuals.createEdgeBBoxes(iec.changingNote.bbox, 8);
       InputEditorVisuals.updateElementBBox(iec.heldEdge, edgeBBoxes[0]);
       InputEditorVisuals.updateElementBBox(tmp_rightEdge, edgeBBoxes[1]);
@@ -190,8 +189,7 @@ export class InputEditorEvents {
     (e.target as HTMLDivElement).style.cursor = 'e-resize';
     if (iec.changingNote !== null && tmp_ticks >= iec.changingNote.noteOn.ticks) {
       iec.changingNote.part.moveEvent(iec.changingNote.noteOff, tmp_ticks - iec.changingNote.noteOff.ticks);
-
-      InputEditorComponent.inpEdComp.song.update();
+      InputEditorFunctions.UpdateSong(iec);
       let edgeBBoxes = InputEditorVisuals.createEdgeBBoxes(iec.changingNote.bbox, 8);
       InputEditorVisuals.updateElementBBox(tmp_leftEdge, edgeBBoxes[0]);
       InputEditorVisuals.updateElementBBox(iec.heldEdge, edgeBBoxes[1]);
@@ -210,7 +208,7 @@ export class InputEditorEvents {
     iec.heldEdge = null;
     document.removeEventListener('mousemove', InputEditorEvents.NoteEdge_Left_MouMove, false);
     document.removeEventListener('mouseup', InputEditorEvents.NoteEdge_Left_lMouUp);
-    InputEditorComponent.inpEdComp.song.update();
+    InputEditorFunctions.UpdateSong(iec);
     (e.target as HTMLDivElement).style.cursor = 'default';
   }
 
@@ -224,7 +222,7 @@ export class InputEditorEvents {
     iec.heldEdge = null;
     document.removeEventListener('mousemove', InputEditorEvents.NoteEdge_Right_MouMove, false);
     document.removeEventListener('mouseup', InputEditorEvents.NoteEdge_Right_lMouUp);
-    InputEditorComponent.inpEdComp.song.update();
+    InputEditorFunctions.UpdateSong(iec);
   }
 
   /* Grid */
@@ -235,7 +233,6 @@ export class InputEditorEvents {
   }
 
   /** Event: left mouse double click on editor grid
-   * @param e
    */
   static Grid_lMouDbl(e: MouseEvent) {
     let iec = InputEditorComponent.inpEdComp,
@@ -253,14 +250,14 @@ export class InputEditorEvents {
     else if (tmp_className.indexOf('part') !== -1) {
       iec.currPart = iec.allParts[elmt.id];
       iec.currPart.addEvents(InputEditorFunctions.createNewNoteAtMouse(iec.currPart, iec));
-      iec.song.update();
+      InputEditorFunctions.UpdateSong(iec);
       return;
     }
     /**
      * if double clicking grid but current part is selected */
     else if (iec.currPart) {
       // currPart.addEvents(addNewNoteAtMouse());
-      iec.song.update();
+      // InputEditorFunctions.UpdateSong(iec);
       return;
     }
     /**
@@ -269,6 +266,7 @@ export class InputEditorEvents {
       iec.currNote = null;
       iec.currPart = null;
       InputEditorFunctions.addPartAtMouse(iec);
+      InputEditorFunctions.UpdateSong(iec);
       return;
     }
   }
@@ -320,7 +318,6 @@ export class InputEditorEvents {
       return;
     }
     // you could also use:
-    //song.setPlayhead('ticks', keyEditor.xToTicks(e.pageX));
   }
 
   //#endregion
@@ -343,8 +340,6 @@ export class InputEditorEvents {
     iec.html.txt_KeyRangeEnd.addEventListener('change', (e) => {
       iec.keyEditor.highestNote = parseInt(iec.html.txt_KeyRangeEnd.value);
       // iec.song.setPitchRange(iec.keyEditor.lowestNote, iec.html.txt_KeyRangeEnd.value);
-      // iec.song.update();
-      // iec.keyEditor.updateSong(iec.song);
     });
     // listen for scale and draw events, a scale event is fired when you change the number of bars per page
     // a draw event is fired when you change the size of the viewport by resizing the browser window

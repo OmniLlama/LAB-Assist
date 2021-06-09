@@ -178,7 +178,7 @@ function init() {
         denominator: tmp_midiFile.denominator,
         timeEvents: tmp_midiFile.timeEvents,
         tracks: tmp_midiFile.tracks,
-        useMetronome: true
+        // useMetronome: true
       });
       track = song.track;
       break;
