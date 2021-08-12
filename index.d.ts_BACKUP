@@ -4,6 +4,11 @@ import { loadMusicXMLFile } from './load_musicxml_file';
 export { loadMusicXMLFile };
 
 export as namespace sequencer;
+
+// export interface Sequencer {
+//
+// }
+
 export function createSong(config: any): Song
 export function createTrack(name: string): Track
 export function createPart(name?: string): Part
@@ -25,6 +30,9 @@ export function getDevices()
 export var browser: string
 export var midiInputs: WebMidi.MIDIInput[]
 export var midiOutputs: WebMidi.MIDIOutput[]
+export interface Sequencer {
+  createNote: (startEvt: MIDIEvent, endEvt: MIDIEvent) => Note
+}
 
 export as namespace Heartbeat;
 export interface SongPosition {
@@ -43,6 +51,7 @@ export type Listener = {
 }
 
 export interface Song {
+  getPart: (data) => Part
   ppq: number
   nominator: number
   denominator: number
@@ -157,6 +166,7 @@ export interface Part {
   moveEvent: (event: MIDIEvent, ticks: Number) => void
   removeEvents: (events: Array<MIDIEvent>, part?: Part) => void
   transposeAllEvents: (semi: number) => void
+  update: () => void
   bbox: {
     x: number
     y: number
@@ -182,6 +192,7 @@ export type Track = {
   monitor: boolean
   mute: boolean
   recordEnabled
+
   addPart: (part: Part) => void
   addPartAt: (part: Part, type: [string, number]) => void
   removeEvents: (events: Array<MIDIEvent>) => void

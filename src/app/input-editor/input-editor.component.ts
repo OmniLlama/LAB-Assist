@@ -79,18 +79,6 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // if (this.song.tracks.length === 0) {
-    //   const tr = sequencer.createTrack('AutoTrack');
-    //   this.song.addTrack(tr);
-    //   InputEditorFunctions.UpdateSong(this);
-    // }
-    // if (this.track === undefined) {
-    //   this.track = this.song.tracks[0];
-    // }
-    // this.track.recordEnabled = 'midi';
-    // this.track.setMidiInput('all');
-    // InputEditorFunctions.UpdateTrack(this);
-    // InputEditorFunctions.UpdateSong(this);
   }
 
   /**

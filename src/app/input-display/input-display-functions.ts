@@ -1,5 +1,5 @@
 import { InputDisplayVisuals } from './input-display-visuals';
-import { InputDisplayComponent } from './input-display.component';
+import {DirectionalHTMLShell, InputDisplayComponent} from './input-display.component';
 
 export class InputDisplayFunctions {
   static arrayIndexToDirection(i) {
@@ -25,9 +25,9 @@ export class InputDisplayFunctions {
  * @param vertAxis
  * @param ddz diagonal deadzone
  * @param odz orthogonal deadzone
- * @param arwArr
+ * @param dirShell
  */
-  static processJoystickDirections(horiAxis: number, vertAxis: number, odz: number, ddz: number, arwArr) {
+  static processJoystickDirections(horiAxis: number, vertAxis: number, odz: number, ddz: number, dirShell: DirectionalHTMLShell) {
     // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
     let dirIdx = -1;
     if (horiAxis < -ddz && vertAxis < -ddz) {
@@ -60,37 +60,37 @@ export class InputDisplayFunctions {
     } else {
       dirIdx = -1;
     }
-    InputDisplayVisuals.resetArrows(arwArr, dirIdx);
+    InputDisplayVisuals.resetDirections(dirShell, dirIdx);
     // arwArr[4].style.width = horiAxis * 128;
     // arwArr[4].children[0].style.top = vertAxis * 128;
     // arwArr[4].style.offsetX = horiAxis * 128;
     // arwArr[4].style.offsetY = vertAxis * 128;
   }
-  static processDigitalDirectionalInput(dirArr: boolean[], arwArr) {
+  static processDigitalDirectionalInput(dirArr: boolean[], dirShell: DirectionalHTMLShell) {
 
 
     // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
     if (dirArr[2] && dirArr[0]) {
-      InputDisplayVisuals.resetArrows(arwArr, 0);
+      InputDisplayVisuals.resetDirections(dirShell, 0);
     } else if (dirArr[2] && dirArr[1]) {
-      InputDisplayVisuals.resetArrows(arwArr, 5);
+      InputDisplayVisuals.resetDirections(dirShell, 5);
     } else if (dirArr[3] && dirArr[0]) {
-      InputDisplayVisuals.resetArrows(arwArr, 2);
+      InputDisplayVisuals.resetDirections(dirShell, 2);
     } else if (dirArr[3] && dirArr[1]) {
-      InputDisplayVisuals.resetArrows(arwArr, 7);
+      InputDisplayVisuals.resetDirections(dirShell, 7);
     }
 
     // Now handle all the regular directions, if the constraints for diagonal directions are not met
     else if (dirArr[2]) {
-      InputDisplayVisuals.resetArrows(arwArr, 3);
+      InputDisplayVisuals.resetDirections(dirShell, 3);
     } else if (dirArr[0]) {
-      InputDisplayVisuals.resetArrows(arwArr, 1);
+      InputDisplayVisuals.resetDirections(dirShell, 1);
     } else if (dirArr[3]) {
-      InputDisplayVisuals.resetArrows(arwArr, 4);
+      InputDisplayVisuals.resetDirections(dirShell, 4);
     } else if (dirArr[1]) {
-      InputDisplayVisuals.resetArrows(arwArr, 6);
+      InputDisplayVisuals.resetDirections(dirShell, 6);
     }
     else
-      InputDisplayVisuals.resetArrows(arwArr);
+      InputDisplayVisuals.resetDirections(dirShell);
   }
 }

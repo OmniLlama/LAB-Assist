@@ -143,8 +143,8 @@ export class InputEditorEvents {
    * @param e
    */
   static NoteEdge_Right_lMouDown(e: MouseEvent) {
-    const iec = InputEditorComponent.inpEdComp,
-      tmp_note = InputEditorComponent.inpEdComp.allNotes[(e.target as HTMLDivElement).id];
+    const iec = InputEditorComponent.inpEdComp;
+    let tmp_note = InputEditorComponent.inpEdComp.allNotes[(e.target as HTMLDivElement).id];
     iec.holdingEdge = true;
     (e.target as HTMLDivElement).style.cursor = 'e-resize';
     // InputEditorComponent.inpEdComp.keyEditor.gripX = e.clientX;

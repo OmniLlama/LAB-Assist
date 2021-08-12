@@ -20,19 +20,21 @@ export class InputConverterEvents {
     const padObj = icc.testPadObj;
     if (iec.song.playing && !icc.trackNotes) {
       InputConverterEvents.startTrackingNotes(icc);
-
+      icc.backupPart = sequencer.createPart();
     } else if (!iec.song.playing && icc.trackNotes) {
       InputConverterEvents.stopTrackingNotes(icc, iec);
     }
-
-
     InputConverterEvents.updateControllerStxTrackers(padObj, iec.info.scrollTicksAtHead);
     InputConverterEvents.updateControllerDPadTrackers(padObj, iec.info.scrollTicksAtHead);
     InputConverterEvents.updateControllerButtonTrackers(padObj, iec.info.scrollTicksAtHead);
 
-    // InputEditorFunctions.UpdateSong(iec);
+    // InputEditorFunctions.UpdateSong(iec); //DO NOT USE
     // JZZ().refresh();
     InputConverterVisuals.rAF(InputConverterEvents.updateController);
+  }
+
+  ConvertedPlayback()
+  {
   }
 
   static updateControllerStxTrackers(padObj: GamepadObject, currTicks: number) {
@@ -57,7 +59,8 @@ export class InputConverterEvents {
               currTicks,
               pitchNum,
               icc.stxPart
-            );
+            // icc.backupPart
+          );
           }
         }
       } else if (a.valueOf() < -icc.deadZone) {
@@ -71,7 +74,8 @@ export class InputConverterEvents {
               currTicks,
               pitchNum,
               icc.stxPart
-            );
+            // icc.backupPart
+          );
           }
         }
       } else {
@@ -125,7 +129,8 @@ export class InputConverterEvents {
           InputConverterEvents.startTracker(trkr,
             currTicks,
             pitch,
-            icc.dpadPart
+            icc.backupPart
+          // icc.dpadPart
           );
         }
         // if RELEASED this frame
@@ -175,7 +180,8 @@ export class InputConverterEvents {
           InputConverterEvents.startTracker(trkr,
             currTicks,
             InputConverterFunctions.getButtonPitch(idx),
-          icc.btnPart
+            icc.backupPart
+          // icc.btnPart
         );
         }
         // if RELEASED this frame
@@ -200,12 +206,12 @@ export class InputConverterEvents {
   }
 
   static updateInputVisual(div: HTMLDivElement, btn: GamepadButton, name: string) {
-    if (div != undefined) {
+    if (div !== undefined) {
       let pressed = btn.value > .8;
       if (typeof (btn) === 'object') {
         pressed = btn.pressed;
       }
-      let imgStr = `assets/images/${pressed ? 'pressed_' : ''}${name}.png`;
+      const imgStr = `assets/images/${pressed ? 'pressed_' : ''}${name}.png`;
       const img = (div.firstChild as HTMLImageElement);
       img.id = 'icon-img';
       img.src = imgStr;
@@ -232,6 +238,7 @@ export class InputConverterEvents {
         trkr.heldNote.part.moveEvent(trkr.heldNote.noteOff, (ticks - trkr.heldNote.noteOff.ticks));
         trkr.inpEnd = ticks;
       }
+      // InputEditorFunctions.UpdateTrack(InputEditorComponent.inpEdComp);
       // InputEditorFunctions.UpdateSong(InputEditorComponent.inpEdComp);
     }
   }

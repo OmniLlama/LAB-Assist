@@ -1,8 +1,9 @@
-import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song} from 'heartbeat-sequencer';
+import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song, Sequencer} from 'heartbeat-sequencer';
 import {InputEditorComponent} from './input-editor.component';
 
 ;
 declare let sequencer: any;
+
 let NOTE_OFF = 0x80;
 let NOTE_ON = 0x90;
 let MIDI_HEARTBEAT = 0xFE;
@@ -59,10 +60,11 @@ export class InputEditorFunctions {
       part = sequencer.createPart();
       part.addEvents(noteEvts);
     }
-    iec.currPart = part;
-    // InputEditorFunctions.UpdateTrack(iec);
+    // iec.currPart = part;
+    sequencer.createNote(noteEvts[0], noteEvts[1]);
+    InputEditorFunctions.UpdateTrack(iec);
+    part.update();
     // InputEditorFunctions.UpdateSong(iec);
-    // return sequencer.createNote(noteEvts[0], noteEvts[1]);
     return noteEvts;
   }
 
@@ -97,12 +99,6 @@ export class InputEditorFunctions {
     tmp_ticks = iec.keyEditor.getTicksAt(iec.keyEditor.getPlayheadX());
 
     tmp_part.addEvents(tmp_events);
-    // if (!iec.track) {
-    //   iec.track = iec.song.tracks[0];
-    // }
-    // if (!iec.track) {
-    //   iec.track = sequencer.createTrack('forcedTrack');
-    // }
     iec.track.addPartAt(tmp_part, ['ticks', tmp_ticks]);
     InputEditorFunctions.UpdateSong(iec);
   }
@@ -294,7 +290,7 @@ export class InputEditorFunctions {
       song = sequencer.createSong(tmp_midiFile);
     } else {
       song = sequencer.createSong({
-        bpm: 150,
+        bpm: 200,
         nominator: 3,
         denominator: 4,
         useMetronome: true

@@ -29,7 +29,7 @@ export class InputDisplayComponent implements OnInit {
   mntKeys = Object.keys(MovementNotationType);
   bntKeys = Object.keys(ButtonNotationType);
   btnDivs: Array<HTMLDivElement>;
-  axisDivs: Array<HTMLSpanElement>;
+  dirDivs: Array<HTMLSpanElement>;
   div_leftStick: HTMLDivElement;
   div_rightStick: HTMLDivElement;
   haveWebkitEvents = 'WebKitGamepadEvent' in  window;
@@ -111,11 +111,11 @@ export class InputDisplayComponent implements OnInit {
     div_cntrllr.appendChild(div_info);
 
 
-    const arwSets = new Array<HTMLDivElement>();
+    const arwSets = new Array<DirectionalHTMLShell>();
     for (let i = 0; i < gamepad.axes.length / 2; i++) {
 
       arwSets[i] = InputDisplayVisuals.CreateDirectionalArrows(this, i);
-      div_cntrllr.appendChild(arwSets[i]);
+      div_cntrllr.appendChild(arwSets[i].div);
     }
     // Create Button Icons
     const div_btns: HTMLDivElement = document.createElement('div');
@@ -131,14 +131,14 @@ export class InputDisplayComponent implements OnInit {
     // Append Buttons to div
     div_cntrllr.appendChild(div_btns);
 
-    this.axisDivs = new Array<HTMLSpanElement>();
+    this.dirDivs = new Array<HTMLSpanElement>();
     // Create Axis Meters
     const div_axes: HTMLDivElement = document.createElement('div');
     div_axes.className = 'axes';
     for (let i = 0; i < gamepad.axes.length / 4; i++) {
       const sp = this.createAxisSpanElement(i);
       div_axes.appendChild(sp);
-      this.axisDivs.push(sp);
+      this.dirDivs.push(sp);
     }
     // Append Meters to div
     div_cntrllr.appendChild(div_axes);
@@ -146,7 +146,7 @@ export class InputDisplayComponent implements OnInit {
     padObjs[gamepad.index].html = new GamepadHTMLShell(
       div_cntrllr,
       title,
-      this.axisDivs,
+      this.dirDivs,
       this.btnDivs,
       arwSets
     );
@@ -196,7 +196,7 @@ export class InputDisplayComponent implements OnInit {
     padObjs.forEach((padObj, ind) => {
       padObj.pad = pads[padObj.pad.index];
       const pad = navigator.getGamepads()[padObj.pad.index];
-      const d = padObj.html.parent;
+      const d = padObj.html.div;
       const prestring = 'assets/images/';
       const poststring = '.png';
       /**
@@ -221,17 +221,17 @@ export class InputDisplayComponent implements OnInit {
       /**
        * Get Axis Status */
 
-      const divs_arrowL = padObj.html.dirArrowSets[0];
-      const divs_arrowR = padObj.html.dirArrowSets[1];
+      const lDirShell = padObj.html.dirArrowSets[0];
+      const rDirShell = padObj.html.dirArrowSets[1];
       const divs_arrowDP = padObj.html.dirArrowSets[2];
 
       const normAxesL = normalizeVector(pad.axes[0], pad.axes[1]);
       const normAxesR = normalizeVector(pad.axes[2], pad.axes[3]);
 
-      // this.div_leftStick.style.left = Math.round(24 * pad.axes[0]) + "px";
-      // this.div_leftStick.style.top = Math.round(24 * pad.axes[1]) + "px";
-      // this.div_rightStick.style.left = Math.round(24 * pad.axes[2]) + "px";
-      // this.div_rightStick.style.top = Math.round(24 * pad.axes[3]) + "px";
+      lDirShell.tracer.style.left = Math.round(24 * pad.axes[0]) + "px";
+      lDirShell.tracer.style.top = Math.round(24 * pad.axes[1]) + "px";
+      rDirShell.tracer.style.left = Math.round(24 * pad.axes[2]) + "px";
+      rDirShell.tracer.style.top = Math.round(24 * pad.axes[3]) + "px";
       if (this.useDPad && padObj.DPad().some(dir => dir.pressed)) {
         const padArr = new Array<boolean>(4);
         padObj.DPad().forEach((d, i) => {
@@ -239,8 +239,8 @@ export class InputDisplayComponent implements OnInit {
         });
         // InputDisplayFunctions.processDigitalDirectionalInput(padArr, divs_arrowDP.children);
       }
-      InputDisplayFunctions.processJoystickDirections(pad.axes[0], pad.axes[1], this.orthoDeadzone, this.diagDeadzone, divs_arrowL.children);
-      InputDisplayFunctions.processJoystickDirections(pad.axes[2], pad.axes[3], this.orthoDeadzone, this.diagDeadzone, divs_arrowR.children);
+      InputDisplayFunctions.processJoystickDirections(pad.axes[0], pad.axes[1], this.orthoDeadzone, this.diagDeadzone, lDirShell);
+      InputDisplayFunctions.processJoystickDirections(pad.axes[2], pad.axes[3], this.orthoDeadzone, this.diagDeadzone, rDirShell);
     });
 
     InputDisplayComponent.rAF(cb => this.updateStatus());
@@ -324,22 +324,72 @@ export function normalizeVector(v1, v2): Array<number> {
   return [v1 / v, v2 / v, v];
 }
 
+interface HTMLShell {
+  div: HTMLDivElement;
+}
 /**
  * not used much, but still necessary collection of elements for each controller
  */
-class GamepadHTMLShell {
-  parent: HTMLElement;
+class GamepadHTMLShell implements HTMLShell {
+  div: HTMLDivElement;
   padTitle: HTMLHeadElement;
-  dirArrowSets: HTMLDivElement[];
+  dirArrowSets: DirectionalHTMLShell[];
   padAxes: HTMLDivElement[];
   padButtons: HTMLDivElement[];
 
-  constructor(rent, title, axes, buttons, arwSets) {
-    this.parent = rent;
+  constructor(div, title, axes, buttons, arwSets) {
+    this.div = div;
     this.padTitle = title;
     this.padAxes = axes;
     this.padButtons = buttons;
     this.dirArrowSets = arwSets;
+  }
+}
+class ButtonHTMLShell implements HTMLShell {
+  div: HTMLDivElement;
+  img: HTMLImageElement;
+  constructor(div, img) {
+    this.div = div;
+    this.img = img;
+  }
+}
+export class DirectionalHTMLShell implements HTMLShell {
+  div: HTMLDivElement;
+  ul: ButtonHTMLShell;
+  u: ButtonHTMLShell;
+  ur: ButtonHTMLShell;
+  l: ButtonHTMLShell;
+  center: ButtonHTMLShell;
+  r: ButtonHTMLShell;
+  dl: ButtonHTMLShell;
+  d: ButtonHTMLShell;
+  dr: ButtonHTMLShell;
+  tracer: HTMLDivElement;
+  constructor(div, dirs: HTMLCollection, tracer) {
+    this.div = div;
+    this.ul = new ButtonHTMLShell(dirs[0], dirs[0].firstChild);
+    this.u = new ButtonHTMLShell(dirs[1], dirs[1].firstChild);
+    this.ur = new ButtonHTMLShell(dirs[2], dirs[2].firstChild);
+    this.l = new ButtonHTMLShell(dirs[3], dirs[3].firstChild);
+    this.center = new ButtonHTMLShell(dirs[4], dirs[4].firstChild);
+    this.r = new ButtonHTMLShell(dirs[5], dirs[5].firstChild);
+    this.dl = new ButtonHTMLShell(dirs[6], dirs[6].firstChild);
+    this.d = new ButtonHTMLShell(dirs[7], dirs[7].firstChild);
+    this.dr = new ButtonHTMLShell(dirs[8], dirs[8].firstChild);
+    this.tracer = tracer;
+    this.center.div.appendChild(this.tracer);
+  }
+  dirs() {
+    return [this.ul,
+      this.u,
+      this.ur,
+      this.l,
+      this.center,
+      this.r,
+      this.dl,
+      this.d,
+      this.dr,
+    ];
   }
 }
 
@@ -347,6 +397,9 @@ class GamepadHTMLShell {
  * layer class to traditional gamepad API, handles many of the adaptations and customizations needed for our highly modular design
  */
 export class GamepadObject {
+  type: GamepadType;
+  pad: Gamepad;
+  html: GamepadHTMLShell;
   constructor(gp) {
     if (gp !== null && gp !== undefined) {
       this.pad = gp;
@@ -354,10 +407,6 @@ export class GamepadObject {
     } else {
     }
   }
-
-  type: GamepadType;
-  pad: Gamepad;
-  html: GamepadHTMLShell;
 
   Axes(): readonly number[] {
     return this.pad.axes;
