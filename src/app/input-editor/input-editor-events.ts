@@ -410,7 +410,7 @@ export class InputEditorEvents {
       iec.song.pause();
     });
     iec.html.btn_Record.addEventListener('click', () => {
-      iec.song.startRecording();
+      // iec.song.startRecording();
     });
     iec.html.btn_Loop.addEventListener('click', () => {
       iec.song.loop = !iec.song.loop;

@@ -14,9 +14,9 @@ import {
 } from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
 import {GamepadType, ButtonNotationType} from 'src/Enums';
-import jzz = require('jzz');
-import jzzInpKbd = require('jzz-input-kbd');
-import jzzSynOSC = require('jzz-synth-osc');
+import * as jzz from 'jzz';
+import * as jzzInpKbd from 'jzz-input-kbd';
+import * as jzzSynOSC from 'jzz-synth-osc';
 import {InputEditorFunctions} from '../input-editor/input-editor-functions';
 import {InputDisplayEvents} from '../input-display/input-display-events';
 import {InputConverterEvents} from './input-converter-events';

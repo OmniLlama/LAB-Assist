@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
-import firebase = require('firebase');
+import * as firebase from 'firebase';
 
 @Component({
   selector: 'app-root',

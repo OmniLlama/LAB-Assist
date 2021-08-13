@@ -1,4 +1,4 @@
-import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song, Sequencer} from 'heartbeat-sequencer';
+import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song} from 'heartbeat-sequencer';
 import {InputEditorComponent} from './input-editor.component';
 
 ;

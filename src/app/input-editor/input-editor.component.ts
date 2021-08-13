@@ -119,7 +119,6 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
     InputEditorVisuals.draw(iec);
     InputEditorVisuals.render();
   }
-
   /**
    * OLD - Add midi files for testing
    */
