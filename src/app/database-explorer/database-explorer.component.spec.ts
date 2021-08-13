@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { DatabaseExplorerComponent } from './database-explorer.component';
 
@@ -6,7 +6,7 @@ describe('DatabaseExplorerComponent', () => {
   let component: DatabaseExplorerComponent;
   let fixture: ComponentFixture<DatabaseExplorerComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ DatabaseExplorerComponent ]
     })
