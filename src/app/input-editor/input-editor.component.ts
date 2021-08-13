@@ -17,6 +17,7 @@ import {InputDisplayComponent} from '../input-display/input-display.component';
 import {InputEditorEvents} from './input-editor-events';
 import {EditorHTMLShell, EditorInfo, InputEditorFunctions} from './input-editor-functions';
 import {InputEditorVisuals} from './input-editor-visuals';
+import { heartbeat, Heartbeat } from 'webdaw-modules';
 
 declare let sequencer: any;
 
