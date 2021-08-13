@@ -184,7 +184,6 @@ export function setSliderValues(ref_elmt, val, min, max, step) {
   ref_elmt.step = step;
   ref_elmt.value = val;
 }
-
 //#region [rgba(120, 120, 0 ,0.15)] Draw Functions
 
 export let NOTE_OFF = 0x80;
