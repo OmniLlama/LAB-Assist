@@ -23,7 +23,7 @@
     "@types/webmidi": "^2.0.6",
     "core-js": "^2.6.12",
     "dependency-check": "^4.1.0",
-    "firebase": "^7.24.0",
+    "firebase": "^8.9.1",
     "heartbeat-sequencer": "0.0.16",
     "html5-gamepad": "^1.1.0",
     "jzz": "^0.9.9",
