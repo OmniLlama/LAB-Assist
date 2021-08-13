@@ -32,9 +32,8 @@
               "src/styles.sass"
             ],
             "scripts": [
-              "node_modules/heartbeat-sequencer/build/heartbeat.js",
-            ],
-            "es5BrowserSupport": true
+              "node_modules/heartbeat-sequencer/build/heartbeat.js"
+            ]
           },
           "configurations": {
             "production": {
