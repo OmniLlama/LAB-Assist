@@ -4,9 +4,9 @@ import {InputEditorComponent} from './input-editor.component';
 ;
 declare let sequencer: any;
 
-let NOTE_OFF = 0x80;
-let NOTE_ON = 0x90;
-let MIDI_HEARTBEAT = 0xFE;
+const NOTE_OFF = 0x80;
+const NOTE_ON = 0x90;
+const MIDI_HEARTBEAT = 0xFE;
 
 export class InputEditorFunctions {
   // iec: InputEditorComponent = InputEditorComponent.inpEdComp;
@@ -282,10 +282,10 @@ export class InputEditorFunctions {
    */
   static initSong(): Song {
 
-    let song: Song,
-      iec = InputEditorComponent.inpEdComp,
-      tmp_midiFiles = sequencer.getMidiFiles(),
-      tmp_midiFile = tmp_midiFiles[0];
+    let song: Song;
+    const iec = InputEditorComponent.inpEdComp;
+    let tmp_midiFiles = sequencer.getMidiFiles();
+    let tmp_midiFile = tmp_midiFiles[0];
     if (tmp_midiFile !== undefined) {
       song = sequencer.createSong(tmp_midiFile);
     } else {
