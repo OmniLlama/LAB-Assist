@@ -17,7 +17,7 @@ import {InputDisplayComponent} from '../input-display/input-display.component';
 import {InputEditorEvents} from './input-editor-events';
 import {EditorHTMLShell, EditorInfo, InputEditorFunctions} from './input-editor-functions';
 import {InputEditorVisuals} from './input-editor-visuals';
-import { heartbeat, Heartbeat } from 'webdaw-modules';
+import {heartbeat, Heartbeat} from 'webdaw-modules';
 
 declare let sequencer: any;
 
@@ -73,6 +73,9 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    // const init = async () => {
+    //   await sequencer.ready();
+    // };
     InputEditorComponent.inpEdComp = this;
     this.info = new EditorInfo();
     this.html = new EditorHTMLShell();
@@ -92,7 +95,7 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
     if (iec.flattenTracksToSingleTrack) {
       InputEditorFunctions.flattenTracks(iec.song);
     }
-    iec.keyEditor = InputEditorFunctions.createKeyEditor(iec);
+    iec.keyEditor = InputEditorFunctions.initKeyEditor(iec);
 
     iec.instruments = sequencer.getInstruments();
 
@@ -119,15 +122,16 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
     InputEditorVisuals.draw(iec);
     InputEditorVisuals.render();
   }
-  /**
-   * OLD - Add midi files for testing
-   */
-  addAssetsToSequencer() {
-    sequencer.addMidiFile({url: '../../assets/midi/test.mid'}, null);
-    sequencer.addMidiFile({url: '../../assets/midi/minute_waltz.mid'}, null);
-    sequencer.addMidiFile({url: '../../assets/midi/chpn_op66.mid'}, null);
-    sequencer.addMidiFile({url: '../../assets/midi/Queen - Bohemian Rhapsody.mid'}, null);
-  }
+
+  // /**
+  //  * OLD - Add midi files for testing
+  //  */
+  // addAssetsToSequencer() {
+  //   sequencer.addMidiFile({url: '../../assets/midi/test.mid'}, null);
+  //   sequencer.addMidiFile({url: '../../assets/midi/minute_waltz.mid'}, null);
+  //   sequencer.addMidiFile({url: '../../assets/midi/chpn_op66.mid'}, null);
+  //   sequencer.addMidiFile({url: '../../assets/midi/Queen - Bohemian Rhapsody.mid'}, null);
+  // }
 
   /**
    * turns on GUI elements once all are properly initalized
@@ -184,6 +188,7 @@ export function setSliderValues(ref_elmt, val, min, max, step) {
   ref_elmt.step = step;
   ref_elmt.value = val;
 }
+
 //#region [rgba(120, 120, 0 ,0.15)] Draw Functions
 
 export let NOTE_OFF = 0x80;

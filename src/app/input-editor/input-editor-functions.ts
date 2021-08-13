@@ -10,19 +10,18 @@ const MIDI_HEARTBEAT = 0xFE;
 
 export class InputEditorFunctions {
   // iec: InputEditorComponent = InputEditorComponent.inpEdComp;
-  //#region [ rgba(200, 200, 200, 0.1) ] Random Generation Functions
   /**
    * returns a random value between the min and the max
-   * @param num_min
-   * @param num_max
-   * @param bool_round
+   * @param min
+   * @param max
+   * @param round
    */
-  static getRandom(num_min, num_max, bool_round) {
-    let tmp_r = Math.random() * (num_max - num_min) + num_min;
-    if (bool_round === true) {
-      return Math.round(tmp_r);
+  static getRandom(min: number, max: number, round: boolean) {
+    let rand = Math.random() * (max - min) + min;
+    if (round === true) {
+      return Math.round(rand);
     } else {
-      return tmp_r;
+      return rand;
     }
   }
 
@@ -34,7 +33,7 @@ export class InputEditorFunctions {
    * @param velocity
    */
   static createNewNoteEvents(start: number, end: number, pitch: number, velocity?: number): [MIDIEvent, MIDIEvent] {
-    const tmp_velocity = (velocity == undefined ? 127 : velocity);
+    const tmp_velocity = (velocity === undefined ? 127 : velocity);
     const tmp_noteOn = sequencer.createMidiEvent(start, NOTE_ON, pitch, tmp_velocity);
     const tmp_noteOff = sequencer.createMidiEvent(end, NOTE_OFF, pitch, tmp_velocity);
     return [tmp_noteOn, tmp_noteOff];
@@ -73,19 +72,19 @@ export class InputEditorFunctions {
    * @param iec
    */
   static addRandomPartAtPlayhead(iec: InputEditorComponent) {
-    let tmp_ticks = 0,
-      tmp_numNotes = this.getRandom(4, 8, true),
-      tmp_spread = 5,
-      tmp_basePitch = this.getRandom(
-        iec.keyEditor.lowestNote + tmp_spread,
-        iec.keyEditor.highestNote - tmp_spread,
-        true
-      ),
-      tmp_part = sequencer.createPart(),
-      tmp_events = [],
-      tmp_noteLength = iec.song.ppq / 2,
-      tmp_pitch,
-      tmp_velocity;
+    let tmp_ticks = 0;
+    let tmp_numNotes = this.getRandom(4, 8, true);
+    let tmp_spread = 5;
+    let tmp_basePitch = this.getRandom(
+      iec.keyEditor.lowestNote + tmp_spread,
+      iec.keyEditor.highestNote - tmp_spread,
+      true
+    );
+    let tmp_part = sequencer.createPart();
+    let tmp_events = [];
+    let tmp_noteLength = iec.song.ppq / 2;
+    let tmp_pitch;
+    let tmp_velocity;
 
     for (let i = 0; i < tmp_numNotes; i++) {
       tmp_pitch = tmp_basePitch + this.getRandom(-tmp_spread, tmp_spread, true);
@@ -187,9 +186,8 @@ export class InputEditorFunctions {
    *  Compacts all song tracks onto single track, set to monitor, and set instrument to piano
    * @param ref_song
    */
-  static flattenTracks(ref_song) {
-    ref_song.tracks.forEach(
-      function(track) {
+  static flattenTracks(ref_song: Song) {
+    ref_song.tracks.forEach((track) => {
         track.setInstrument('piano');
         track.monitor = true;
         track.setMidiInput('all');
@@ -306,7 +304,7 @@ export class InputEditorFunctions {
     return song;
   }
 
-  static createKeyEditor(iec: InputEditorComponent): KeyEditor {
+  static initKeyEditor(iec: InputEditorComponent): KeyEditor {
     let tmp_icons_w = 128;
     let tmp_w = window.innerWidth - tmp_icons_w;
     let tmp_h = iec.info.editorHeight;
