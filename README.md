@@ -24,6 +24,6 @@ You need to run the above, and once all dependencies are installed, you will fin
 ## Development server
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`.
 
-##Current Status
+## Current Status
 
 Moving MIDI and Sequencer functionality from heartbeat-sequencer(https://github.com/abudaan/heartbeat) to webDAW(https://github.com/abudaan/webdaw-modules) to allow the latest updates and the fastest/lowest level interoperability between the MIDI, Controller events, and dynamic playback, as well as remedying a few long standing bugs.
