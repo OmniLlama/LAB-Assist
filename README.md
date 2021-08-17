@@ -34,7 +34,7 @@ Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`.
 - Implementing the 'Melodic Phrase' generator for playback
   - Arbitrarily sequential and procedural at first, then grouped based on input cluster recognition and user-selected grouping
   - Implement basic triad/chording for movement phrases, and melodic accompaniment for buttons, both based on chosen key & scale
-  - Eventually creating more diverse and unique melodic interactions for longer/divergent input sequences, including different cadences for 
+  - Eventually creating more diverse and unique melodic interactions for longer/divergent input sequences, including different cadences/key shifts for branching input options (particularly in regard to fighting games and their combo systems)
 - Implementing input 'Rehearsal' AKA matching the playback and subsequent feedback
-  - Currently difficult to make meaningful due to sync and feedback conflicts that are actively being resolved
-- Fully implementing the database component and a proper interface
+  - Currently difficult to make meaningful and reliable due to sync criteria and feedback conflicts that are actively being worked on
+- Fully implementing the database component and a proper interface for searching, tagging and loading different combos / inputs
