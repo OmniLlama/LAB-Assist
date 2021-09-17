@@ -14,15 +14,16 @@ import {
 } from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
 import {GamepadType, ButtonNotationType} from 'src/Enums';
-import * as jzz from 'jzz';
 import * as jzzInpKbd from 'jzz-input-kbd';
 import * as jzzSynOSC from 'jzz-synth-osc';
+import * as jzzTiny from 'jzz-synth-tiny';
+
 import {InputEditorFunctions} from '../input-editor/input-editor-functions';
 import {InputDisplayEvents} from '../input-display/input-display-events';
 import {InputConverterEvents} from './input-converter-events';
 import {InputConverterVisuals} from './input-converter-visuals';
-
 declare let sequencer: any;
+
 
 @Component({
   selector: 'app-input-converter',
@@ -35,8 +36,6 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   events: MIDIEvent[];
   div_Editor: HTMLDivElement;
   div_editInputIcons: HTMLDivElement;
-  inpEdCmp: InputEditorComponent;
-  inpDispCmp: InputDisplayComponent;
   midiWidget;
   midiInKbd;
   midiOutPort;
@@ -76,8 +75,6 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.getSetHTMLElements(this);
-    this.inpEdCmp = InputEditorComponent.inpEdComp;
-    this.inpDispCmp = InputDisplayComponent.inpDispCmp;
     jzzInpKbd(JZZ);
     this.midiOutPort =
       JZZ().or('Cannot start MIDI engine!')

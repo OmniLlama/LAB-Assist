@@ -5,13 +5,16 @@ const dirIconWidth = 'width=60px';
 const dirIconHeight = 'height=60px';
 const btnIconWidth = 'width=72px';
 const btnIconHeight = 'height=72px';
-
+const dirSetId = {0: 'left', 1: 'right', 2: 'dpad'};
+const tracerId = {0: 'ls', 1: 'rs', 2: 'dpad'};
 export class InputDisplayVisuals {
 
   static CreateDirectionalArrows(idc: InputDisplayComponent, n: number): DirectionalHTMLShell {
     const div_arrows: HTMLDivElement = document.createElement('div');
     div_arrows.className = 'grid3x3';
-    div_arrows.id = `${n === 0 ? 'left' : 'right'}`;
+    // div_arrows.id = `${n === 0 ? 'left' : 'right'}`;
+
+    div_arrows.id = `${dirSetId[n]}`;
     for (let i = 0; i < 9; i++) {
       let arrow = document.createElement('div');
       switch (i) {
@@ -43,7 +46,6 @@ export class InputDisplayVisuals {
       arrow.appendChild(img_dir);
       div_arrows.appendChild(arrow);
     }
-
     // let div_stick = (n == 0 ? idc.div_leftStick : idc.div_rightStick);
     let div_tracer = document.createElement('div');
     div_tracer.id = `${div_arrows.id}-stick`;
@@ -51,7 +53,7 @@ export class InputDisplayVisuals {
     div_tracer.style.width = dirIconWidth;
     div_tracer.style.height = dirIconHeight;
     let img_tracer: HTMLImageElement = document.createElement('img');
-    img_tracer.src = `assets/images/${n === 0 ? 'ls' : 'rs'}.png`;
+    img_tracer.src = `assets/images/${tracerId[n]}.png`;
     div_tracer.appendChild(img_tracer);
     let dirHTMLShell = new DirectionalHTMLShell(div_arrows, div_arrows.children, div_tracer);
     return dirHTMLShell;
@@ -115,3 +117,4 @@ export class InputDisplayVisuals {
     return s;
   }
 }
+

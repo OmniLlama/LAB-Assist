@@ -9,6 +9,7 @@ import {InputConverterComponent} from '../input-converter/input-converter.compon
 import {InputDisplayFunctions} from './input-display-functions';
 import {InputDisplayVisuals} from './input-display-visuals';
 import {InputDisplayEvents} from './input-display-events';
+import {MovementTrail} from './movement-trail';
 
 export let pads: Array<Gamepad>;
 export let padObjs: Array<GamepadObject>;
@@ -32,29 +33,32 @@ export class InputDisplayComponent implements OnInit {
   dirDivs: Array<HTMLSpanElement>;
   div_leftStick: HTMLDivElement;
   div_rightStick: HTMLDivElement;
-  haveWebkitEvents = 'WebKitGamepadEvent' in  window;
-  haveEvents = 'GamepadEvent'  in  window;
+
   diagDeadzone = 0.4;
   orthoDeadzone = 0.75;
 
+  useLeftStick = true;
+  useRightStick = true;
   useDPad = true;
 
   constructor() {
   }
 
   ngOnInit(): void {
+    const haveWebkitEvents = 'WebKitGamepadEvent' in window;
+    const haveEvents = 'GamepadEvent' in window;
     InputDisplayComponent.inpDispCmp = this;
     pads = new Array<Gamepad>();
     padObjs = new Array<GamepadObject>();
     /**
      * EVENTS
      */
-    if (this.haveEvents) {
+    if (haveEvents) {
       window.addEventListener('gamepadconnected', e => InputDisplayEvents.connecthandler(e, this));
       window.addEventListener('gamepaddisconnected', e =>
         InputDisplayEvents.disconnecthandler(e, this)
       );
-    } else if (this.haveWebkitEvents) {
+    } else if (haveWebkitEvents) {
       window.addEventListener('webkitgamepadconnected', e =>
         InputDisplayEvents.connecthandler(e, this)
       );
@@ -110,13 +114,16 @@ export class InputDisplayComponent implements OnInit {
     div_info.appendChild(title);
     div_cntrllr.appendChild(div_info);
 
-
+    //Create Arrow Sets
     const arwSets = new Array<DirectionalHTMLShell>();
     for (let i = 0; i < gamepad.axes.length / 2; i++) {
 
       arwSets[i] = InputDisplayVisuals.CreateDirectionalArrows(this, i);
       div_cntrllr.appendChild(arwSets[i].div);
     }
+    arwSets[2] = InputDisplayVisuals.CreateDirectionalArrows(this, 2);
+    div_cntrllr.appendChild(arwSets[2].div);
+
     // Create Button Icons
     const div_btns: HTMLDivElement = document.createElement('div');
     div_btns.className = 'grid4x2';
@@ -223,15 +230,21 @@ export class InputDisplayComponent implements OnInit {
 
       const lDirShell = padObj.html.dirArrowSets[0];
       const rDirShell = padObj.html.dirArrowSets[1];
-      const divs_arrowDP = padObj.html.dirArrowSets[2];
+      const dpDirShell = padObj.html.dirArrowSets[2];
+      const dpVec = DPadToVector(padObj.DPad());
 
-      const normAxesL = normalizeVector(pad.axes[0], pad.axes[1]);
-      const normAxesR = normalizeVector(pad.axes[2], pad.axes[3]);
-
-      lDirShell.tracer.style.left = Math.round(24 * pad.axes[0]) + "px";
-      lDirShell.tracer.style.top = Math.round(24 * pad.axes[1]) + "px";
-      rDirShell.tracer.style.left = Math.round(24 * pad.axes[2]) + "px";
-      rDirShell.tracer.style.top = Math.round(24 * pad.axes[3]) + "px";
+      lDirShell.tracer.style.left = Math.round(36 * pad.axes[0]) + 'px';
+      lDirShell.tracer.style.top = Math.round(36 * pad.axes[1]) + 'px';
+      lDirShell.trail.draw(lDirShell.getTracerPos());
+      lDirShell.div.style.display = this.useLeftStick ? 'inline-block' : 'none';
+      rDirShell.tracer.style.left = Math.round(36 * pad.axes[2]) + 'px';
+      rDirShell.tracer.style.top = Math.round(36 * pad.axes[3]) + 'px';
+      rDirShell.trail.draw(rDirShell.getTracerPos());
+      rDirShell.div.style.display = this.useRightStick ? 'inline-block' : 'none';
+      dpDirShell.tracer.style.left = Math.round(36 * dpVec[0]) + 'px';
+      dpDirShell.tracer.style.top = Math.round(36 * dpVec[1]) + 'px';
+      dpDirShell.trail.draw(dpDirShell.getTracerPos());
+      dpDirShell.div.style.display = this.useDPad ? 'inline-block' : 'none';
       if (this.useDPad && padObj.DPad().some(dir => dir.pressed)) {
         const padArr = new Array<boolean>(4);
         padObj.DPad().forEach((d, i) => {
@@ -319,6 +332,14 @@ export function vectorMagnitude(v1, v2): number {
   return Math.sqrt(v1 ** 2 + v2 ** 2);
 }
 
+export function DPadToVector(dpad: readonly GamepadButton[]) {
+  return [
+    (dpad[2].pressed ? -1 : 0) +
+    (dpad[3].pressed ? 1 : 0),
+    (dpad[0].pressed ? -1 : 0) +
+    (dpad[1].pressed ? 1 : 0)];
+}
+
 export function normalizeVector(v1, v2): Array<number> {
   const v = vectorMagnitude(v1, v2);
   return [v1 / v, v2 / v, v];
@@ -327,6 +348,7 @@ export function normalizeVector(v1, v2): Array<number> {
 interface HTMLShell {
   div: HTMLDivElement;
 }
+
 /**
  * not used much, but still necessary collection of elements for each controller
  */
@@ -345,14 +367,17 @@ class GamepadHTMLShell implements HTMLShell {
     this.dirArrowSets = arwSets;
   }
 }
+
 class ButtonHTMLShell implements HTMLShell {
   div: HTMLDivElement;
   img: HTMLImageElement;
+
   constructor(div, img) {
     this.div = div;
     this.img = img;
   }
 }
+
 export class DirectionalHTMLShell implements HTMLShell {
   div: HTMLDivElement;
   ul: ButtonHTMLShell;
@@ -365,6 +390,8 @@ export class DirectionalHTMLShell implements HTMLShell {
   d: ButtonHTMLShell;
   dr: ButtonHTMLShell;
   tracer: HTMLDivElement;
+  trail: MovementTrail;
+
   constructor(div, dirs: HTMLCollection, tracer) {
     this.div = div;
     this.ul = new ButtonHTMLShell(dirs[0], dirs[0].firstChild);
@@ -378,7 +405,9 @@ export class DirectionalHTMLShell implements HTMLShell {
     this.dr = new ButtonHTMLShell(dirs[8], dirs[8].firstChild);
     this.tracer = tracer;
     this.center.div.appendChild(this.tracer);
+    this.trail = new MovementTrail(this.div);
   }
+
   dirs() {
     return [this.ul,
       this.u,
@@ -391,6 +420,11 @@ export class DirectionalHTMLShell implements HTMLShell {
       this.dr,
     ];
   }
+
+  getTracerPos() {
+    const rect = this.tracer.getBoundingClientRect();
+    return [rect.left + window.pageXOffset, rect.top + window.pageYOffset];
+  }
 }
 
 /**
@@ -400,6 +434,7 @@ export class GamepadObject {
   type: GamepadType;
   pad: Gamepad;
   html: GamepadHTMLShell;
+
   constructor(gp) {
     if (gp !== null && gp !== undefined) {
       this.pad = gp;
