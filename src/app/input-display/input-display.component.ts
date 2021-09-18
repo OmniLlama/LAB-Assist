@@ -3,7 +3,7 @@ import {
   MovementNotationType,
   ButtonNotationType,
   GamepadTypeString,
-  GamepadType
+  GamepadType, ButtonLayoutOrder
 } from 'src/Enums';
 import {InputConverterComponent} from '../input-converter/input-converter.component';
 import {InputDisplayFunctions} from './input-display-functions';
@@ -117,7 +117,6 @@ export class InputDisplayComponent implements OnInit {
     //Create Arrow Sets
     const arwSets = new Array<DirectionalHTMLShell>();
     for (let i = 0; i < gamepad.axes.length / 2; i++) {
-
       arwSets[i] = InputDisplayVisuals.CreateDirectionalArrows(this, i);
       div_cntrllr.appendChild(arwSets[i].div);
     }
@@ -233,9 +232,10 @@ export class InputDisplayComponent implements OnInit {
       const dpDirShell = padObj.html.dirArrowSets[2];
       const dpVec = DPadToVector(padObj.DPad());
 
-      lDirShell.tracer.style.left = Math.round(36 * pad.axes[0]) + 'px';
-      lDirShell.tracer.style.top = Math.round(36 * pad.axes[1]) + 'px';
-      lDirShell.trail.draw(lDirShell.getTracerPos());
+      // lDirShell.tracer.style.left = Math.round(36 * pad.axes[0]) + 'px';
+      // lDirShell.tracer.style.top = Math.round(36 * pad.axes[1]) + 'px';
+      // lDirShell.trail.draw(lDirShell.getTracerPos());
+      lDirShell.updateTracer([pad.axes[0], pad.axes[1]]);
       lDirShell.div.style.display = this.useLeftStick ? 'inline-block' : 'none';
       rDirShell.tracer.style.left = Math.round(36 * pad.axes[2]) + 'px';
       rDirShell.tracer.style.top = Math.round(36 * pad.axes[3]) + 'px';
@@ -276,6 +276,9 @@ export class InputDisplayComponent implements OnInit {
       e.innerHTML = imageString;
     }
     return e;
+  }
+
+  arrangeButtons(layout: ButtonLayoutOrder) {
   }
 
   /**
@@ -421,6 +424,12 @@ export class DirectionalHTMLShell implements HTMLShell {
     ];
   }
 
+  updateTracer(pos) {
+    this.tracer.style.left = Math.round(36 * pos[0]) + 'px';
+    this.tracer.style.top = Math.round(36 * pos[1]) + 'px';
+    this.trail.draw(this.getTracerPos());
+  }
+
   getTracerPos() {
     const rect = this.tracer.getBoundingClientRect();
     return [rect.left + window.pageXOffset, rect.top + window.pageYOffset];
@@ -482,14 +491,15 @@ export class GamepadObject {
     }
   }
 
+
   /**
    * returns the order that the main buttons should be presented, depending upon the manufacturer and standard
    */
   getArcadeLayoutButtonNumbers(): number[] {
     switch (this.type) {
       case GamepadType.XInput:
-        // return [2, 3, 5, 4, 0, 1, 7, 6];
-        return [0, 1, 2, 3, 4, 5, 6, 7];
+        return [2, 3, 5, 4, 0, 1, 7, 6];
+      // return [0, 1, 2, 3, 4, 5, 6, 7];
       default:
         return [0, 1, 2, 3, 4, 5, 6, 7];
       // return [0, 0, 0, 0, 0, 0, 0, 0];

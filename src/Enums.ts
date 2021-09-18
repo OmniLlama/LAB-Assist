@@ -1,3 +1,7 @@
+export enum ButtonLayoutOrder{
+  Linear = 'linear',
+  Arcade = 'arcade'
+}
 export enum GamepadType {
   Generic,
   XInput,
