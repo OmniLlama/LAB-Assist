@@ -1,4 +1,4 @@
-import { Note, Part } from 'heartbeat-sequencer';
+import { Note, Part } from '../../heartbeat/build';
 import { InputEditorComponent } from './input-editor.component';
 import { InputEditorEvents } from './input-editor-events';
 import { BBox, InputEditorFunctions } from './input-editor-functions';

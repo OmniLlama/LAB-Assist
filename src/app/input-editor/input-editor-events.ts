@@ -1,6 +1,6 @@
 import {InputEditorComponent, setElementValue} from './input-editor.component';
 import {InputEditorFunctions} from './input-editor-functions';
-import {Part} from 'heartbeat-sequencer';
+import {Part} from '../../heartbeat/build';
 import {InputEditorVisuals} from './input-editor-visuals';
 import {InputConverterFunctions} from '../input-converter/input-converter-functions';
 

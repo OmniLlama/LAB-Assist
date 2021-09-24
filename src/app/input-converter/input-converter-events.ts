@@ -5,7 +5,7 @@ import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {InputConverterFunctions} from './input-converter-functions';
 import * as JZZ from 'jzz';
 import {InputConverterVisuals} from './input-converter-visuals';
-import {MIDINote, Part, Track} from 'heartbeat-sequencer';
+import {MIDINote, Part, Track} from '../../heartbeat/build';
 
 declare let sequencer: any;
 

@@ -11,7 +11,7 @@ import {
   KeyEditor,
   createTrack,
   MIDIEvent
-} from 'heartbeat-sequencer';
+} from '../../heartbeat/build';
 import {InputConverterComponent} from '../input-converter/input-converter.component';
 import {InputDisplayComponent} from '../input-display/input-display.component';
 import {InputEditorEvents} from './input-editor-events';

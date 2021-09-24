@@ -369,11 +369,19 @@ $btn-height: 72px
     border-radius: 3px
     background: teal
     opacity: 40%
-svg
+
+.svg-shell
   position: fixed
+  top: 0
+  left: 0
+  width: 100%
+  height: 100%
+  z-index: 300
+  svg
+  position: absolute
   z-index: 300
   polyline
-    position: fixed
-    z-index: 400
+    //position: fixed
+    z-index: 300
     stroke: darkcyan
     fill: none
