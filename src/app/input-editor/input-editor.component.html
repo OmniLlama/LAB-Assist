@@ -61,7 +61,7 @@
       start<input
         type="text"
         id="key-range-start"
-        (ngModel)="(info.pitchStart)"
+        [(ngModel)]="info.pitchStart"
         value="{{ info.pitchStart }}"
       />
     </div>
@@ -69,7 +69,7 @@
       end<input
         type="text"
         id="key-range-end"
-        (ngModel)="(info.pitchEnd)"
+        [(ngModel)]="info.pitchEnd"
         value="{{ info.pitchEnd }}"
       />
     </div>

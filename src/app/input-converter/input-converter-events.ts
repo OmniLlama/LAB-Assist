@@ -33,10 +33,6 @@ export class InputConverterEvents {
     InputConverterVisuals.rAF(InputConverterEvents.updateController);
   }
 
-  ConvertedPlayback()
-  {
-  }
-
   static updateControllerStxTrackers(padObj: GamepadObject, currTicks: number) {
     /**
      * Update Controller Axes
@@ -170,7 +166,7 @@ export class InputConverterEvents {
         return;
       }
       let trkr = icc.btnTrackerGroup[idx];
-      let pitch: string = InputConverterFunctions.getPitchStringFromNumber(scale[idx] + rootNote);
+      let pitch: string = InputConverterFunctions.numberToPitchString(scale[idx] + rootNote);
       // if PRESSED this frame
       if (b.pressed && !trkr.held) {
         icc.midiOutPort.noteOn(0, pitch, 127);
@@ -238,8 +234,6 @@ export class InputConverterEvents {
         trkr.heldNote.part.moveEvent(trkr.heldNote.noteOff, (ticks - trkr.heldNote.noteOff.ticks));
         trkr.inpEnd = ticks;
       }
-      // InputEditorFunctions.UpdateTrack(InputEditorComponent.inpEdComp);
-      // InputEditorFunctions.UpdateSong(InputEditorComponent.inpEdComp);
     }
   }
 

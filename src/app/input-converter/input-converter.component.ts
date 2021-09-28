@@ -1,6 +1,5 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {MIDIEvent, Note, MIDINote, Track, Part} from 'heartbeat-sequencer';
-import {InputEditorComponent, getEdgeDivs} from '../input-editor/input-editor.component';
+import {MIDIEvent, Note, MIDINote, Track, Part} from '../../heartbeat/build';
 import {
   InputDisplayComponent,
   GamepadObject,
@@ -93,7 +92,6 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
    * Initializes arrays that hold the various inputs and their respective notes
    */
   getController() {
-    const idc = InputDisplayComponent.inpDispCmp;
     const icc = InputConverterComponent.inpConvComp;
     if (pads !== undefined && pads.length !== 0 && icc.testPadObj == null) {
       let pad = (pads[0] !== undefined ? pads[0] : pads[1]);

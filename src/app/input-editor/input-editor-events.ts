@@ -50,7 +50,7 @@ export class InputEditorEvents {
     let part = iec.allParts[iec.currPart.id] as Part;
     part.notes.forEach((n) => {
       const noteDiv = iec.html.divs_AllNotes[n.id];
-      noteDiv.setAttribute('pitch', InputEditorFunctions.numToPitch(n.number));
+      noteDiv.setAttribute('pitch', InputConverterFunctions.numberToPitchString(n.number));
     });
     document.removeEventListener('mouseup', InputEditorEvents.Part_lMouUp);
   }
@@ -97,7 +97,7 @@ export class InputEditorEvents {
     let elmt = iec.html.divs_AllNotes[iec.currNote.id];
     let tmp_note = iec.allNotes[elmt.id];
     // let pitch = InputEditorFunctions.createNewMIDINote(0, 0, iec.info.mousePitchPos);
-    let pitch = InputEditorFunctions.numToPitch(iec.info.mousePitchPos);
+    let pitch = InputConverterFunctions.numberToPitchString(iec.info.mousePitchPos);
     iec.changingNote = null;
     elmt.setAttribute('pitch', pitch);
     document.removeEventListener('mouseup', InputEditorEvents.Note_lMouUp);

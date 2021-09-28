@@ -1,5 +1,5 @@
 export class InputConverterFunctions {
-  static getPitchStringFromNumber(n: number): string {
+  static numberToPitchString(n: number): string {
     const noteLetter = n % 12;
     const noteOctave = (n / 12);
     let str = '';

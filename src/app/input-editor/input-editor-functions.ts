@@ -329,61 +329,6 @@ export class InputEditorFunctions {
     iec.song.update();
   }
 
-  static numToPitch(i: number): string {
-    switch (i) {
-      case 43:
-        return 'G2';
-      case 42:
-        return 'F#2';
-      case 41:
-        return 'F2';
-      case 40:
-        return 'E2';
-      case 39:
-        return 'D#2';
-      case 38:
-        return 'D2';
-      case 37:
-        return 'C#2';
-      case 36:
-        return 'C2';
-      case 35:
-        return 'B1';
-      case 34:
-        return 'A#1';
-      case 33:
-        return 'A1';
-      case 32:
-        return 'G#1';
-      case 31:
-        return 'G1';
-      case 30:
-        return 'F#1';
-      case 29:
-        return 'F1';
-      case 28:
-        return 'E1';
-      case 27:
-        return 'D#1';
-      case 26:
-        return 'D1';
-      case 25:
-        return 'C#1';
-      case 24:
-        return 'C1';
-      case 23:
-        return 'B0';
-      case 22:
-        return 'A#0';
-      case 21:
-        return 'A0';
-      case 12:
-        return 'C-1';
-      case 0:
-        return 'C-2';
-    }
-  }
-
 }
 
 export class BBox {
