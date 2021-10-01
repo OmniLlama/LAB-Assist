@@ -296,10 +296,10 @@ $clr-00: rgba(234, 234, 234, 0.6)
   background-color: #000
 
 //Input Display Style
-$dir-width: 60px
-$dir-height: 60px
-$btn-width: 72px
-$btn-height: 72px
+$dir-width: 48px
+$dir-height: 48px
+$btn-width: 60px
+$btn-height: 60px
 
 .grid3x3
   display: inline-block
@@ -326,9 +326,8 @@ $btn-height: 72px
   .tracer
     position: absolute
     height: $dir-height
-    //line-height: $dir-height
-    text-align: center
     width: $dir-width
+    text-align: center
     z-index: 250
 
 
@@ -372,16 +371,15 @@ $btn-height: 72px
 
 .svg-shell
   position: fixed
-  top: 0
-  left: 0
-  width: 100%
-  height: 100%
+  //top: 0
+  //left: 0
   z-index: 300
-  svg
+svg
   position: absolute
   z-index: 300
   polyline
     //position: fixed
     z-index: 300
-    stroke: darkcyan
+    stroke: yellowgreen
+    stroke-width: 5px
     fill: none

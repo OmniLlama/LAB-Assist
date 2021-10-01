@@ -36,7 +36,11 @@ export class MovementTrail {
     this.svg.appendChild(this.line);
     this.divFrame.appendChild(this.svg);
   }
-
+  relPos(dot: TrailDot)
+  {
+    const rect = this.parent.getBoundingClientRect();
+    return [dot.x - rect.left, dot.y - rect.top];
+  }
   draw(pos) {
     const dot = new TrailDot(pos, this.parent);
     dot.draw();
@@ -49,8 +53,10 @@ export class MovementTrail {
 
   drawSVGLine() {
     let pts = '';
+
     this.dots.forEach((dot, i) => {
-      pts += `${dot.x + ',' + dot.y + ' '}`;
+      const dotPos = this.relPos(dot);
+      pts += `${dotPos[0] + ',' + dotPos[1] + ' '}`;
     });
     this.line.setAttribute('points', pts);
   }

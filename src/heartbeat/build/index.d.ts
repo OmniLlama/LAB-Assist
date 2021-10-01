@@ -4,7 +4,7 @@ import {loadMusicXMLFile} from './load_musicxml_file';
 
 export {loadMusicXMLFile};
 
-export as namespace sequencer;
+export as namespace sqcr;
 
 // export interface Sequencer {
 //
@@ -410,4 +410,9 @@ export type SnapShot = {
 
   pageNo: number
   lastPage: number
+};
+
+export type AudioEvent = {
+  buffer?: AudioBuffer;
+  path?: string;
 };

@@ -31,8 +31,6 @@ export class InputDisplayComponent implements OnInit {
   bntKeys = Object.keys(ButtonNotationType);
   btnDivs: Array<HTMLDivElement>;
   dirDivs: Array<HTMLSpanElement>;
-  div_leftStick: HTMLDivElement;
-  div_rightStick: HTMLDivElement;
 
   diagDeadzone = 0.4;
   orthoDeadzone = 0.75;
@@ -232,19 +230,13 @@ export class InputDisplayComponent implements OnInit {
       const dpDirShell = padObj.html.dirArrowSets[2];
       const dpVec = DPadToVector(padObj.DPad());
 
-      // lDirShell.tracer.style.left = Math.round(36 * pad.axes[0]) + 'px';
-      // lDirShell.tracer.style.top = Math.round(36 * pad.axes[1]) + 'px';
-      // lDirShell.trail.draw(lDirShell.getTracerPos());
       lDirShell.updateTracer([pad.axes[0], pad.axes[1]]);
       lDirShell.div.style.display = this.useLeftStick ? 'inline-block' : 'none';
-      rDirShell.tracer.style.left = Math.round(36 * pad.axes[2]) + 'px';
-      rDirShell.tracer.style.top = Math.round(36 * pad.axes[3]) + 'px';
-      rDirShell.trail.draw(rDirShell.getTracerPos());
+      rDirShell.updateTracer([pad.axes[2], pad.axes[3]]);
       rDirShell.div.style.display = this.useRightStick ? 'inline-block' : 'none';
-      dpDirShell.tracer.style.left = Math.round(36 * dpVec[0]) + 'px';
-      dpDirShell.tracer.style.top = Math.round(36 * dpVec[1]) + 'px';
-      dpDirShell.trail.draw(dpDirShell.getTracerPos());
+      dpDirShell.updateTracer([dpVec[0], dpVec[1]]);
       dpDirShell.div.style.display = this.useDPad ? 'inline-block' : 'none';
+
       if (this.useDPad && padObj.DPad().some(dir => dir.pressed)) {
         const padArr = new Array<boolean>(4);
         padObj.DPad().forEach((d, i) => {

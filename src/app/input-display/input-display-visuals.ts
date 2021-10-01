@@ -48,10 +48,8 @@ export class InputDisplayVisuals {
     }
     // let div_stick = (n == 0 ? idc.div_leftStick : idc.div_rightStick);
     let div_tracer = document.createElement('div');
-    div_tracer.id = `${div_arrows.id}-stick`;
+    div_tracer.id = `${div_arrows.id}-tracer`;
     div_tracer.className = 'tracer';
-    div_tracer.style.width = dirIconWidth;
-    div_tracer.style.height = dirIconHeight;
     let img_tracer: HTMLImageElement = document.createElement('img');
     img_tracer.src = `assets/images/${tracerId[n]}.png`;
     div_tracer.appendChild(img_tracer);
