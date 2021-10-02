@@ -1,8 +1,8 @@
 import { InputDisplayVisuals } from './input-display-visuals';
-import {DirectionalHTMLShell, InputDisplayComponent} from './input-display.component';
+import {DirectionalHTMLShell} from './input-display.component';
 
 export class InputDisplayFunctions {
-  static arrayIndexToDirection(i) {
+  static directionalArrayIndexToDirection(i) {
     switch (i) {
       case 0: return `up_left`;
       case 1: return `up`;
@@ -13,6 +13,8 @@ export class InputDisplayFunctions {
       case 6: return `down_left`;
       case 7: return `down`;
       case 8: return `down_right`;
+      default:
+        return `up`;
     }
   }
   /**
@@ -67,8 +69,6 @@ export class InputDisplayFunctions {
     // arwArr[4].style.offsetY = vertAxis * 128;
   }
   static processDigitalDirectionalInput(dirArr: boolean[], dirShell: DirectionalHTMLShell) {
-
-
     // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
     if (dirArr[2] && dirArr[0]) {
       InputDisplayVisuals.resetDirections(dirShell, 0);

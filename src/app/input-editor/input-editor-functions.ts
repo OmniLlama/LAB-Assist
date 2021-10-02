@@ -1,4 +1,5 @@
 import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song} from '../../heartbeat/build';
+// import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song} from 'heartbeat-sequencer';
 import {InputEditorComponent} from './input-editor.component';
 
 ;
@@ -50,7 +51,7 @@ export class InputEditorFunctions {
   static createNoteFromTicks(start: number, end: number, pitch: number, vel: number, part: Part): [MIDIEvent, MIDIEvent] {
     const iec = InputEditorComponent.inpEdComp;
     if (!iec.song.getPart(part.id)) {
-      iec.track.addPartAt(part, ['ticks', start]);
+      iec.mainTrack.addPartAt(part, ['ticks', start]);
     }
     const noteEvts = this.createNewNoteEvents(start, end, pitch, vel);
     if (part) {
@@ -62,7 +63,7 @@ export class InputEditorFunctions {
     // iec.currPart = part;
     sequencer.createNote(noteEvts[0], noteEvts[1]);
     InputEditorFunctions.UpdateTrack(iec);
-    part.update();
+    // part.update();
     // InputEditorFunctions.UpdateSong(iec);
     return noteEvts;
   }
@@ -98,7 +99,7 @@ export class InputEditorFunctions {
     tmp_ticks = iec.keyEditor.getTicksAt(iec.keyEditor.getPlayheadX());
 
     tmp_part.addEvents(tmp_events);
-    iec.track.addPartAt(tmp_part, ['ticks', tmp_ticks]);
+    iec.mainTrack.addPartAt(tmp_part, ['ticks', tmp_ticks]);
     InputEditorFunctions.UpdateSong(iec);
   }
 
@@ -131,7 +132,7 @@ export class InputEditorFunctions {
     tmp_ticks = iec.info.totalTicksAtHead;
 
     tmp_part.addEvents(tmp_events);
-    iec.track.addPartAt(tmp_part, ['ticks', tmp_ticks]);
+    iec.mainTrack.addPartAt(tmp_part, ['ticks', tmp_ticks]);
     InputEditorFunctions.UpdateTrack(iec);
     InputEditorFunctions.UpdateSong(iec);
   }
@@ -282,24 +283,17 @@ export class InputEditorFunctions {
 
     let song: Song;
     const iec = InputEditorComponent.inpEdComp;
-    let tmp_midiFiles = sequencer.getMidiFiles();
-    let tmp_midiFile = tmp_midiFiles[0];
-    if (tmp_midiFile !== undefined) {
-      song = sequencer.createSong(tmp_midiFile);
-    } else {
-      song = sequencer.createSong({
-        bpm: 200,
-        nominator: 3,
-        denominator: 4,
-        useMetronome: true
-      });
-    }
-    if (song.tracks[0]) {
-      iec.track = song.tracks[0];
-    } else {
-      iec.track = sequencer.createTrack('newTrack');
-      song.addTrack(iec.track);
-    }
+    let insts = sequencer.getInstruments();
+    song = sequencer.createSong({
+      bpm: 200,
+      nominator: 3,
+      denominator: 4,
+      // useMetronome: true,
+      instruments: insts
+    });
+
+    iec.mainTrack = sequencer.createTrack('newTrack');
+    song.addTrack(iec.mainTrack);
     song.update();
     return song;
   }
@@ -309,7 +303,6 @@ export class InputEditorFunctions {
     let tmp_w = window.innerWidth - tmp_icons_w;
     let tmp_h = iec.info.editorHeight;
     let keyEditor = sequencer.createKeyEditor(iec.song, {
-      // keyListener: true,
       viewportHeight: tmp_h,
       viewportWidth: tmp_w,
       pitchHeight: iec.info.pitchHeight,
@@ -322,7 +315,7 @@ export class InputEditorFunctions {
 
 
   static UpdateTrack(iec: InputEditorComponent) {
-    iec.track.update();
+    iec.mainTrack.update();
   }
 
   static UpdateSong(iec: InputEditorComponent) {

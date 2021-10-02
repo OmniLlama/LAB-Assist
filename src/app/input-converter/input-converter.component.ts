@@ -17,11 +17,8 @@ import * as jzzInpKbd from 'jzz-input-kbd';
 import * as jzzSynOSC from 'jzz-synth-osc';
 import * as jzzTiny from 'jzz-synth-tiny';
 
-import {InputEditorFunctions} from '../input-editor/input-editor-functions';
-import {InputDisplayEvents} from '../input-display/input-display-events';
 import {InputConverterEvents} from './input-converter-events';
 import {InputConverterVisuals} from './input-converter-visuals';
-declare let sequencer: any;
 
 
 @Component({
@@ -33,8 +30,7 @@ declare let sequencer: any;
 export class InputConverterComponent implements OnInit, AfterViewInit {
   static inpConvComp: InputConverterComponent;
   events: MIDIEvent[];
-  div_Editor: HTMLDivElement;
-  div_editInputIcons: HTMLDivElement;
+
   midiWidget;
   midiInKbd;
   midiOutPort;
@@ -73,7 +69,6 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.getSetHTMLElements(this);
     jzzInpKbd(JZZ);
     this.midiOutPort =
       JZZ().or('Cannot start MIDI engine!')
@@ -115,15 +110,6 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   *  Initialize the html element properties
-   * @param icc
-   */
-  getSetHTMLElements(icc: InputConverterComponent): void {
-    icc.div_Editor = document.getElementById('editor') as HTMLDivElement;
-    icc.div_editInputIcons = document.getElementById('editor-input-icons') as HTMLDivElement;
-  }
-
-  /**
    * Boot Jingle
    */
   playStartJingle() {
@@ -137,10 +123,6 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
       .note(0, 'C4', 127, 100).wait(66)
       .note(0, 'A#4', 127, 100).wait(99)
       .note(0, 'C#5', 127, 100).wait(33);
-    // .note(0, 'D6', 127, 100).wait(45)
-    // .note(0, 'F7', 127, 100).wait(50)
-    // .note(0, 'G#7', 127, 100).wait(83)
-    // .note(0, 'C#8', 127, 100);
   }
 
   /**

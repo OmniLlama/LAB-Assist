@@ -20,6 +20,8 @@ export function createNote(start: MIDIEvent, end: MIDIEvent): MIDINote;
 
 export function createKeyEditor(song: Song, config: any): KeyEditor;
 
+export function createInstrument(config: any): Instrument;
+
 export function getMidiFile(path: string, exact_match: boolean): MIDIFileJSON;
 
 export function getMidiFiles(): MIDIFileJSON[];

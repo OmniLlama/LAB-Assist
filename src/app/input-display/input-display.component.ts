@@ -401,6 +401,7 @@ export class DirectionalHTMLShell implements HTMLShell {
     this.tracer = tracer;
     this.center.div.appendChild(this.tracer);
     this.trail = new MovementTrail(this.div);
+    // this.trail = new MovementTrail(this.center.div);
   }
 
   dirs() {
@@ -417,8 +418,8 @@ export class DirectionalHTMLShell implements HTMLShell {
   }
 
   updateTracer(pos) {
-    this.tracer.style.left = Math.round(36 * pos[0]) + 'px';
-    this.tracer.style.top = Math.round(36 * pos[1]) + 'px';
+    this.tracer.style.left = Math.round(30 * pos[0]) + 'px';
+    this.tracer.style.top = Math.round(30 * pos[1]) + 'px';
     this.trail.draw(this.getTracerPos());
   }
 

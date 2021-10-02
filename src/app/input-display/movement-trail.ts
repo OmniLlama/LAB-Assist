@@ -12,8 +12,8 @@ class TrailDot {
   }
 
   draw() {
-    this.node.style.left = 28 + this.x + 'px';
-    this.node.style.top = 28 + this.y + 'px';
+    this.node.style.left = 24 + this.x + 'px';
+    this.node.style.top = 24 + this.y + 'px';
   }
 }
 

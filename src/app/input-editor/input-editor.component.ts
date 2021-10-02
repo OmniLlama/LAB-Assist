@@ -34,19 +34,17 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
   // static MIDI_HEARTBEAT = 0xFE;
   static inpEdComp: InputEditorComponent;
   static inpEdEvts: InputEditorEvents;
-  testMethod = 1;
   midiOutput;
   html: EditorHTMLShell;
   info: EditorInfo;
   midiFile;
   keyEditor: KeyEditor;
-  div_MidiFileList: HTMLDivElement;
   midiFileList;
   audCntxt: AudioContext;
 
 
   snapAmt;
-  track: Track;
+  mainTrack: Track;
   tracks: Track[];
   instruments: Instrument[];
   song: Song;
@@ -79,10 +77,11 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
     InputEditorComponent.inpEdComp = this;
     this.info = new EditorInfo();
     this.html = new EditorHTMLShell();
-    this.init(this);
+    // this.init(this);
   }
 
   ngAfterViewInit(): void {
+    this.init(this);
   }
 
   /**
