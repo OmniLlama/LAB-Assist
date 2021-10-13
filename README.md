@@ -34,8 +34,8 @@ Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`.
   - Including more customizablility in button arrangement and color schemes, adding different platform schemes and game-dependent labelling
   - Less debug interface garishly on the page (obviously)
   - Directional input path tracing 
-    -performative SVG-based solution implemented, working on placement reliability
-  ~~- show/hide different direcitonal inputs in display~~ / editor
+    - performative SVG-based solution implemented, working on placement reliability
+  - show/hide different direcitonal inputs in editor
   - Proper input display playback from the editor
 - Implementing the 'Melodic Phrase' generator for playback
   - Arbitrarily sequential and procedural at first, then grouped based on input cluster recognition and user-selected grouping
