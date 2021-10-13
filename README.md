@@ -27,7 +27,7 @@ Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`.
 
 [//]: # (diff: -red +green !yellow #gray @@purpleBold@@)
 - Implementing input 'Rehearsal' AKA matching the playback and subsequent feedback
-  - Actively creating an mostly functional, all event-based simulacra of the editor component to fast-track this functionality.
+  - Actively creating a mostly functional, all event-based simulacra of the editor component to fast-track this functionality.
 - Moving Sequencer functionality from heartbeat-sequencer(https://github.com/abudaan/heartbeat) to webDAW(https://github.com/abudaan/webdaw-modules) & making several integration refinements between components
   - In hopes of using the latest updates and achieve the fastest & lowest-level interoperability between the MIDI Input, Controller events, and audio feedback / playback.
 - Overhauling visual/interface components.
