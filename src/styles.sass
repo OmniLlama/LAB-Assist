@@ -14,14 +14,18 @@ html
 #icon-img
   max-width: 24px
 
+#test-editor
+  //position: absolute
+  background-color: #ffffff33
+
 #test-playhead
   position: absolute
   z-index: 10
   height: 100%
-  width: 21px
+  //width: 21px
   background-color: #ffffff33
 #test-playhead-line
-  width: 10px
+  //width: 10px
   height: 100%
   border-right: 2px solid #c53131
 
@@ -101,112 +105,112 @@ $clr-part-active-border: #98f86bb6
 $clr-part-selected-bg: #d15cff28
 $clr-part-selected-border: #a863aa8f
 
-$clr-e2: rgba(0, 28, 66, 0.81)
+$clr-g0: rgba(0, 28, 66, 0.81)
 //up ls
-$clr-ds2: rgba(0, 51, 147, 0.81)
+$clr-fs0: rgba(0, 51, 147, 0.81)
 //right ls
-$clr-d2: rgba(69, 153, 255, 0.81)
+$clr-f0: rgba(69, 153, 255, 0.81)
 //left ls
-$clr-cs2: rgba(117, 176, 252, 0.81)
+$clr-e0: rgba(117, 176, 252, 0.81)
 //down ls
 
-$clr-c2: rgba(52, 0, 16, 0.81)
+$clr-ds0: rgba(52, 0, 16, 0.81)
 //up rs
-$clr-b1: rgba(127, 0, 41, 0.81)
+$clr-d0: rgba(127, 0, 41, 0.81)
 //right rs
-$clr-as1: rgba(248, 33, 84, 0.88)
+$clr-cs0: rgba(248, 33, 84, 0.88)
 //left rs
-$clr-a1: rgba(246, 169, 177, 0.81)
+$clr-c0: rgba(246, 169, 177, 0.81)
 //down rs
 
-$clr-gs1: rgba(13, 54, 0, 0.81)
+$clr-b-1: rgba(13, 54, 0, 0.81)
 //up dpad
-$clr-g1: rgba(12, 125, 0, 0.81)
+$clr-as-1: rgba(12, 125, 0, 0.81)
 //down dpad
-$clr-fs1: rgba(108, 245, 92, 0.81)
+$clr-a-1: rgba(108, 245, 92, 0.81)
 //left dpad
-$clr-f1: rgba(166, 246, 159, 0.81)
+$clr-gs-1: rgba(166, 246, 159, 0.81)
 //right dpad
 
-$clr-e1: #2dc46c9f
+$clr-g-1: #2dc46c9f
 //b0
-$clr-ds1: #d80606e1
+$clr-fs-1: #d80606e1
 //b1
-$clr-d1: #2a53dbd2
+$clr-f-1: #2a53dbd2
 //b2
-$clr-cs1: #ffed49b6
+$clr-e-1: #ffed49b6
 //b3
-$clr-c1: #a3a2a2e1
+$clr-ds-1: #a3a2a2e1
 //b4
-$clr-b0: #7c7c7ca6
+$clr-d-1: #7c7c7ca6
 //b5
-$clr-as0: #333333ad
+$clr-cs-1: #333333ad
 //b6
-$clr-a0: #111111bb
+$clr-c-1: #111111bb
 //b7
 
 $clr-00: rgba(234, 234, 234, 0.6)
 //b7
 
-.note[pitch='E2']
-  background-color: $clr-e2
+.note[pitch='G0']
+  background-color: $clr-g0
 
-.note[pitch='D#2']
-  background-color: $clr-ds2
+.note[pitch='F#0']
+  background-color: $clr-fs0
 
-.note[pitch='D2']
-  background-color: $clr-d2
+.note[pitch='F0']
+  background-color: $clr-f0
 
-.note[pitch='C#2']
-  background-color: $clr-cs2
+.note[pitch='E0']
+  background-color: $clr-e0
 
-.note[pitch='C2']
-  background-color: $clr-c2
+.note[pitch='D#0']
+  background-color: $clr-ds0
 
-.note[pitch='B1']
-  background-color: $clr-b1
+.note[pitch='D0']
+  background-color: $clr-d0
 
-.note[pitch='A#1']
-  background-color: $clr-as1
+.note[pitch='C#0']
+  background-color: $clr-cs0
 
-.note[pitch='A1']
-  background-color: $clr-a1
+.note[pitch='C0']
+  background-color: $clr-c0
 
-.note[pitch='G#1']
-  background-color: $clr-gs1
+.note[pitch='B-1']
+  background-color: $clr-b-1
 
-.note[pitch='G1']
-  background-color: $clr-g1
+.note[pitch='A#-1']
+  background-color: $clr-as-1
 
-.note[pitch='F#1']
-  background-color: $clr-fs1
+.note[pitch='A-1']
+  background-color: $clr-a-1
 
-.note[pitch='F1']
-  background-color: $clr-f1
+.note[pitch='G#-1']
+  background-color: $clr-gs-1
 
-.note[pitch='E1']
-  background-color: $clr-e1
+.note[pitch='G-1']
+  background-color: $clr-g-1
 
-.note[pitch='D#1']
-  background-color: $clr-ds1
+.note[pitch='F#-1']
+  background-color: $clr-fs-1
 
-.note[pitch='D1']
-  background-color: $clr-d1
+.note[pitch='F-1']
+  background-color: $clr-f-1
 
-.note[pitch='C#1']
-  background-color: $clr-cs1
+.note[pitch='E-1']
+  background-color: $clr-e-1
 
-.note[pitch='C1']
-  background-color: $clr-c1
+.note[pitch='D#-1']
+  background-color: $clr-ds-1
 
-.note[pitch='B0']
-  background-color: $clr-b0
+.note[pitch='D-1']
+  background-color: $clr-d-1
 
-.note[pitch='A#0']
-  background-color: $clr-as0
+.note[pitch='C#-1']
+  background-color: $clr-cs-1
 
-.note[pitch='A0']
-  background-color: $clr-a0
+.note[pitch='C-1']
+  background-color: $clr-c-1
 
 .note[pitch='00']
   background-color: $clr-00

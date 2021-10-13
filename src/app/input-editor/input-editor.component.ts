@@ -17,7 +17,7 @@ import {InputDisplayComponent} from '../input-display/input-display.component';
 import {InputEditorEvents} from './input-editor-events';
 import {EditorHTMLShell, EditorInfo, InputEditorFunctions} from './input-editor-functions';
 import {InputEditorVisuals} from './input-editor-visuals';
-import {Playhead} from '../../Defs';
+import {EditorView, HTMLNote, Playhead} from '../../Defs';
 
 declare let sequencer: any;
 
@@ -29,15 +29,11 @@ declare let sequencer: any;
 })
 export class InputEditorComponent implements OnInit, AfterViewInit {
   static seq = sequencer;
-  // static NOTE_OFF = 0x80;
-  // static NOTE_ON = 0x90;
-  // static MIDI_HEARTBEAT = 0xFE;
   static inpEdComp: InputEditorComponent;
   static inpEdEvts: InputEditorEvents;
   midiOutput;
   html: EditorHTMLShell;
   info: EditorInfo;
-  playhead: Playhead;
   midiFile;
   keyEditor: KeyEditor;
   midiFileList;
@@ -52,9 +48,15 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
 
   allNotes: Array<Note> = new Array<Note>(); // stores references to all midi notes;
   allParts: Array<Part> = new Array<Part>(); // stores references to all midi parts;
-  currNote: Note = null;
   currPart: Part = null;
   flattenTracksToSingleTrack = true;
+
+  edtrView: EditorView;
+  playing: boolean;
+  currNote: HTMLNote = null;
+  noteList: Array<HTMLNote> = new Array<HTMLNote>();
+
+
 
   bppStart = 8;  // default: 16
 
@@ -78,7 +80,6 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
     InputEditorComponent.inpEdComp = this;
     this.info = new EditorInfo();
     this.html = new EditorHTMLShell();
-    // this.init(this);
   }
 
   ngAfterViewInit(): void {
@@ -89,27 +90,14 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
    * Initialize Critical Components
    */
   init(iec: InputEditorComponent): void {
+    const icc = InputConverterComponent.inpConvComp;
     iec.info.edHTMLShell = this.html;
     iec.enableGUI(false);
-    iec.song = InputEditorFunctions.initSong();
-    if (iec.flattenTracksToSingleTrack) {
-      InputEditorFunctions.flattenTracks(iec.song);
-    }
-    iec.keyEditor = InputEditorFunctions.initKeyEditor(iec);
 
-    iec.instruments = sequencer.getInstruments();
+    // iec.HrtbtInit(this);
 
-    // set editor element values to editor defaults
-    setElementValue(iec.html.txt_KeyRangeStart, iec.keyEditor.lowestNote);
-    setElementValue(iec.html.txt_KeyRangeEnd, iec.keyEditor.highestNote);
-    iec.html.txt_BPM.value = iec.song.bpm.toString();
+    // iec.html.txt_BPM.value = iec.song.bpm.toString();
     setSliderValues(iec.html.sldr_barsPerPage, iec.bppStart, 1, 32, 1);
-
-    InputEditorVisuals.resize();
-    InputEditorEvents.initContextEvents();
-    InputEditorEvents.initInputEvents();
-    InputEditorEvents.initWindowEvents(iec);
-
     iec.enableGUI(true);
 
     iec.html.slct_Snap.selectedIndex = 4;
@@ -119,12 +107,11 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
     tmp_event.initEvent('change', false, false);
     iec.html.slct_Snap.dispatchEvent(tmp_event);
 
-
-    InputEditorVisuals.draw(iec);
-
-    this.info.UpdateInfo(null, iec.keyEditor);
-    iec.playhead = new Playhead(iec.info.editorFrameOffsetX, iec.info.editorFrameOffsetY, 20, iec.info.editorHeight);
-    iec.html.div_Editor.appendChild(iec.playhead.div);
+    // InputEditorVisuals.draw(iec);
+    iec.edtrView = new EditorView(36, 240, 360,
+      icc.div.getBoundingClientRect().height);
+    InputEditorEvents.initKeyboard(iec);
+    // document.body.appendChild(iec.edtrView.div);
     InputEditorVisuals.render();
   }
 
@@ -140,10 +127,20 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
       tmp_elmt.disabled = !flag;
     });
   }
-
-  /**
-   * END InputEditorComponent Class -------|||||-----------------
-   */
+  HrtbtInit(iec: InputEditorComponent){
+    iec.song = InputEditorFunctions.initSong();
+    if (iec.flattenTracksToSingleTrack) {
+      InputEditorFunctions.flattenTracks(iec.song);
+    }
+    iec.keyEditor = InputEditorFunctions.initKeyEditor(iec);
+    iec.instruments = sequencer.getInstruments();
+    setElementValue(iec.html.txt_KeyRangeStart, iec.keyEditor.lowestNote);
+    setElementValue(iec.html.txt_KeyRangeEnd, iec.keyEditor.highestNote);
+    InputEditorVisuals.resize();
+    InputEditorEvents.initContextEvents();
+    InputEditorEvents.initWindowEvents(iec);
+    InputEditorEvents.initInputEvents();
+  }
 }
 
 

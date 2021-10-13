@@ -1,8 +1,7 @@
 import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song} from '../../heartbeat/build';
 // import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song} from 'heartbeat-sequencer';
 import {InputEditorComponent} from './input-editor.component';
-import {Tracker} from '../input-converter/input-converter.component';
-import {BBox} from '../../Defs';
+import {BBox, HTMLNote, Tracker} from '../../Defs';
 import {InputEditorVisuals} from './input-editor-visuals';
 import {InputConverterFunctions} from '../input-converter/input-converter-functions';
 
@@ -15,31 +14,26 @@ const MIDI_HEARTBEAT = 0xFE;
 
 export class InputEditorFunctions {
 
-  static testCreateNote(trkr: Tracker)
-  {
+  static testCreateNote(trkr: Tracker, pitch: number) {
     let iec = InputEditorComponent.inpEdComp;
-    trkr.htmlNote = document.createElement('div');
-    trkr.htmlNote.className = 'note';
-    trkr.htmlNote.setAttribute('pitch', InputConverterFunctions.numberToPitchString(trkr.pitch));
-    trkr.htmlStart = iec.playhead.center;
-    trkr.htmlNoteBBox = new BBox(null, trkr.htmlStart, 32 * (44 - trkr.pitch), 0, 24);
-    InputEditorVisuals.updateElementBBox(trkr.htmlNote, trkr.htmlNoteBBox);
-    iec.html.div_Editor.appendChild(trkr.htmlNote);
+    trkr.htmlNote = new HTMLNote(pitch, iec.edtrView.playhead.bbox.pageCenter,
+      iec.edtrView.playhead.bbox.y + ((iec.edtrView.pitchCount - pitch) * iec.edtrView.pitchHeight));
+    iec.edtrView.score.appendChild(trkr.htmlNote.div);
+    iec.noteList.push(trkr.htmlNote);
   }
-  static testUpdateNote(trkr: Tracker)
-  {
+
+  static testUpdateNote(trkr: Tracker) {
     let iec = InputEditorComponent.inpEdComp;
-    trkr.htmlEnd = iec.playhead.center;
-    trkr.htmlNoteBBox.width = trkr.htmlEnd - trkr.htmlStart;
-    InputEditorVisuals.updateElementBBox(trkr.htmlNote, trkr.htmlNoteBBox);
+    trkr.htmlNote.updateNoteEnd(iec.edtrView.playhead.bbox.pageCenter);
   }
-  static testFinishNote(trkr: Tracker)
-  {
+
+  static testFinishNote(trkr: Tracker) {
     let iec = InputEditorComponent.inpEdComp;
-    trkr.htmlEnd = iec.playhead.center;
-    trkr.htmlNoteBBox.width = trkr.htmlEnd - trkr.htmlStart;
-    InputEditorVisuals.updateElementBBox(trkr.htmlNote, trkr.htmlNoteBBox);
+    trkr.htmlNote.updateNoteEnd(iec.edtrView.playhead.bbox.pageCenter);
+    trkr.htmlNote = null;
+
   }
+
   /**
    * returns a random value between the min and the max
    * @param min
@@ -231,9 +225,22 @@ export class InputEditorFunctions {
    * @param note
    * @param div_Note
    */
-  static setNoteActiveState(note: Note, div_Note) {
+  static setNoteActiveState(note: HTMLNote) {
+    const div_Note = document.getElementById(note.id) as HTMLDivElement;
+    // if (div_Note !== null && note.part.mute === false && note.mute !== true) {
+    if (div_Note !== null) {
+      if (note.active) {
+        div_Note.className = 'note note-active';
+      } else {
+        div_Note.className = 'note';
+      }
+    }
+  }
+
+  static setNoteActiveStateOld(note: Note, div_Note) {
     div_Note = document.getElementById(note.id);
-    if (div_Note !== null && note.part.mute === false && note.mute !== true) {
+    // if (div_Note !== null && note.part.mute === false && note.mute !== true) {
+    if (div_Note !== null) {
       if (note.active) {
         div_Note.className = 'note note-active';
       } else if (note.active === false) {
@@ -246,9 +253,10 @@ export class InputEditorFunctions {
    * set properties in note required for selected state
    * @param note
    */
-  static selectNote(note: Note) {
+  static selectNote(note: HTMLNote) {
     let div_Note = document.getElementById(note.id);
-    if (div_Note !== null && note.part.mute === false && note.mute !== true) {
+    // if (div_Note !== null && note.part.mute === false && note.mute !== true) {
+    if (div_Note !== null) {
       div_Note.className = 'note note-selected';
     }
   }
@@ -257,9 +265,10 @@ export class InputEditorFunctions {
    * set properties in note required for unselected state
    * @param note
    */
-  static unselectNote(note: Note) {
-    let div_Note = document.getElementById(note.id);
-    if (note.part.mute === false && note.mute !== true && div_Note !== null) {
+  static unselectNote(note: HTMLNote) {
+    let div_Note = document.getElementById(note.div.id);
+    // if (note.part.mute === false && note.mute !== true && div_Note !== null) {
+    if (div_Note !== null) {
       div_Note.className = 'note';
     }
   }
@@ -317,7 +326,7 @@ export class InputEditorFunctions {
       bpm: 200,
       nominator: 3,
       denominator: 4,
-      // useMetronome: true,
+      useMetronome: false,
       instruments: insts
     });
 
@@ -331,7 +340,7 @@ export class InputEditorFunctions {
     let tmp_icons_w = 128;
     let tmp_w = window.innerWidth - tmp_icons_w;
     let tmp_h = iec.info.editorHeight;
-    let keyEditor = sequencer.createKeyEditor(iec.song, {
+    let keyEditor = sequencer.createKeyEditor(null, {
       viewportHeight: tmp_h,
       viewportWidth: tmp_w,
       pitchHeight: iec.info.pitchHeight,
@@ -352,7 +361,6 @@ export class InputEditorFunctions {
   }
 
 }
-
 
 
 /**

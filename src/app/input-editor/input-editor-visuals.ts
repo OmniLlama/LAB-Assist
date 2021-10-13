@@ -93,34 +93,41 @@ export class InputEditorVisuals {
    * @param ref_note
    * @param iec
    */
-  static drawNote(ref_note: Note, iec: InputEditorComponent) {
+  static drawNote(ref_note, iec: InputEditorComponent) {
     const bbox = ref_note.bbox,
-      edgeBBoxes = this.createNoteEdgeBBoxes(ref_note.bbox, 8),
       div_Note = document.createElement('div'),
-      img_Note_leftEdge = document.createElement('img'),
-      img_Note_rightEdge = document.createElement('img'),
+      edges = InputEditorVisuals.createEdges(bbox, div_Note),
       div_Note_info = document.createElement('div');
 
     div_Note.id = ref_note.id;
     div_Note.setAttribute('pitch', ref_note.name);
     div_Note.className = 'note';
-
-    img_Note_leftEdge.id = div_Note.id;
-    img_Note_rightEdge.id = div_Note.id;
-    img_Note_leftEdge.className = 'note-edge';
-    img_Note_rightEdge.className = 'note-edge';
-    img_Note_leftEdge.src = 'assets/images/Editor-Arrow-Left-Transparent.png';
-    img_Note_rightEdge.src = 'assets/images/Editor-Arrow-Right-Transparent.png';
-
     InputEditorVisuals.updateElementBBox(div_Note, bbox);
-    InputEditorVisuals.updateElementBBox(img_Note_leftEdge, edgeBBoxes[0]);
-    InputEditorVisuals.updateElementBBox(img_Note_rightEdge, edgeBBoxes[1]);
 
     // store note and div
     InputEditorComponent.inpEdComp.allNotes[ref_note.id] = ref_note;
     iec.html.divs_AllNotes[ref_note.id] = div_Note;
     div_Note.addEventListener('mouseover', (e) => InputEditorEvents.Note_MouOver(e), false);
     div_Note.addEventListener('mousedown', (e) => InputEditorEvents.Note_lMouDown(e), false);
+
+    div_Note.append(edges[0], edges[1]);
+    div_Note.append(div_Note_info);
+    // iec.html.div_Notes.appendChild(div_Note);
+    iec.edtrView.score.appendChild(div_Note);
+  }
+
+  static createEdges(bbox, div): [HTMLImageElement, HTMLImageElement] {
+    const edgeBBoxes = this.createNoteEdgeBBoxes(bbox, 8);
+    const img_Note_leftEdge = document.createElement('img');
+    const img_Note_rightEdge = document.createElement('img');
+    img_Note_leftEdge.id = div.id;
+    img_Note_rightEdge.id = div.id;
+    img_Note_leftEdge.className = 'note-edge';
+    img_Note_rightEdge.className = 'note-edge';
+    img_Note_leftEdge.src = 'assets/images/Editor-Arrow-Left-Transparent.png';
+    img_Note_rightEdge.src = 'assets/images/Editor-Arrow-Right-Transparent.png';
+    InputEditorVisuals.updateElementBBox(img_Note_leftEdge, edgeBBoxes[0]);
+    InputEditorVisuals.updateElementBBox(img_Note_rightEdge, edgeBBoxes[1]);
     img_Note_leftEdge.addEventListener('mouseover', (e) => {
       InputEditorEvents.NoteEdge_Left_MouOver(e);
     });
@@ -133,11 +140,7 @@ export class InputEditorVisuals {
     img_Note_rightEdge.addEventListener('mousedown', (e) => {
       InputEditorEvents.NoteEdge_Right_lMouDown(e);
     });
-
-    div_Note.append(img_Note_leftEdge);
-    div_Note.append(img_Note_rightEdge);
-    div_Note.append(div_Note_info);
-    iec.html.div_Notes.appendChild(div_Note);
+    return [img_Note_leftEdge, img_Note_rightEdge];
   }
 
   /**
@@ -209,10 +212,34 @@ export class InputEditorVisuals {
    */
   static render() {
     let iec = InputEditorComponent.inpEdComp,
-      iev = InputEditorVisuals,
-      snapshot = iec.keyEditor.getSnapshot('key-editor'),
-      tmp_div_Note: HTMLDivElement,
-      tmp_div_Part: HTMLDivElement;
+      iev = InputEditorVisuals;
+
+    // InputEditorVisuals.HrtBtRender(iec);
+
+    //update head values if playing
+    // if (iec.song.playing) {
+    if (iec.playing) {
+      // iec.info.UpdateInfo(null, iec.keyEditor);
+      iec.edtrView.playhead.shiftUpdate(1, 0);
+    }
+    requestAnimationFrame(iev.render);
+  }
+
+  /**
+   * Creates bounding boxes for note
+   * @param bbox Bounding box of note
+   * @param xPx Width of bounding box in pixels
+   */
+  static createNoteEdgeBBoxes(bbox, xPx: number): [BBox, BBox] {
+    const tmp_bbox_l = new BBox(null, 0 - xPx, 0, xPx, bbox.height);
+    const tmp_bbox_r = new BBox(null, bbox.width, 0, xPx, bbox.height);
+    return [tmp_bbox_l, tmp_bbox_r];
+  }
+
+  static HrtBtRender(iec: InputEditorComponent) {
+    let tmp_div_Note: HTMLDivElement;
+    let tmp_div_Part: HTMLDivElement;
+    const iev = InputEditorVisuals;
     const position = iec.keyEditor.getPositionAt(iec.keyEditor.getPlayheadX());
 
     iec.html.div_Playhead.style.left = iec.keyEditor.getPlayheadX() - 10 + 'px';
@@ -228,7 +255,7 @@ export class InputEditorVisuals {
         + tmp_hrMinSecMillisec.getUTCSeconds() + '.'
         + tmp_hrMinSecMillisec.getUTCMilliseconds();
     }
-
+    const snapshot = iec.keyEditor.getSnapshot('key-editor');
     snapshot.notes.removed.forEach((note) => {
       iec.html.divs_AllNotes[note.id].removeEventListener('mousedown', InputEditorEvents.Note_lMouDown);
       iec.html.div_Notes.removeChild(document.getElementById(note.id));
@@ -252,7 +279,7 @@ export class InputEditorVisuals {
 
     // stateChanged arrays contain elements that have become active or inactive
     snapshot.notes.stateChanged.forEach((note) => {
-      InputEditorFunctions.setNoteActiveState(note, tmp_div_Note);
+      InputEditorFunctions.setNoteActiveStateOld(note, tmp_div_Note);
     });
 
     snapshot.parts.removed.forEach((part) => {
@@ -293,26 +320,8 @@ export class InputEditorVisuals {
         iev.drawVerticalLine(iec.keyEditor.verticalLine.next('sixteenth'));
       }
     }
-    //update head values if playing
-    if (iec.song.playing) {
-      iec.info.UpdateInfo(null, iec.keyEditor);
-
-      iec.playhead.shiftUpdate(1, 0);
-      // InputEditorVisuals.updateElementBBox(iec.playhead.div, iec.playhead.bbox);
-    }
-    requestAnimationFrame(iev.render);
   }
 
-  /**
-   * Creates bounding boxes for note
-   * @param bbox Bounding box of note
-   * @param xPx Width of bounding box in pixels
-   */
-  static createNoteEdgeBBoxes(bbox, xPx: number): [BBox, BBox] {
-    const tmp_bbox_l = new BBox(null, 0 - xPx, 0, xPx, bbox.height);
-    const tmp_bbox_r = new BBox(null, bbox.width, 0, xPx, bbox.height);
-    return [tmp_bbox_l, tmp_bbox_r];
-  }
 
   //#endregion
 }

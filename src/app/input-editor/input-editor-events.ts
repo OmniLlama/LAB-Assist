@@ -125,8 +125,8 @@ export class InputEditorEvents {
     let iec = InputEditorComponent.inpEdComp;
     iec.holdingEdge = true;
     (e.target as HTMLDivElement).style.cursor = 'w-resize';
-    let tmp_note = InputEditorComponent.inpEdComp.allNotes[(e.target as HTMLDivElement).id];
-    // InputEditorComponent.inpEdComp.keyEditor.gripX = e.clientX;
+    // let tmp_note = InputEditorComponent.inpEdComp.allNotes[(e.target as HTMLDivElement).id];
+    let tmp_note = InputEditorComponent.inpEdComp.noteList[(e.target as HTMLDivElement).id];
     if (tmp_note == undefined) {
       tmp_note = iec.changingNote;
     } else if (iec.changingNote == null) {
@@ -242,7 +242,7 @@ export class InputEditorEvents {
      * if double clicking a note */
     if (tmp_className.indexOf('note') !== -1) {
       iec.currNote = iec.allNotes[elmt.id];
-      iec.currPart = iec.currNote.part;
+      // iec.currPart = iec.currNote.part;
       return;
     }
     /**
@@ -286,7 +286,7 @@ export class InputEditorEvents {
       if (iec.currNote !== null) {
         InputEditorFunctions.selectNote(iec.currNote);
       }
-      iec.currPart = iec.currNote.part;
+      // iec.currPart = iec.currNote.part;
       if (iec.currPart !== null) {
         InputEditorFunctions.selectPart(iec.currPart);
       }
@@ -333,28 +333,28 @@ export class InputEditorEvents {
      * Text
      */
     iec.html.txt_KeyRangeStart.addEventListener('change', (e) => {
-      iec.keyEditor.lowestNote = parseInt(iec.html.txt_KeyRangeStart.value);
+      // iec.keyEditor.lowestNote = parseInt(iec.html.txt_KeyRangeStart.value);
       // iec.song.setPitchRange(iec.html.txt_KeyRangeStart.value, iec.keyEditor.highestNote);
       // iec.keyEditor.updateSong(iec.song);
     });
     iec.html.txt_KeyRangeEnd.addEventListener('change', (e) => {
-      iec.keyEditor.highestNote = parseInt(iec.html.txt_KeyRangeEnd.value);
+      // iec.keyEditor.highestNote = parseInt(iec.html.txt_KeyRangeEnd.value);
       // iec.song.setPitchRange(iec.keyEditor.lowestNote, iec.html.txt_KeyRangeEnd.value);
     });
     // listen for scale and draw events, a scale event is fired when you change the number of bars per page
     // a draw event is fired when you change the size of the viewport by resizing the browser window
-    iec.keyEditor.addEventListener('scale draw', () => {
-      InputEditorVisuals.draw(iec);
-    });
+    // iec.keyEditor.addEventListener('scale draw', () => {
+    //   InputEditorVisuals.draw(iec);
+    // });
 
-    window.addEventListener('scroll', (sc) => {
-      iec.info.UpdateInfo(null, iec.keyEditor);
-    });
+    // window.addEventListener('scroll', (sc) => {
+    //   iec.info.UpdateInfo(null, iec.keyEditor);
+    // });
     // listen for scroll events, the score automatically follows the song positon during playback: as soon as
     // the playhead moves off the right side of the screen, a scroll event is fired
-    iec.keyEditor.addEventListener('scroll', (data) => {
-      iec.html.div_Editor.scrollLeft = data.x;
-    });
+    // iec.keyEditor.addEventListener('scroll', (data) => {
+    //   iec.html.div_Editor.scrollLeft = data.x;
+    // });
     /**
      * EXPERIMENTAL - Add notes and parts when double clicked in certain contexts
      */
@@ -367,9 +367,9 @@ export class InputEditorEvents {
       InputEditorEvents.Generic_lMouDown(me);
     });
     /** AUDIO CONTEXT CHECKER EVENT */
-    iec.html.div_Editor.addEventListener('click', (me) => {
-      iec.info.UpdateInfo(me, iec.keyEditor);
-    });
+    // iec.html.div_Editor.addEventListener('click', (me) => {
+    //   iec.info.UpdateInfo(me, iec.keyEditor);
+    // });
     // if you scroll the score by hand you must inform the key editor. necessary for calculating
     // the song position by x coordinate and the pitch by y coordinate
     iec.html.div_Editor.addEventListener('scroll', () => {
@@ -452,7 +452,7 @@ export class InputEditorEvents {
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Backspace') {
         iec.song.stop();
-        iec.playhead.placeUpdate(0, 0);
+        iec.edtrView.playhead.reset();
       }
       if (e.key === ' ') {
         iec.song.pause();
@@ -469,6 +469,27 @@ export class InputEditorEvents {
     });
   }
 
+  static initKeyboard(iec: InputEditorComponent){
+    /**
+     * Keyboard Shortcuts
+     */
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace') {
+        iec.playing = false;
+        iec.edtrView.playhead.reset();
+      }
+      if (e.key === ' ') {
+        iec.playing = !iec.playing;
+      }
+      if (e.key === 'Delete') {
+      }
+      //dumb hack: brings playhead to first displayed location from left if offscreen to the left
+      if (e.key === 'ArrowRight') {
+      }
+      if (e.key === 'ArrowLeft') {
+      }
+    });
+  }
   /**
    * Initialization of basic window events
    * @param iec

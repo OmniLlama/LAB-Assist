@@ -19,7 +19,7 @@ import * as jzzTiny from 'jzz-synth-tiny';
 
 import {InputConverterEvents} from './input-converter-events';
 import {InputConverterVisuals} from './input-converter-visuals';
-import {BBox} from '../../Defs';
+import {BBox, Tracker} from '../../Defs';
 
 
 @Component({
@@ -32,6 +32,7 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   static inpConvComp: InputConverterComponent;
   events: MIDIEvent[];
 
+  div: HTMLDivElement;
   midiWidget;
   midiInKbd;
   midiOutPort;
@@ -39,7 +40,7 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   midi;
   trackNotes: boolean;
   liveUpdateHeldNotes: boolean;
-  recordingPrimed: boolean;
+  recordingPrimed: boolean = true;
   trackedNotes: Array<[number, number, number]>; // startTicks, endTicks, pitch
 
   backupPart: Part;
@@ -67,6 +68,7 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
     const port = JZZ().openMidiIn(1).or('MIDI-In: Cannot open!');
     this.midi = JZZ.MIDI;
     console.warn(port.name);
+    this.div = document.getElementById('editor-input-icons') as HTMLDivElement;
   }
 
   ngAfterViewInit() {
@@ -146,18 +148,7 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
 
 }
 
-export class Tracker {
-  held = false;
-  heldNote: MIDINote; // heldNote, currentTicks
-  inpStart: number;
-  inpEnd: number;
-  pitch: number;
-  htmlStart: number;
-  htmlEnd: number;
-  htmlNote: HTMLDivElement;
-  htmlNoteBBox: BBox;
 
-}
 
 /**
  * returns first likely instance of a controller to act as main interface

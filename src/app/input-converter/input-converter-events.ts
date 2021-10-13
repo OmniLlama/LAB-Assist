@@ -1,11 +1,12 @@
 import {InputEditorFunctions} from '../input-editor/input-editor-functions';
-import {InputConverterComponent, nameButton, Tracker} from './input-converter.component';
+import {InputConverterComponent, nameButton} from './input-converter.component';
 import {GamepadObject, InputDisplayComponent} from '../input-display/input-display.component';
 import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {InputConverterFunctions} from './input-converter-functions';
 import * as JZZ from 'jzz';
 import {InputConverterVisuals} from './input-converter-visuals';
 import {MIDINote, Part, Track} from '../../heartbeat/build';
+import {Tracker} from '../../Defs';
 
 declare let sequencer: any;
 
@@ -18,10 +19,12 @@ export class InputConverterEvents {
     const idc = InputDisplayComponent.inpDispCmp;
     const iec = InputEditorComponent.inpEdComp;
     const padObj = icc.testPadObj;
-    if (iec.song.playing && !icc.trackNotes) {
+    // if (iec.song.playing && !icc.trackNotes) {
+    if (iec.playing && icc.recordingPrimed && !icc.trackNotes) {
       InputConverterEvents.startTrackingNotes(icc);
       icc.backupPart = sequencer.createPart();
-    } else if (!iec.song.playing && icc.trackNotes) {
+      // } else if (!iec.song.playing && icc.trackNotes) {
+    } else if (!iec.playing && icc.recordingPrimed && icc.trackNotes) {
       InputConverterEvents.stopTrackingNotes(icc, iec);
     }
     InputConverterEvents.updateControllerStxTrackers(padObj, iec.info.scrollTicksAtHead);
@@ -45,7 +48,7 @@ export class InputConverterEvents {
       const pos = icc.stxTrackerGroup[j];
       let pitchNum;
       if (a.valueOf() > icc.deadZone) {
-        pitchNum = InputConverterEvents.getDirectionPitchFromAxis(ind, a.valueOf());
+        pitchNum = InputConverterFunctions.getDirectionPitchFromAxis(ind, a.valueOf());
         if (!pos.held) {
           pos.held = true;
           neg.held = false;
@@ -55,12 +58,12 @@ export class InputConverterEvents {
               currTicks,
               pitchNum,
               icc.stxPart
-            // icc.backupPart
-          );
+              // icc.backupPart
+            );
           }
         }
       } else if (a.valueOf() < -icc.deadZone) {
-        pitchNum = InputConverterEvents.getDirectionPitchFromAxis(ind, a.valueOf());
+        pitchNum = InputConverterFunctions.getDirectionPitchFromAxis(ind, a.valueOf());
         if (!neg.held) {
           pos.held = false;
           neg.held = true;
@@ -70,8 +73,8 @@ export class InputConverterEvents {
               currTicks,
               pitchNum,
               icc.stxPart
-            // icc.backupPart
-          );
+              // icc.backupPart
+            );
           }
         }
       } else {
@@ -88,20 +91,22 @@ export class InputConverterEvents {
             currTicks,
             icc.liveUpdateHeldNotes);
         }
-        if (!pos.held && pos.heldNote != null) {
-          InputConverterEvents.endTracker(pos,
-            currTicks,
-            pitchNum,
-            icc.trackedNotes,
-            icc.liveUpdateHeldNotes);
-        }
-        if (!neg.held && neg.heldNote != null) {
-          InputConverterEvents.endTracker(neg,
-            currTicks,
-            pitchNum,
-            icc.trackedNotes,
-            icc.liveUpdateHeldNotes);
-        }
+        // // if (!pos.held && pos.heldNote != null) {
+        // if (!pos.held && pos.htmlNote != null) {
+        //   InputConverterEvents.endTracker(pos,
+        //     currTicks,
+        //     pitchNum,
+        //     icc.trackedNotes,
+        //     icc.liveUpdateHeldNotes);
+        // }
+        // // if (!neg.held && neg.heldNote != null) {
+        // if (!neg.held && pos.htmlNote != null) {
+        //   InputConverterEvents.endTracker(neg,
+        //     currTicks,
+        //     pitchNum,
+        //     icc.trackedNotes,
+        //     icc.liveUpdateHeldNotes);
+        // }
       }
     });
   }
@@ -126,7 +131,7 @@ export class InputConverterEvents {
             currTicks,
             pitch,
             icc.backupPart
-          // icc.dpadPart
+            // icc.dpadPart
           );
         }
         // if RELEASED this frame
@@ -177,8 +182,8 @@ export class InputConverterEvents {
             currTicks,
             InputConverterFunctions.getButtonPitch(idx),
             icc.backupPart
-          // icc.btnPart
-        );
+            // icc.btnPart
+          );
         }
         // if RELEASED this frame
       } else if (!b.pressed && trkr.held) {
@@ -225,14 +230,14 @@ export class InputConverterEvents {
     icc.dpadPart = null;
     icc.btnPart = null;
     icc.trackNotes = false;
-    InputEditorFunctions.UpdateSong(iec);
+    // InputEditorFunctions.UpdateSong(iec);
   }
 
   static updateTracker(trkr: Tracker, ticks: number, liveUpdate: boolean) {
     if (trkr.held) {
       if (liveUpdate) {
-        trkr.heldNote.part.moveEvent(trkr.heldNote.noteOff, (ticks - trkr.heldNote.noteOff.ticks));
-        trkr.inpEnd = ticks;
+        // trkr.heldNote.part.moveEvent(trkr.heldNote.noteOff, (ticks - trkr.heldNote.noteOff.ticks));
+        // trkr.inpEnd = ticks;
         InputEditorFunctions.testUpdateNote(trkr);
       }
     }
@@ -241,61 +246,27 @@ export class InputConverterEvents {
   static startTracker(trkr: Tracker, ticks: number, pitch: number, part?: Part) {
     trkr.held = true;
     trkr.inpStart = ticks;
-    trkr.pitch = pitch;
-    let evts = InputEditorFunctions.createNoteFromTicks(ticks, ticks + 128, pitch, undefined, part);
-    InputEditorFunctions.UpdateSong(InputEditorComponent.inpEdComp);
-    trkr.heldNote = evts[0].midiNote;
-    InputEditorFunctions.testCreateNote(trkr);
+    // let evts = InputEditorFunctions.createNoteFromTicks(ticks, ticks + 128, pitch, undefined, part);
+    // InputEditorFunctions.UpdateSong(InputEditorComponent.inpEdComp);
+    // trkr.heldNote = evts[0].midiNote;
+    InputEditorFunctions.testCreateNote(trkr, pitch);
   }
 
   static endTracker(trkr: Tracker, ticks: number, pitch: number, trackedNotes: Array<[number, number, number]>,
                     liveUpdate = false) {
     trkr.inpEnd = ticks;
     trackedNotes.push([trkr.inpStart, trkr.inpEnd, pitch]);
-    if (!liveUpdate) {
-      trkr.heldNote.part.moveEvent(trkr.heldNote.noteOff, (ticks - trkr.heldNote.noteOff.ticks
-        // + 128
-      ));
-    }
+    // if (!liveUpdate) {
+    //   // trkr.heldNote.part.moveEvent(trkr.heldNote.noteOff, (ticks - trkr.heldNote.noteOff.ticks
+    //   //   + 128 ));
+    // }
     trkr.held = false;
     trkr.heldNote = null;
     InputEditorFunctions.testFinishNote(trkr);
-    InputEditorFunctions.UpdateTrack(InputEditorComponent.inpEdComp);
-    InputEditorFunctions.UpdateSong(InputEditorComponent.inpEdComp);
+    // InputEditorFunctions.UpdateTrack(InputEditorComponent.inpEdComp);
+    // InputEditorFunctions.UpdateSong(InputEditorComponent.inpEdComp);
   }
 
-  /**
-   * Sends pitch based on which axis direction was sent
-   * @param ind
-   */
-  static getDirectionPitchFromAxis(ind, val): number {
-    switch (ind) {
-      case 0:
-        if (val > 0) {
-          return 39;
-        } else {
-          return 40;
-        }
-      case 1:
-        if (val > 0) {
-          return 37;
-        } else {
-          return 38;
-        }
-      case 2:
-        if (val > 0) {
-          return 35;
-        } else {
-          return 36;
-        }
-      case 3:
-        if (val > 0) {
-          return 33;
-        } else {
-          return 34;
-        }
-    }
-  }
 
 }
 
