@@ -17,7 +17,7 @@ import {InputDisplayComponent} from '../input-display/input-display.component';
 import {InputEditorEvents} from './input-editor-events';
 import {EditorHTMLShell, EditorInfo, InputEditorFunctions} from './input-editor-functions';
 import {InputEditorVisuals} from './input-editor-visuals';
-import {heartbeat, Heartbeat} from 'webdaw-modules';
+import {Playhead} from '../../Defs';
 
 declare let sequencer: any;
 
@@ -37,6 +37,7 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
   midiOutput;
   html: EditorHTMLShell;
   info: EditorInfo;
+  playhead: Playhead;
   midiFile;
   keyEditor: KeyEditor;
   midiFileList;
@@ -118,19 +119,14 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
     tmp_event.initEvent('change', false, false);
     iec.html.slct_Snap.dispatchEvent(tmp_event);
 
+
     InputEditorVisuals.draw(iec);
+
+    this.info.UpdateInfo(null, iec.keyEditor);
+    iec.playhead = new Playhead(iec.info.editorFrameOffsetX, iec.info.editorFrameOffsetY, 20, iec.info.editorHeight);
+    iec.html.div_Editor.appendChild(iec.playhead.div);
     InputEditorVisuals.render();
   }
-
-  // /**
-  //  * OLD - Add midi files for testing
-  //  */
-  // addAssetsToSequencer() {
-  //   sequencer.addMidiFile({url: '../../assets/midi/test.mid'}, null);
-  //   sequencer.addMidiFile({url: '../../assets/midi/minute_waltz.mid'}, null);
-  //   sequencer.addMidiFile({url: '../../assets/midi/chpn_op66.mid'}, null);
-  //   sequencer.addMidiFile({url: '../../assets/midi/Queen - Bohemian Rhapsody.mid'}, null);
-  // }
 
   /**
    * turns on GUI elements once all are properly initalized
@@ -155,7 +151,7 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
  * Returns the two edge HtmlDivElements of a given note
  * @param note
  */
-export function getEdgeDivs(note: MIDINote): [HTMLDivElement, HTMLDivElement, HTMLDivElement] {
+export function getNoteEdgeDivs(note: MIDINote): [HTMLDivElement, HTMLDivElement, HTMLDivElement] {
   let tmp_noteDiv = document.getElementById(note.id) as HTMLDivElement;
   if (tmp_noteDiv != null) {
     return [tmp_noteDiv, tmp_noteDiv.children[0] as HTMLDivElement, tmp_noteDiv.children[1] as HTMLDivElement];

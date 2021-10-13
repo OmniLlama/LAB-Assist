@@ -41,22 +41,11 @@ currBtnLayout = ButtonLayout(0, 1, 2, 3, 4, 5);
 testBtnLayout = ButtonLayout(2, 4, 0, 5, 3, 1);
 
 var convInpStr = document.getElementById("convInpStr");
-// convInpStr.addEventListener("change", changeInput);
-// $(document).ready($("#convBtn").click(convertInput));
-// $(document).ready(initConverter);
-
 var mvmtInElmt = document.getElementById("mvmtIn");
 var mvmtOutElmt = document.getElementById("mvmtOut");
 var btnInElmt = document.getElementById("btnIn");
 var btnOutElmt = document.getElementById("btnOut");
 var dispBtnElmt = document.getElementById("dispBtn");
-// mvmtInElmt.addEventListener("change", function () { convMvmtNoteTypeIn = ChangeEnum(mvmtInElmt, mvmtInElmt.value); });
-// mvmtOutElmt.addEventListener("change", function () { convMvmtNoteTypeOut = ChangeEnum(mvmtOutElmt, mvmtOutElmt.value); });
-// btnInElmt.addEventListener("change", function () { convBtnNoteTypeIn = ChangeEnum(btnInElmt, btnInElmt.value); });
-// btnOutElmt.addEventListener("change", function () { convBtnNoteTypeOut = ChangeEnum(btnOutElmt, btnOutElmt.value); });
-
-// dispBtnElmt.addEventListener("change", function () { dispBtnNoteType = ChangeDisplayEnum(dispBtnElmt, dispBtnElmt.value); });
-
 
 function initConverter() {
     changeInput();

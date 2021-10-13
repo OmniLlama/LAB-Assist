@@ -172,7 +172,7 @@ export class InputEditorEvents {
     if (iec.changingNote !== null && tmp_ticks <= iec.changingNote.noteOff.ticks) {
       iec.changingNote.part.moveEvent(iec.changingNote.noteOn, tmp_ticks - iec.changingNote.noteOn.ticks);
       InputEditorFunctions.UpdateSong(iec);
-      let edgeBBoxes = InputEditorVisuals.createEdgeBBoxes(iec.changingNote.bbox, 8);
+      let edgeBBoxes = InputEditorVisuals.createNoteEdgeBBoxes(iec.changingNote.bbox, 8);
       InputEditorVisuals.updateElementBBox(iec.heldEdge, edgeBBoxes[0]);
       InputEditorVisuals.updateElementBBox(tmp_rightEdge, edgeBBoxes[1]);
     } else {
@@ -190,7 +190,7 @@ export class InputEditorEvents {
     if (iec.changingNote !== null && tmp_ticks >= iec.changingNote.noteOn.ticks) {
       iec.changingNote.part.moveEvent(iec.changingNote.noteOff, tmp_ticks - iec.changingNote.noteOff.ticks);
       InputEditorFunctions.UpdateSong(iec);
-      let edgeBBoxes = InputEditorVisuals.createEdgeBBoxes(iec.changingNote.bbox, 8);
+      let edgeBBoxes = InputEditorVisuals.createNoteEdgeBBoxes(iec.changingNote.bbox, 8);
       InputEditorVisuals.updateElementBBox(tmp_leftEdge, edgeBBoxes[0]);
       InputEditorVisuals.updateElementBBox(iec.heldEdge, edgeBBoxes[1]);
     } else {
@@ -452,6 +452,7 @@ export class InputEditorEvents {
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Backspace') {
         iec.song.stop();
+        iec.playhead.placeUpdate(0, 0);
       }
       if (e.key === ' ') {
         iec.song.pause();

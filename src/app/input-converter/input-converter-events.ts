@@ -233,6 +233,7 @@ export class InputConverterEvents {
       if (liveUpdate) {
         trkr.heldNote.part.moveEvent(trkr.heldNote.noteOff, (ticks - trkr.heldNote.noteOff.ticks));
         trkr.inpEnd = ticks;
+        InputEditorFunctions.testUpdateNote(trkr);
       }
     }
   }
@@ -240,10 +241,11 @@ export class InputConverterEvents {
   static startTracker(trkr: Tracker, ticks: number, pitch: number, part?: Part) {
     trkr.held = true;
     trkr.inpStart = ticks;
+    trkr.pitch = pitch;
     let evts = InputEditorFunctions.createNoteFromTicks(ticks, ticks + 128, pitch, undefined, part);
     InputEditorFunctions.UpdateSong(InputEditorComponent.inpEdComp);
     trkr.heldNote = evts[0].midiNote;
-    // trkr.heldNote = evts;
+    InputEditorFunctions.testCreateNote(trkr);
   }
 
   static endTracker(trkr: Tracker, ticks: number, pitch: number, trackedNotes: Array<[number, number, number]>,
@@ -257,6 +259,7 @@ export class InputConverterEvents {
     }
     trkr.held = false;
     trkr.heldNote = null;
+    InputEditorFunctions.testFinishNote(trkr);
     InputEditorFunctions.UpdateTrack(InputEditorComponent.inpEdComp);
     InputEditorFunctions.UpdateSong(InputEditorComponent.inpEdComp);
   }

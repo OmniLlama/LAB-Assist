@@ -19,6 +19,7 @@ import * as jzzTiny from 'jzz-synth-tiny';
 
 import {InputConverterEvents} from './input-converter-events';
 import {InputConverterVisuals} from './input-converter-visuals';
+import {BBox} from '../../Defs';
 
 
 @Component({
@@ -150,6 +151,11 @@ export class Tracker {
   heldNote: MIDINote; // heldNote, currentTicks
   inpStart: number;
   inpEnd: number;
+  pitch: number;
+  htmlStart: number;
+  htmlEnd: number;
+  htmlNote: HTMLDivElement;
+  htmlNoteBBox: BBox;
 
 }
 

@@ -1,18 +1,15 @@
-import { Note, Part } from '../../heartbeat/build';
-import { InputEditorComponent } from './input-editor.component';
-import { InputEditorEvents } from './input-editor-events';
-import { BBox, InputEditorFunctions } from './input-editor-functions';
+import {Note, Part} from '../../heartbeat/build';
+import {InputEditorComponent} from './input-editor.component';
+import {InputEditorEvents} from './input-editor-events';
+import {InputEditorFunctions} from './input-editor-functions';
+import {BBox} from '../../Defs';
+
 export class InputEditorVisuals {
   /**
    * Editor Main Draw Function
    * @param iec
    */
   static draw(iec: InputEditorComponent) {
-    //Initialize all Grid HTML elements to blank
-    // iec.allNotes = new Array<Note>();
-    // iec.allParts = new Array<Part>();
-    // iec.html.divs_AllNotes = new Array<HTMLDivElement>();
-    // iec.html.divs_AllParts = new Array<HTMLDivElement>();
     iec.html.div_Parts.innerHTML = '';
     iec.html.div_Notes.innerHTML = '';
     iec.html.div_PitchLines.innerHTML = '';
@@ -27,11 +24,20 @@ export class InputEditorVisuals {
 
     iec.html.div_Score.style.width = iec.keyEditor.width + 'px';
     let i = 0;
-    while (iec.keyEditor.horizontalLine.hasNext('chromatic')) { this.drawHorizontalLine(iec.keyEditor.horizontalLine.next('chromatic')); }
-    while (iec.keyEditor.verticalLine.hasNext('sixteenth')) { this.drawVerticalLine(iec.keyEditor.verticalLine.next('sixteenth')); }
-    while (iec.keyEditor.noteIterator.hasNext()) { this.drawNote(iec.keyEditor.noteIterator.next(), iec); }
-    while (iec.keyEditor.partIterator.hasNext()) { this.drawPart(iec.keyEditor.partIterator.next(), iec); }
+    while (iec.keyEditor.horizontalLine.hasNext('chromatic')) {
+      this.drawHorizontalLine(iec.keyEditor.horizontalLine.next('chromatic'));
+    }
+    while (iec.keyEditor.verticalLine.hasNext('sixteenth')) {
+      this.drawVerticalLine(iec.keyEditor.verticalLine.next('sixteenth'));
+    }
+    while (iec.keyEditor.noteIterator.hasNext()) {
+      this.drawNote(iec.keyEditor.noteIterator.next(), iec);
+    }
+    while (iec.keyEditor.partIterator.hasNext()) {
+      this.drawPart(iec.keyEditor.partIterator.next(), iec);
+    }
   }
+
   /**
    * horizontal line iterator
    * @param ref_data
@@ -52,6 +58,7 @@ export class InputEditorVisuals {
     InputEditorComponent.inpEdComp.html.div_PitchLines.appendChild(div_HLine);
 
   }
+
   /**
    * vertical line iterator
    * @param ref_data
@@ -80,6 +87,7 @@ export class InputEditorVisuals {
         break;
     }
   }
+
   /**
    * draw a given note in sequencer
    * @param ref_note
@@ -87,7 +95,7 @@ export class InputEditorVisuals {
    */
   static drawNote(ref_note: Note, iec: InputEditorComponent) {
     const bbox = ref_note.bbox,
-      edgeBBoxes = this.createEdgeBBoxes(ref_note.bbox, 8),
+      edgeBBoxes = this.createNoteEdgeBBoxes(ref_note.bbox, 8),
       div_Note = document.createElement('div'),
       img_Note_leftEdge = document.createElement('img'),
       img_Note_rightEdge = document.createElement('img'),
@@ -113,16 +121,25 @@ export class InputEditorVisuals {
     iec.html.divs_AllNotes[ref_note.id] = div_Note;
     div_Note.addEventListener('mouseover', (e) => InputEditorEvents.Note_MouOver(e), false);
     div_Note.addEventListener('mousedown', (e) => InputEditorEvents.Note_lMouDown(e), false);
-    img_Note_leftEdge.addEventListener('mouseover', (e) => { InputEditorEvents.NoteEdge_Left_MouOver(e); });
-    img_Note_leftEdge.addEventListener('mousedown', (e) => { InputEditorEvents.NoteEdge_Left_lMouDown(e); });
-    img_Note_rightEdge.addEventListener('mouseover', (e) => { InputEditorEvents.NoteEdge_Right_MouOver(e); });
-    img_Note_rightEdge.addEventListener('mousedown', (e) => { InputEditorEvents.NoteEdge_Right_lMouDown(e); });
+    img_Note_leftEdge.addEventListener('mouseover', (e) => {
+      InputEditorEvents.NoteEdge_Left_MouOver(e);
+    });
+    img_Note_leftEdge.addEventListener('mousedown', (e) => {
+      InputEditorEvents.NoteEdge_Left_lMouDown(e);
+    });
+    img_Note_rightEdge.addEventListener('mouseover', (e) => {
+      InputEditorEvents.NoteEdge_Right_MouOver(e);
+    });
+    img_Note_rightEdge.addEventListener('mousedown', (e) => {
+      InputEditorEvents.NoteEdge_Right_lMouDown(e);
+    });
 
     div_Note.append(img_Note_leftEdge);
     div_Note.append(img_Note_rightEdge);
     div_Note.append(div_Note_info);
     iec.html.div_Notes.appendChild(div_Note);
   }
+
   /**
    * draw a given part in the sequencer
    * @param ref_part
@@ -145,17 +162,31 @@ export class InputEditorVisuals {
     tmp_div_Part.addEventListener('mousedown', InputEditorEvents.Part_lMouDown, false);
     iec.html.div_Parts.appendChild(tmp_div_Part);
   }
+
   /**
- * Fits element within its bounding box
- * @param element
- * @param bbox
- */
+   * Fits element within its bounding box
+   * @param element
+   * @param bbox
+   */
+  static updateElementBBoxOld(element, bbox: any) {
+    element.style.left = bbox.x + 'px';
+    element.style.top = bbox.y + 'px';
+    element.style.width = bbox.width + 'px';
+    element.style.height = bbox.height + 'px';
+  }
+
+  /**
+   * Fits element within its bounding box
+   * @param element
+   * @param bbox
+   */
   static updateElementBBox(element, bbox: BBox) {
     element.style.left = bbox.x + 'px';
     element.style.top = bbox.y + 'px';
     element.style.width = bbox.width + 'px';
     element.style.height = bbox.height + 'px';
   }
+
   /**
    * resizes editor whenever the window's size or shape is changed
    */
@@ -172,6 +203,7 @@ export class InputEditorVisuals {
     iec.html.div_Editor.style.left = tmp_icons_w + 'px';
     iec.html.div_Editor.style.height = tmp_h + 'px';
   }
+
   /**
    * General Editor Render Loop
    */
@@ -202,9 +234,15 @@ export class InputEditorVisuals {
       iec.html.div_Notes.removeChild(document.getElementById(note.id));
     });
 
-    snapshot.notes.new.forEach((note) => { iev.drawNote(note, iec); });
-    snapshot.notes.recorded.forEach((note) => { iev.drawNote(note, iec); });
-    snapshot.notes.recording.forEach((note) => { iev.updateElementBBox(iec.html.divs_AllNotes[note.id], note.bbox); });
+    snapshot.notes.new.forEach((note) => {
+      iev.drawNote(note, iec);
+    });
+    snapshot.notes.recorded.forEach((note) => {
+      iev.drawNote(note, iec);
+    });
+    snapshot.notes.recording.forEach((note) => {
+      iev.updateElementBBox(iec.html.divs_AllNotes[note.id], note.bbox);
+    });
     // events.changed, notes.changed, parts.changed contain elements that have been moved or transposed
     snapshot.notes.changed.forEach((note) => {
       let elmt = iec.html.divs_AllNotes[note.id] as HTMLElement;
@@ -213,20 +251,28 @@ export class InputEditorVisuals {
     });
 
     // stateChanged arrays contain elements that have become active or inactive
-    snapshot.notes.stateChanged.forEach((note) => { InputEditorFunctions.setNoteActiveState(note, tmp_div_Note); });
+    snapshot.notes.stateChanged.forEach((note) => {
+      InputEditorFunctions.setNoteActiveState(note, tmp_div_Note);
+    });
 
     snapshot.parts.removed.forEach((part) => {
       iec.html.divs_AllParts[part.id].removeEventListener('mousedown', InputEditorEvents.Part_lMouDown);
       iec.html.div_Parts.removeChild(document.getElementById(part.id));
     });
 
-    snapshot.parts.new.forEach((part) => { iev.drawPart(part, iec); });
+    snapshot.parts.new.forEach((part) => {
+      iev.drawPart(part, iec);
+    });
 
     // events.changed, notes.changed, parts.changed contain elements that have been moved or transposed
-    snapshot.parts.changed.forEach((part) => { iev.updateElementBBox(iec.html.divs_AllParts[part.id], part.bbox); });
+    snapshot.parts.changed.forEach((part) => {
+      iev.updateElementBBoxOld(iec.html.divs_AllParts[part.id], part.bbox);
+    });
 
     // stateChanged arrays contain elements that have become active or inactive
-    snapshot.parts.stateChanged.forEach((part) => { InputEditorFunctions.setPartActiveState(part, tmp_div_Part); });
+    snapshot.parts.stateChanged.forEach((part) => {
+      InputEditorFunctions.setPartActiveState(part, tmp_div_Part);
+    });
 
     if (snapshot.hasNewBars) {
       // set the new width of the score
@@ -237,27 +283,36 @@ export class InputEditorVisuals {
 
       // reset the index of the iterator because we're starting from 0 again
       iec.keyEditor.horizontalLine.reset();
-      while (iec.keyEditor.horizontalLine.hasNext('chromatic')) { iev.drawHorizontalLine(iec.keyEditor.horizontalLine.next('chromatic')); }
+      while (iec.keyEditor.horizontalLine.hasNext('chromatic')) {
+        iev.drawHorizontalLine(iec.keyEditor.horizontalLine.next('chromatic'));
+      }
 
       // the index of the vertical line iterator has already been set to the right index by the key editor
       // so only the extra barlines will be drawn
-      while (iec.keyEditor.verticalLine.hasNext('sixteenth')) { iev.drawVerticalLine(iec.keyEditor.verticalLine.next('sixteenth')); }
+      while (iec.keyEditor.verticalLine.hasNext('sixteenth')) {
+        iev.drawVerticalLine(iec.keyEditor.verticalLine.next('sixteenth'));
+      }
     }
     //update head values if playing
     if (iec.song.playing) {
       iec.info.UpdateInfo(null, iec.keyEditor);
+
+      iec.playhead.shiftUpdate(1, 0);
+      // InputEditorVisuals.updateElementBBox(iec.playhead.div, iec.playhead.bbox);
     }
     requestAnimationFrame(iev.render);
   }
+
   /**
    * Creates bounding boxes for note
    * @param bbox Bounding box of note
    * @param xPx Width of bounding box in pixels
    */
-  static createEdgeBBoxes(bbox, xPx: number): [BBox, BBox] {
+  static createNoteEdgeBBoxes(bbox, xPx: number): [BBox, BBox] {
     const tmp_bbox_l = new BBox(null, 0 - xPx, 0, xPx, bbox.height);
     const tmp_bbox_r = new BBox(null, bbox.width, 0, xPx, bbox.height);
     return [tmp_bbox_l, tmp_bbox_r];
   }
+
   //#endregion
 }

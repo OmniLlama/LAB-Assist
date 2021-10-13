@@ -1,6 +1,10 @@
 import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song} from '../../heartbeat/build';
 // import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song} from 'heartbeat-sequencer';
 import {InputEditorComponent} from './input-editor.component';
+import {Tracker} from '../input-converter/input-converter.component';
+import {BBox} from '../../Defs';
+import {InputEditorVisuals} from './input-editor-visuals';
+import {InputConverterFunctions} from '../input-converter/input-converter-functions';
 
 ;
 declare let sequencer: any;
@@ -10,7 +14,32 @@ const NOTE_ON = 0x90;
 const MIDI_HEARTBEAT = 0xFE;
 
 export class InputEditorFunctions {
-  // iec: InputEditorComponent = InputEditorComponent.inpEdComp;
+
+  static testCreateNote(trkr: Tracker)
+  {
+    let iec = InputEditorComponent.inpEdComp;
+    trkr.htmlNote = document.createElement('div');
+    trkr.htmlNote.className = 'note';
+    trkr.htmlNote.setAttribute('pitch', InputConverterFunctions.numberToPitchString(trkr.pitch));
+    trkr.htmlStart = iec.playhead.center;
+    trkr.htmlNoteBBox = new BBox(null, trkr.htmlStart, 32 * (44 - trkr.pitch), 0, 24);
+    InputEditorVisuals.updateElementBBox(trkr.htmlNote, trkr.htmlNoteBBox);
+    iec.html.div_Editor.appendChild(trkr.htmlNote);
+  }
+  static testUpdateNote(trkr: Tracker)
+  {
+    let iec = InputEditorComponent.inpEdComp;
+    trkr.htmlEnd = iec.playhead.center;
+    trkr.htmlNoteBBox.width = trkr.htmlEnd - trkr.htmlStart;
+    InputEditorVisuals.updateElementBBox(trkr.htmlNote, trkr.htmlNoteBBox);
+  }
+  static testFinishNote(trkr: Tracker)
+  {
+    let iec = InputEditorComponent.inpEdComp;
+    trkr.htmlEnd = iec.playhead.center;
+    trkr.htmlNoteBBox.width = trkr.htmlEnd - trkr.htmlStart;
+    InputEditorVisuals.updateElementBBox(trkr.htmlNote, trkr.htmlNoteBBox);
+  }
   /**
    * returns a random value between the min and the max
    * @param min
@@ -324,27 +353,7 @@ export class InputEditorFunctions {
 
 }
 
-export class BBox {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
 
-  constructor(box: BBox = null, x, y, w, h) {
-    if (box !== null) {
-      this.x = box.x;
-      this.y = box.y;
-      this.width = box.width;
-      this.height = box.height;
-    } else {
-      this.x = x;
-      this.y = y;
-      this.width = w;
-      this.height = h;
-    }
-    return this;
-  }
-}
 
 /**
  * holds many useful values needed to help make heartbeat-sequencer compatible with our solution
