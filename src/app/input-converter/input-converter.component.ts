@@ -5,21 +5,14 @@ import {
   GamepadObject,
   pads,
   padObjs,
-  xbBtns,
-  ggBtns,
-  scBtns,
-  tknBtns,
-  snkBtns
 } from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
-import {GamepadType, ButtonNotationType} from 'src/Enums';
+import {GamepadType, ButtonNotationType} from 'src/helpers/Enums';
 import * as jzzInpKbd from 'jzz-input-kbd';
-import * as jzzSynOSC from 'jzz-synth-osc';
-import * as jzzTiny from 'jzz-synth-tiny';
 
 import {InputConverterEvents} from './input-converter-events';
 import {InputConverterVisuals} from './input-converter-visuals';
-import {BBox, Tracker} from '../../Defs';
+import {BBox, Tracker} from '../../helpers/Defs';
 
 
 @Component({
@@ -95,8 +88,8 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
       let pad = (pads[0] !== undefined ? pads[0] : pads[1]);
       let padObj = (padObjs[0] !== undefined ? padObjs[0] : padObjs[1]);
       icc.testPadObj = padObj;
-      let thing = GamepadType[icc.testPadObj.type];
-      console.log(thing);
+      let padType = GamepadType[icc.testPadObj.type];
+      console.log(padType);
 
       icc.playControllerConnectedJingle();
 
@@ -186,25 +179,7 @@ function onMIDISuccess(mAcc) {
 function onMIDIFailure(data) {
 }
 
-/**
- * returns the button name, based on the components selected notation type
- * @param i button number
- */
-export function nameButton(i) {
-  switch (InputDisplayComponent.inpDispCmp.butNotTy) {
-    case ButtonNotationType.StreetFighter:
-      return (xbBtns[i] !== undefined ? xbBtns[i] : i);
-    case ButtonNotationType.GuiltyGear:
-      return (ggBtns[i] !== undefined ? ggBtns[i] : i);
-    case ButtonNotationType.SoulCalibur:
-      return (scBtns[i] !== undefined ? scBtns[i] : i);
-    case ButtonNotationType.Tekken:
-      return (tknBtns[i] !== undefined ? tknBtns[i] : i);
-    case ButtonNotationType.SNK:
-      return (snkBtns[i] !== undefined ? snkBtns[i] : i);
-  }
-  return i;
-}
+
 
 export function createTrackerGroup(cnt: number): Array<Tracker> {
   const arr = new Array<Tracker>();

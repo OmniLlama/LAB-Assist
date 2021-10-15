@@ -20,3 +20,11 @@ export class Collision {
       );
     }
 }
+
+export function normalizeVector(v1, v2): [number, number, number] {
+  const v = vectorMagnitude(v1, v2);
+  return [v1 / v, v2 / v, v];
+}
+export function vectorMagnitude(v1, v2): number {
+  return Math.sqrt(v1 ** 2 + v2 ** 2);
+}

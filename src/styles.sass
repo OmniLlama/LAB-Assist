@@ -24,6 +24,7 @@ html
   height: 100%
   //width: 21px
   background-color: #ffffff33
+
 #test-playhead-line
   //width: 10px
   height: 100%
@@ -104,53 +105,60 @@ $clr-part-active-border: #98f86bb6
 
 $clr-part-selected-bg: #d15cff28
 $clr-part-selected-border: #a863aa8f
-
-$clr-g0: rgba(0, 28, 66, 0.81)
 //up ls
-$clr-fs0: rgba(0, 51, 147, 0.81)
+$clr-b0: rgba(0, 28, 66, 0.81)
 //right ls
-$clr-f0: rgba(69, 153, 255, 0.81)
+
+$clr-as0: rgba(0, 51, 147, 0.81)
 //left ls
-$clr-e0: rgba(117, 176, 252, 0.81)
+
+$clr-a0: rgba(69, 153, 255, 0.81)
 //down ls
 
-$clr-ds0: rgba(52, 0, 16, 0.81)
+$clr-gs0: rgba(117, 176, 252, 0.81)
+
 //up rs
-$clr-d0: rgba(127, 0, 41, 0.81)
+$clr-g0: rgba(52, 0, 16, 0.81)
 //right rs
-$clr-cs0: rgba(248, 33, 84, 0.88)
+$clr-fs0: rgba(127, 0, 41, 0.81)
 //left rs
-$clr-c0: rgba(246, 169, 177, 0.81)
+$clr-f0: rgba(248, 33, 84, 0.88)
 //down rs
-
-$clr-b-1: rgba(13, 54, 0, 0.81)
+$clr-e0: rgba(246, 169, 177, 0.81)
 //up dpad
-$clr-as-1: rgba(12, 125, 0, 0.81)
+$clr-ds0: rgba(13, 54, 0, 0.81)
 //down dpad
-$clr-a-1: rgba(108, 245, 92, 0.81)
+$clr-d0: rgba(12, 125, 0, 0.81)
 //left dpad
-$clr-gs-1: rgba(166, 246, 159, 0.81)
+$clr-cs0: rgba(108, 245, 92, 0.81)
 //right dpad
-
-$clr-g-1: #2dc46c9f
+$clr-c0: rgba(166, 246, 159, 0.81)
 //b0
-$clr-fs-1: #d80606e1
+$clr-b-1: rgba(45, 196, 108, 0.62)
 //b1
-$clr-f-1: #2a53dbd2
+$clr-as-1: rgba(216, 6, 6, 0.88)
 //b2
-$clr-e-1: #ffed49b6
+$clr-a-1: rgba(42, 83, 219, 0.82)
 //b3
-$clr-ds-1: #a3a2a2e1
+$clr-gs-1: rgba(255, 237, 73, 0.71)
 //b4
-$clr-d-1: #7c7c7ca6
+$clr-g-1: rgba(163, 162, 162, 0.88)
 //b5
-$clr-cs-1: #333333ad
+$clr-fs-1: rgba(124, 124, 124, 0.65)
 //b6
-$clr-c-1: #111111bb
+$clr-f-1: rgba(51, 51, 51, 0.68)
 //b7
+$clr-e-1: rgba(30, 30, 30, 0.73)
+//b8
+$clr-ds-1: rgba(255, 255, 255, .68)
+//b9
+$clr-d-1: rgba(0, 0, 0, 0.73)
+//b10
+$clr-cs-1: rgba(255, 89, 0, 0.73)
+//b11
+$clr-c-1: rgba(144, 26, 255, 0.73)
 
-$clr-00: rgba(234, 234, 234, 0.6)
-//b7
+$clr-00: rgba(255, 213, 0, 0.78)
 
 .note[pitch='G0']
   background-color: $clr-g0
@@ -316,12 +324,12 @@ $dir-height: 48px
 $btn-width: 60px
 $btn-height: 60px
 
-.grid3x3
+.dirs3x3
   display: inline-block
   height: $dir-height * 3
   width: $dir-width * 3
 
-  .directionalArrows
+  .dirBtns-ortho
     // div
     float: left
     height: $dir-height
@@ -330,13 +338,22 @@ $btn-height: 60px
     width: $dir-width
     position: relative
 
-    #center
-      height: $dir-height
-      line-height: $dir-height
-      vertical-align: middle
-      position: relative
-      width: $dir-width
-      z-index: 0
+  .dirBtns-diag
+    // div
+    float: left
+    height: $dir-height
+    line-height: $dir-height
+    text-align: center
+    width: $dir-width
+    position: relative
+
+  .dirBtns-center
+    height: $dir-height
+    line-height: $dir-height
+    vertical-align: middle
+    position: relative
+    width: $dir-width
+    z-index: 0
 
   .tracer
     position: absolute
@@ -351,7 +368,7 @@ $btn-height: 60px
     max-width: 100%
     max-height: 100%
 
-.grid4x2
+.btns4x2
   display: block
   width: $btn-width * 4
   height: $btn-height * 2
@@ -375,23 +392,26 @@ $btn-height: 60px
 
 .controller
   overflow: hidden
+
 .trail
-    z-index: 260
-    position: absolute
-    height: 6px
-    width: 6px
-    border-radius: 3px
-    background: teal
-    opacity: 40%
+  z-index: 260
+  position: absolute
+  height: 6px
+  width: 6px
+  border-radius: 3px
+  background: teal
+  opacity: 40%
 
 .svg-shell
   position: fixed
   //top: 0
   //left: 0
   z-index: 300
+
 svg
   position: absolute
   z-index: 300
+
   polyline
     //position: fixed
     z-index: 300

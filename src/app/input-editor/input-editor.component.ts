@@ -17,7 +17,7 @@ import {InputDisplayComponent} from '../input-display/input-display.component';
 import {InputEditorEvents} from './input-editor-events';
 import {EditorHTMLShell, EditorInfo, InputEditorFunctions} from './input-editor-functions';
 import {InputEditorVisuals} from './input-editor-visuals';
-import {EditorView, HTMLNote, Playhead} from '../../Defs';
+import {EditorView, HTMLNote, Playhead} from '../../helpers/Defs';
 
 declare let sequencer: any;
 
@@ -91,21 +91,21 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
    */
   init(iec: InputEditorComponent): void {
     const icc = InputConverterComponent.inpConvComp;
-    iec.info.edHTMLShell = this.html;
+    // iec.info.edHTMLShell = this.html;
     iec.enableGUI(false);
 
     // iec.HrtbtInit(this);
 
     // iec.html.txt_BPM.value = iec.song.bpm.toString();
-    setSliderValues(iec.html.sldr_barsPerPage, iec.bppStart, 1, 32, 1);
+    // setSliderValues(iec.html.sldr_barsPerPage, iec.bppStart, 1, 32, 1);
     iec.enableGUI(true);
 
-    iec.html.slct_Snap.selectedIndex = 4;
+    // iec.html.slct_Snap.selectedIndex = 4;
 
-    let tmp_event;
-    tmp_event = document.createEvent('HTMLEvents');
-    tmp_event.initEvent('change', false, false);
-    iec.html.slct_Snap.dispatchEvent(tmp_event);
+    // let tmp_event;
+    // tmp_event = document.createEvent('HTMLEvents');
+    // tmp_event.initEvent('change', false, false);
+    // iec.html.slct_Snap.dispatchEvent(tmp_event);
 
     // InputEditorVisuals.draw(iec);
     iec.edtrView = new EditorView(36, 240, 360,
@@ -113,6 +113,7 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
     InputEditorEvents.initKeyboard(iec);
     // document.body.appendChild(iec.edtrView.div);
     InputEditorVisuals.render();
+    iec.edtrView.updateDraw();
   }
 
   /**

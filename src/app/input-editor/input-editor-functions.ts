@@ -1,7 +1,7 @@
 import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song} from '../../heartbeat/build';
 // import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song} from 'heartbeat-sequencer';
 import {InputEditorComponent} from './input-editor.component';
-import {BBox, HTMLNote, Tracker} from '../../Defs';
+import {BBox, HTMLNote, Tracker} from '../../helpers/Defs';
 import {InputEditorVisuals} from './input-editor-visuals';
 import {InputConverterFunctions} from '../input-converter/input-converter-functions';
 

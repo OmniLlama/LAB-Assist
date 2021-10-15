@@ -1,6 +1,6 @@
-import {MIDINote} from './heartbeat/build';
-import {InputConverterFunctions} from './app/input-converter/input-converter-functions';
-import {InputConverterComponent} from './app/input-converter/input-converter.component';
+import {MIDINote} from '../heartbeat/build';
+import {InputConverterFunctions} from '../app/input-converter/input-converter-functions';
+import {InputConverterComponent} from '../app/input-converter/input-converter.component';
 
 export class BBox {
   x: number;
@@ -214,17 +214,17 @@ export class EditorView {
     this.playhead = new Playhead(0, 0, 5, h);
     this.pitchHeight = h / this.pitchCount;
     this.div.appendChild(this.playhead.div);
-    window.addEventListener('resize', (uie) => this.updateDraw(uie));
+    window.addEventListener('resize', (uie) => this.updateDraw());
   }
 
-  updateDraw(uie: UIEvent) {
+  updateDraw() {
     let h = InputConverterComponent.inpConvComp.div.getBoundingClientRect().height;
     this.bbox.setHeight(h);
     this.bbox.setWidth(window.innerWidth);
     this.bbox.updateElementToBBox(this.div);
     this.bbox.updateElementToBBox(this.score);
     this.pitchHeight = h / this.pitchCount;
-    const rect = this.div.getBoundingClientRect();
+    const rect = this.score.getBoundingClientRect();
     this.playhead.bbox.setHeight(h);
     this.playhead.StartPos = [rect.x, rect.y];
     this.playhead.reset();

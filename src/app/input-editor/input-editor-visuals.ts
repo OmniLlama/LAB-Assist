@@ -2,7 +2,7 @@ import {Note, Part} from '../../heartbeat/build';
 import {InputEditorComponent} from './input-editor.component';
 import {InputEditorEvents} from './input-editor-events';
 import {InputEditorFunctions} from './input-editor-functions';
-import {BBox} from '../../Defs';
+import {BBox} from '../../helpers/Defs';
 
 export class InputEditorVisuals {
   /**

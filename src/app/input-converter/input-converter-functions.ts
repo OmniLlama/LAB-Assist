@@ -53,18 +53,30 @@ export class InputConverterFunctions {
    */
   static getButtonPitch(ind: number) {
     switch (ind) {
-      case 0: return 11;
-      case 1: return 10;
-      case 2: return 9;
-      case 3: return 8;
-      case 4: return 7;
-      case 5: return 6;
-      case 6: return 5;
-      case 7: return 4;
-      case 8: return 3;
-      case 9: return 2;
-      case 10: return 1;
-      case 11: return 0;
+      case 0:
+        return 11;
+      case 1:
+        return 10;
+      case 2:
+        return 9;
+      case 3:
+        return 8;
+      case 4:
+        return 7;
+      case 5:
+        return 6;
+      case 6:
+        return 5;
+      case 7:
+        return 4;
+      case 8:
+        return 3;
+      case 9:
+        return 2;
+      case 10:
+        return 1;
+      case 11:
+        return 0;
     }
   }
 
@@ -92,29 +104,13 @@ export class InputConverterFunctions {
   static getDirectionPitchFromAxis(ind, val): number {
     switch (ind) {
       case 0:
-        if (val > 0) {
-          return 16;
-        } else {
-          return 17;
-        }
+        return val > 0 ? 16 : 17;
       case 1:
-        if (val > 0) {
-          return 18;
-        } else {
-          return 17;
-        }
+        return val > 0 ? 18 : 19;
       case 2:
-        if (val > 0) {
-          return 20;
-        } else {
-          return 21;
-        }
+        return val > 0 ? 20 : 21;
       case 3:
-        if (val > 0) {
-          return 23;
-        } else {
-          return 22;
-        }
+        return val > 0 ? 22 : 23;
     }
   }
 

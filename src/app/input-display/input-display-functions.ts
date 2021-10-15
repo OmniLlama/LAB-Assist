@@ -2,7 +2,7 @@ import { InputDisplayVisuals } from './input-display-visuals';
 import {DirectionalHTMLShell} from './input-display.component';
 
 export class InputDisplayFunctions {
-  static directionalArrayIndexToDirection(i) {
+  static directionalArrayIndexToDirectionString(i): string {
     switch (i) {
       case 0: return `up_left`;
       case 1: return `up`;

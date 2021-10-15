@@ -1,12 +1,12 @@
 import {InputEditorFunctions} from '../input-editor/input-editor-functions';
-import {InputConverterComponent, nameButton} from './input-converter.component';
-import {GamepadObject, InputDisplayComponent} from '../input-display/input-display.component';
+import {InputConverterComponent} from './input-converter.component';
+import {GamepadObject, InputDisplayComponent, nameButton} from '../input-display/input-display.component';
 import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {InputConverterFunctions} from './input-converter-functions';
 import * as JZZ from 'jzz';
 import {InputConverterVisuals} from './input-converter-visuals';
 import {MIDINote, Part, Track} from '../../heartbeat/build';
-import {Tracker} from '../../Defs';
+import {Tracker} from '../../helpers/Defs';
 
 declare let sequencer: any;
 
@@ -19,11 +19,9 @@ export class InputConverterEvents {
     const idc = InputDisplayComponent.inpDispCmp;
     const iec = InputEditorComponent.inpEdComp;
     const padObj = icc.testPadObj;
-    // if (iec.song.playing && !icc.trackNotes) {
     if (iec.playing && icc.recordingPrimed && !icc.trackNotes) {
       InputConverterEvents.startTrackingNotes(icc);
       icc.backupPart = sequencer.createPart();
-      // } else if (!iec.song.playing && icc.trackNotes) {
     } else if (!iec.playing && icc.recordingPrimed && icc.trackNotes) {
       InputConverterEvents.stopTrackingNotes(icc, iec);
     }
@@ -115,14 +113,13 @@ export class InputConverterEvents {
     /**
      * Update Controller Digital Pad
      */
-      // let dPadBtns: readonly GamepadButton[] = padObj.DPad();
     let dPadBtns: readonly GamepadButton[] = padObj.DPadURLD();
     let dpadIconDivs = Array.from(document.getElementById('editor-input-icons-dir').querySelectorAll('div'));
     const icc = InputConverterComponent.inpConvComp;
     dPadBtns.forEach((b, idx) => {
       let trkr = icc.dpadTrackerGroup[idx];
       let pitch = InputConverterFunctions.getDirectionPitchFromDPad(idx);
-      if (b.pressed && !trkr.held) {
+      if (b.pressed && (!trkr.held)) {
         icc.midiOutPort.noteOn(0, pitch, 127);
         // if RECORDING
         if (icc.trackNotes) {
@@ -230,14 +227,11 @@ export class InputConverterEvents {
     icc.dpadPart = null;
     icc.btnPart = null;
     icc.trackNotes = false;
-    // InputEditorFunctions.UpdateSong(iec);
   }
 
   static updateTracker(trkr: Tracker, ticks: number, liveUpdate: boolean) {
     if (trkr.held) {
       if (liveUpdate) {
-        // trkr.heldNote.part.moveEvent(trkr.heldNote.noteOff, (ticks - trkr.heldNote.noteOff.ticks));
-        // trkr.inpEnd = ticks;
         InputEditorFunctions.testUpdateNote(trkr);
       }
     }
@@ -246,9 +240,6 @@ export class InputConverterEvents {
   static startTracker(trkr: Tracker, ticks: number, pitch: number, part?: Part) {
     trkr.held = true;
     trkr.inpStart = ticks;
-    // let evts = InputEditorFunctions.createNoteFromTicks(ticks, ticks + 128, pitch, undefined, part);
-    // InputEditorFunctions.UpdateSong(InputEditorComponent.inpEdComp);
-    // trkr.heldNote = evts[0].midiNote;
     InputEditorFunctions.testCreateNote(trkr, pitch);
   }
 
@@ -256,15 +247,11 @@ export class InputConverterEvents {
                     liveUpdate = false) {
     trkr.inpEnd = ticks;
     trackedNotes.push([trkr.inpStart, trkr.inpEnd, pitch]);
-    // if (!liveUpdate) {
-    //   // trkr.heldNote.part.moveEvent(trkr.heldNote.noteOff, (ticks - trkr.heldNote.noteOff.ticks
-    //   //   + 128 ));
-    // }
+
     trkr.held = false;
     trkr.heldNote = null;
     InputEditorFunctions.testFinishNote(trkr);
-    // InputEditorFunctions.UpdateTrack(InputEditorComponent.inpEdComp);
-    // InputEditorFunctions.UpdateSong(InputEditorComponent.inpEdComp);
+
   }
 
 
