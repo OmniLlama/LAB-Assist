@@ -28,3 +28,50 @@ export function normalizeVector(v1, v2): [number, number, number] {
 export function vectorMagnitude(v1, v2): number {
   return Math.sqrt(v1 ** 2 + v2 ** 2);
 }
+export function numberToPitchString(n: number): string {
+  const noteLetter = n % 12;
+  const noteOctave = Math.floor(n / 12) - 1;
+  let str = '';
+  switch (noteLetter) {
+    case 0:
+      str = 'C';
+      break;
+    case 1:
+      str = 'C#';
+      break;
+    case 2:
+      str = 'D';
+      break;
+    case 3:
+      str = 'D#';
+      break;
+    case 4:
+      str = 'E';
+      break;
+    case 5:
+      str = 'F';
+      break;
+    case 6:
+      str = 'F#';
+      break;
+    case 7:
+      str = 'G';
+      break;
+    case 8:
+      str = 'G#';
+      break;
+    case 9:
+      str = 'A';
+      break;
+    case 10:
+      str = 'A#';
+      break;
+    case 11:
+      str = 'B';
+      break;
+    default:
+      break;
+  }
+  str += noteOctave;
+  return str;
+}

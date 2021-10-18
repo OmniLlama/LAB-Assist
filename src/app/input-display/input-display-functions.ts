@@ -1,5 +1,5 @@
 import { InputDisplayVisuals } from './input-display-visuals';
-import {DirectionalHTMLShell} from './input-display.component';
+import {DirectionalHTMLShell} from '../../helpers/Shells';
 
 export class InputDisplayFunctions {
   static directionalArrayIndexToDirectionString(i): string {

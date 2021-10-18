@@ -3,6 +3,7 @@ import {InputEditorFunctions} from './input-editor-functions';
 import {Part} from '../../heartbeat/build';
 import {InputEditorVisuals} from './input-editor-visuals';
 import {InputConverterFunctions} from '../input-converter/input-converter-functions';
+import {numberToPitchString} from '../../helpers/Func';
 
 declare let sequencer: any;
 
@@ -50,7 +51,7 @@ export class InputEditorEvents {
     let part = iec.allParts[iec.currPart.id] as Part;
     part.notes.forEach((n) => {
       const noteDiv = iec.html.divs_AllNotes[n.id];
-      noteDiv.setAttribute('pitch', InputConverterFunctions.numberToPitchString(n.number));
+      noteDiv.setAttribute('pitch', numberToPitchString(n.number));
     });
     document.removeEventListener('mouseup', InputEditorEvents.Part_lMouUp);
   }
@@ -97,7 +98,7 @@ export class InputEditorEvents {
     let elmt = iec.html.divs_AllNotes[iec.currNote.id];
     let tmp_note = iec.allNotes[elmt.id];
     // let pitch = InputEditorFunctions.createNewMIDINote(0, 0, iec.info.mousePitchPos);
-    let pitch = InputConverterFunctions.numberToPitchString(iec.info.mousePitchPos);
+    let pitch = numberToPitchString(iec.info.mousePitchPos);
     iec.changingNote = null;
     elmt.setAttribute('pitch', pitch);
     document.removeEventListener('mouseup', InputEditorEvents.Note_lMouUp);
@@ -474,19 +475,19 @@ export class InputEditorEvents {
      * Keyboard Shortcuts
      */
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Backspace') {
-        iec.playing = false;
-        iec.edtrView.playhead.reset();
-      }
-      if (e.key === ' ') {
-        iec.playing = !iec.playing;
-      }
-      if (e.key === 'Delete') {
-      }
-      //dumb hack: brings playhead to first displayed location from left if offscreen to the left
-      if (e.key === 'ArrowRight') {
-      }
-      if (e.key === 'ArrowLeft') {
+      switch (e.key)
+      {
+        case 'Backspace':
+          iec.playing = false;
+          iec.edtrView.playhead.reset();
+          break;
+        case ' ':
+          iec.playing = !iec.playing;
+          break;
+        case 'Delete':
+        case 'ArrowRight':
+        case 'ArrowLeft':
+          break;
       }
     });
   }

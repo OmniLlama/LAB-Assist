@@ -1,4 +1,5 @@
 <link href="src/app/input-display/input-display.component.sass" type="stylesheet">
+<div [ngStyle]="{'color': (fps.average >= 60) ? '#73c7af' : '#000000'}" [innerHTML]="fps.average"></div>
 <label>LS<input type="checkbox" [(ngModel)]="useLeftStick" /></label>
 <label>RS<input type="checkbox" [(ngModel)]="useRightStick" /></label>
 <label>D-Pad<input type="checkbox" [(ngModel)]="useDPad" /></label>

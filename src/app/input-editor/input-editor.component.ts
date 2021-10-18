@@ -4,13 +4,9 @@ import {
   Part,
   MIDINote,
   Track,
-  getMidiFiles,
-  createSong,
   Instrument,
   Song,
   KeyEditor,
-  createTrack,
-  MIDIEvent
 } from '../../heartbeat/build';
 import {InputConverterComponent} from '../input-converter/input-converter.component';
 import {InputDisplayComponent} from '../input-display/input-display.component';
@@ -56,8 +52,6 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
   currNote: HTMLNote = null;
   noteList: Array<HTMLNote> = new Array<HTMLNote>();
 
-
-
   bppStart = 8;  // default: 16
 
   console: Console = window.console;
@@ -74,9 +68,6 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    // const init = async () => {
-    //   await sequencer.ready();
-    // };
     InputEditorComponent.inpEdComp = this;
     this.info = new EditorInfo();
     this.html = new EditorHTMLShell();
@@ -92,8 +83,6 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
   init(iec: InputEditorComponent): void {
     const icc = InputConverterComponent.inpConvComp;
     // iec.info.edHTMLShell = this.html;
-    iec.enableGUI(false);
-
     // iec.HrtbtInit(this);
 
     // iec.html.txt_BPM.value = iec.song.bpm.toString();
@@ -128,6 +117,8 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
       tmp_elmt.disabled = !flag;
     });
   }
+
+
   HrtbtInit(iec: InputEditorComponent){
     iec.song = InputEditorFunctions.initSong();
     if (iec.flattenTracksToSingleTrack) {

@@ -1,6 +1,7 @@
 import {MIDINote} from '../heartbeat/build';
 import {InputConverterFunctions} from '../app/input-converter/input-converter-functions';
 import {InputConverterComponent} from '../app/input-converter/input-converter.component';
+import {numberToPitchString} from './Func';
 
 export class BBox {
   x: number;
@@ -124,10 +125,12 @@ export class Playhead {
     this.bbox.shift(x, y);
     this.bbox.updateElementToBBox(this.div);
   }
+
   xPlaceUpdate(x: number) {
     this.bbox.x = x;
     this.bbox.updateElementToBBox(this.div);
   }
+
   placeUpdate(x: number, y: number) {
     this.bbox.place(x, y);
     this.bbox.updateElementToBBox(this.div);
@@ -157,7 +160,7 @@ export class HTMLNote {
   active: boolean;
 
   get name() {
-    return InputConverterFunctions.numberToPitchString(this.pitch);
+    return numberToPitchString(this.pitch);
   }
 
   get id() {
@@ -170,7 +173,7 @@ export class HTMLNote {
     this.div.className = 'note';
     HTMLNote.idCntr++;
     this.div.id = `N${HTMLNote.idCntr}`;
-    this.div.setAttribute('pitch', InputConverterFunctions.numberToPitchString(this.pitch));
+    this.div.setAttribute('pitch', numberToPitchString(this.pitch));
     // this.div.addEventListener('mousemove', (me) => this.updateNotePos(me));
     this.start = start;
     this.bbox = new BBox(null, this.start, y, 0, 24);
@@ -199,8 +202,6 @@ export class EditorView {
 
   constructor(x, y, w, h) {
     this.bbox = new BBox(null, x, y, w, h);
-    // this.div = document.createElement('div');
-    // this.div.id = 'test-editor';
     this.div = document.getElementById('test-editor') as HTMLDivElement;
     this.score = document.createElement('div');
     this.score.id = 'test-score';
@@ -231,3 +232,44 @@ export class EditorView {
   }
 }
 
+export class FPSTracker {
+  fps: number = 0;
+  avgFPS: number;
+  fpsHistory: Queue<number> = new Queue<number>();
+  fpsHistCnt: number = 60;
+  lastNow: number = performance.now();
+
+  get average() {
+    return Math.floor(this.fpsHistory.q.reduce((a, b) => a + b, 0) / this.fpsHistory.q.length);
+  }
+
+  constructor() {
+  }
+
+  update() {
+    this.fps = Math.floor(1 / ((performance.now() - this.lastNow) / 1000));
+    this.fpsHistory.qThru(this.fps);
+    this.avgFPS = this.average;
+    this.lastNow = performance.now();
+  }
+}
+
+export class Queue<T> {
+  q: T[] = [];
+  max: number;
+
+  push(val: T) {
+    this.q.push(val);
+  }
+
+  pop(): T | undefined {
+    return this.q.shift();
+  }
+
+  qThru(t: T) {
+    if (this.q.length >= this.max) {
+      this.q.pop();
+    }
+    this.q.push(t);
+  }
+}

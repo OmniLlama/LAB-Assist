@@ -42,9 +42,6 @@
       <img src="assets/images/down.png" width="24"/>
     </div>
   </div>
-  <div id="button-divider">
-    <img src="assets/images/button-divider-long.png"/>
-  </div>
   <div id="editor-input-icons-btn">
     <div class="editor-input-icon">
       <img src="assets/images/x.png" width="24"/>
@@ -71,21 +68,16 @@
       <img src="assets/images/l2.png" width="24"/>
     </div>
   </div>
-  <label for="#primeRecording" id="record-check-label">Rec</label>
-  <input
+  <label id="record-check-label">Rec <input
     id="record-check"
-    #primeRecording
     [(ngModel)]="recordingPrimed"
     type="checkbox"
     data-toggle="toggle"
-  />
-  <input
+  /></label>
+  <label id="live-update-label"> <input
     id="live-update-check"
-    #liveUpdate
     [(ngModel)]="liveUpdateHeldNotes"
     type="checkbox"
     data-toggle="toggle"
-  />
-  <label for="#primeRecording" id="record-check-label">LiveUpdate</label>
-
+  /> LiveUpdate</label>
 </div>

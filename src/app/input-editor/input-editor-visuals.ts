@@ -220,7 +220,7 @@ export class InputEditorVisuals {
     // if (iec.song.playing) {
     if (iec.playing) {
       // iec.info.UpdateInfo(null, iec.keyEditor);
-      iec.edtrView.playhead.shiftUpdate(1, 0);
+      iec.edtrView.playhead.shiftUpdate(2, 0);
     }
     requestAnimationFrame(iev.render);
   }

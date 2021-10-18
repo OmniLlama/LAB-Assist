@@ -31,8 +31,8 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   midiOutPort;
   testPadObj: GamepadObject;
   midi;
-  trackNotes: boolean;
-  liveUpdateHeldNotes: boolean;
+  trackingNotes: boolean;
+  liveUpdateHeldNotes: boolean = true;
   recordingPrimed: boolean = true;
   trackedNotes: Array<[number, number, number]>; // startTicks, endTicks, pitch
 
