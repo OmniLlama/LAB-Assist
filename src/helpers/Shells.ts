@@ -1,6 +1,6 @@
 import {MovementTrail} from '../app/input-display/movement-trail';
 import {InputDisplayVisuals} from '../app/input-display/input-display-visuals';
-import {Img} from './Gen';
+import {Div, Img} from './Gen';
 import {IMG_END, IMG_SRC} from './Vals';
 import {GamepadObject, htmlIdxToDirStr, nameButton} from '../app/input-display/input-display.component';
 
@@ -14,10 +14,8 @@ class ButtonHTMLShell implements HTMLShell {
   name: string;
 
   constructor(name, className, parent) {
-    this.div = document.createElement('div');
-    this.div.className = className;
-    this.div.id = name;
     this.name = name;
+    this.div = Div(name, className);
     this.img = Img(name);
     this.div.appendChild(this.img);
     parent.appendChild(this.div);
@@ -37,15 +35,11 @@ export class GamepadHTMLShell implements HTMLShell {
   btns_div: HTMLDivElement;
 
   constructor(padObj: GamepadObject) {
-    this.div = document.createElement('div');
-    this.div.className = 'controller';
-    this.div.id = 'controller' + padObj.pad.index;
+    this.div = Div('controller' + padObj.pad.index, 'controller');
 
     // Create controller id title
     this.padInfo = document.createElement('div');
-    const title: HTMLHeadingElement = document.createElement('h6');
-    title.appendChild(document.createTextNode('gamepad: ' + padObj.pad.id));
-    this.padInfo.appendChild(title);
+    this.padInfo.appendChild(document.createTextNode('gamepad: ' + padObj.pad.id));
     this.div.appendChild(this.padInfo);
 
     // Create Arrow Sets

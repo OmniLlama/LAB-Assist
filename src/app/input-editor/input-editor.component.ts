@@ -13,7 +13,7 @@ import {InputDisplayComponent} from '../input-display/input-display.component';
 import {InputEditorEvents} from './input-editor-events';
 import {EditorHTMLShell, EditorInfo, InputEditorFunctions} from './input-editor-functions';
 import {InputEditorVisuals} from './input-editor-visuals';
-import {EditorView, HTMLNote, Playhead} from '../../helpers/Defs';
+import {EditorView, FPSTracker, HTMLNote} from '../../helpers/Defs';
 
 declare let sequencer: any;
 
@@ -35,6 +35,7 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
   midiFileList;
   audCntxt: AudioContext;
 
+  fps: FPSTracker;
 
   snapAmt;
   mainTrack: Track;
@@ -69,6 +70,8 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     InputEditorComponent.inpEdComp = this;
+    this.fps = new FPSTracker();
+
     this.info = new EditorInfo();
     this.html = new EditorHTMLShell();
   }

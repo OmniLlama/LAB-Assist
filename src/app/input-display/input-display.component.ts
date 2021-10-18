@@ -42,7 +42,6 @@ export const htmlIdxToDirStr = {
 export class InputDisplayComponent implements OnInit {
   static rAF = window.requestAnimationFrame;
   static inpDispCmp: InputDisplayComponent;
-  fps: FPSTracker;
   gamepadObjects: Array<GamepadObject>;
   mvNotTy: MovementNotationType;
   mvNotTypes = MovementNotationType;
@@ -64,7 +63,6 @@ export class InputDisplayComponent implements OnInit {
   constructor() {
   }
   ngOnInit(): void {
-    this.fps = new FPSTracker();
     const haveWebkitEvents = 'WebKitGamepadEvent' in window;
     const haveEvents = 'GamepadEvent' in window;
     InputDisplayComponent.inpDispCmp = this;
@@ -182,12 +180,12 @@ export class InputDisplayComponent implements OnInit {
       const dpDirShell = pO.html.dirArrowSets[2];
       const dpVec = pO.DPadToVector();
 
-      lDirShell.updateTracer([pO.Axes[0], pO.Axes[1]]);
       lDirShell.div.style.display = this.useLeftStick ? 'inline-block' : 'none';
-      rDirShell.updateTracer([pO.Axes[2], pO.Axes[3]]);
+      lDirShell.updateTracer([pO.Axes[0], pO.Axes[1]]);
       rDirShell.div.style.display = this.useRightStick ? 'inline-block' : 'none';
-      dpDirShell.updateTracer([dpVec[0], dpVec[1]]);
+      rDirShell.updateTracer([pO.Axes[2], pO.Axes[3]]);
       dpDirShell.div.style.display = this.useDPad ? 'inline-block' : 'none';
+      dpDirShell.updateTracer([dpVec[0], dpVec[1]]);
 
       if (this.useDPad && pO.DPad.some(dir => dir.pressed)) {
         const padArr = new Array<boolean>(4);
@@ -199,7 +197,6 @@ export class InputDisplayComponent implements OnInit {
       InputDisplayFunctions.processJoystickDirections(pO.pad.axes[0], pO.pad.axes[1], this.orthoDeadzone, this.diagDeadzone, lDirShell);
       InputDisplayFunctions.processJoystickDirections(pO.pad.axes[2], pO.pad.axes[3], this.orthoDeadzone, this.diagDeadzone, rDirShell);
     });
-    this.fps.update();
     InputDisplayComponent.rAF(cb => this.updateStatus());
 
   }

@@ -10,7 +10,27 @@ declare let sequencer: any;
 export class InputEditorEvents {
 
   iec = InputEditorComponent.inpEdComp as InputEditorComponent;
-
+  static initKeyboard(iec: InputEditorComponent){
+    /**
+     * Keyboard Shortcuts
+     */
+    window.addEventListener('keydown', (e) => {
+      switch (e.key)
+      {
+        case 'Backspace':
+          iec.playing = false;
+          iec.edtrView.playhead.reset();
+          break;
+        case ' ':
+          iec.playing = !iec.playing;
+          break;
+        case 'Delete':
+        case 'ArrowRight':
+        case 'ArrowLeft':
+          break;
+      }
+    });
+  }
   //#region [rgba(0,100,0,0.2)] Grid Element Event Functions
   /* Part */
   /**
@@ -470,27 +490,7 @@ export class InputEditorEvents {
     });
   }
 
-  static initKeyboard(iec: InputEditorComponent){
-    /**
-     * Keyboard Shortcuts
-     */
-    window.addEventListener('keydown', (e) => {
-      switch (e.key)
-      {
-        case 'Backspace':
-          iec.playing = false;
-          iec.edtrView.playhead.reset();
-          break;
-        case ' ':
-          iec.playing = !iec.playing;
-          break;
-        case 'Delete':
-        case 'ArrowRight':
-        case 'ArrowLeft':
-          break;
-      }
-    });
-  }
+
   /**
    * Initialization of basic window events
    * @param iec

@@ -6,7 +6,7 @@ export function Img(name, sourceOverride = null, endOverride = null) {
   img.id = `${name}-img`;
   return img;
 }
-export function Div(id, className) {
+export function Div(id, className= '') {
   const div = document.createElement('div');
   div.id = id;
   div.className = className;

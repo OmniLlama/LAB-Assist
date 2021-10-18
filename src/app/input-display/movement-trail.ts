@@ -1,3 +1,5 @@
+import {Div} from '../../helpers/Gen';
+
 class TrailDot {
   x;
   y;
@@ -6,8 +8,7 @@ class TrailDot {
   constructor(pos: [number, number], parent: HTMLDivElement) {
     this.x = pos[0];
     this.y = pos[1];
-    this.node = document.createElement('div');
-    this.node.className = 'trail';
+    this.node = Div('', 'trail');
     parent.appendChild(this.node);
   }
 
@@ -28,8 +29,7 @@ export class MovementTrail {
 
   constructor(parent) {
     this.parent = parent;
-    this.divFrame = document.createElement('div');
-    this.divFrame.className = 'svg-shell';
+    this.divFrame = Div('', 'svg-shell');
     parent.appendChild(this.divFrame);
     this.line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
     this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

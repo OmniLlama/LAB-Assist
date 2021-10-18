@@ -2,6 +2,7 @@ import {MIDINote} from '../heartbeat/build';
 import {InputConverterFunctions} from '../app/input-converter/input-converter-functions';
 import {InputConverterComponent} from '../app/input-converter/input-converter.component';
 import {numberToPitchString} from './Func';
+import {Div} from './Gen';
 
 export class BBox {
   x: number;
@@ -9,19 +10,11 @@ export class BBox {
   width: number;
   height: number;
 
-  constructor(box: BBox = null, x, y, w, h) {
-    if (box !== null) {
-      this.x = box.x;
-      this.y = box.y;
-      this.width = box.width;
-      this.height = box.height;
-    } else {
+  constructor(x, y, w, h) {
       this.x = x;
       this.y = y;
       this.width = w;
       this.height = h;
-    }
-    return this;
   }
 
   shift(x: number, y: number) {
@@ -65,9 +58,8 @@ export class BBox {
   }
 
   /**
-   * Fits element within its bounding box
+   * Fits element within this bounding box
    * @param element
-   * @param bbox
    */
   updateElementToBBox(element: HTMLElement) {
     element.style.left = this.x + 'px';
@@ -83,37 +75,13 @@ export class Playhead {
   inner: HTMLDivElement;
   bbox: BBox;
   startPos: [number, number];
-  AABB = {
-    collide(el1, el2) {
-      const rect1 = el1.getBoundingClientRect();
-      const rect2 = el2.getBoundingClientRect();
-
-      return !(
-        rect1.top > rect2.bottom ||
-        rect1.right < rect2.left ||
-        rect1.bottom < rect2.top ||
-        rect1.left > rect2.right
-      );
-    },
-
-    inside(el1, el2) {
-      const rect1 = el1.getBoundingClientRect();
-      const rect2 = el2.getBoundingClientRect();
-
-      return (
-        rect1.top <= rect2.bottom && rect1.bottom >= rect2.top && rect1.left <= rect2.right && rect1.right >= rect2.left
-      );
-    }
-  };
 
   constructor(x, y, w, h) {
-    this.inner = document.createElement('div');
-    this.inner.id = 'test-playhead-line';
-    this.div = document.createElement('div');
-    this.div.id = 'test-playhead';
+    this.div = Div('test-playhead');
+    this.inner = Div('test-playhead-line');
     this.div.appendChild(this.inner);
     this.startPos = [x, y];
-    this.bbox = new BBox(null, x, y, w, h);
+    this.bbox = new BBox(x, y, w, h);
     this.bbox.updateElementToBBox(this.div);
   }
 
@@ -169,14 +137,12 @@ export class HTMLNote {
 
   constructor(pitch: number, start: number, y: number) {
     this.pitch = pitch;
-    this.div = document.createElement('div');
-    this.div.className = 'note';
     HTMLNote.idCntr++;
-    this.div.id = `N${HTMLNote.idCntr}`;
+    this.div = Div(`N${HTMLNote.idCntr}`, 'note');
     this.div.setAttribute('pitch', numberToPitchString(this.pitch));
     // this.div.addEventListener('mousemove', (me) => this.updateNotePos(me));
     this.start = start;
-    this.bbox = new BBox(null, this.start, y, 0, 24);
+    this.bbox = new BBox(this.start, y, 0, 24);
     this.bbox.updateElementToBBox(this.div);
   }
 
@@ -201,15 +167,15 @@ export class EditorView {
   playhead: Playhead;
 
   constructor(x, y, w, h) {
-    this.bbox = new BBox(null, x, y, w, h);
+    this.bbox = new BBox(x, y, w, h);
     this.div = document.getElementById('test-editor') as HTMLDivElement;
-    this.score = document.createElement('div');
-    this.score.id = 'test-score';
+    this.score = Div('test-score');
     this.score.addEventListener('click', (me) => this.playhead.xPlaceUpdate(me.x));
 
     this.div.appendChild(this.score);
     this.bbox.updateElementToBBox(this.div);
     this.bbox.updateElementToBBox(this.score);
+
     const rect = this.div.getBoundingClientRect();
     // this.playhead = new Playhead(rect.x, rect.y, 5, h);
     this.playhead = new Playhead(0, 0, 5, h);

@@ -222,6 +222,7 @@ export class InputEditorVisuals {
       // iec.info.UpdateInfo(null, iec.keyEditor);
       iec.edtrView.playhead.shiftUpdate(2, 0);
     }
+    iec.fps.update();
     requestAnimationFrame(iev.render);
   }
 
@@ -231,8 +232,8 @@ export class InputEditorVisuals {
    * @param xPx Width of bounding box in pixels
    */
   static createNoteEdgeBBoxes(bbox, xPx: number): [BBox, BBox] {
-    const tmp_bbox_l = new BBox(null, 0 - xPx, 0, xPx, bbox.height);
-    const tmp_bbox_r = new BBox(null, bbox.width, 0, xPx, bbox.height);
+    const tmp_bbox_l = new BBox(0 - xPx, 0, xPx, bbox.height);
+    const tmp_bbox_r = new BBox(bbox.width, 0, xPx, bbox.height);
     return [tmp_bbox_l, tmp_bbox_r];
   }
 
