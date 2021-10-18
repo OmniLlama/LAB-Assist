@@ -32,13 +32,9 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   liveUpdateHeldNotes: boolean = true;
   recordingPrimed: boolean = true;
   trackedNotes: Array<[number, number, number]>; // startTicks, endTicks, pitch
-
   stxTrackerGroup: Array<Tracker>;
-
   dpadTrackerGroup: Array<Tracker>;
-
   btnTrackerGroup: Array<Tracker>;
-
   deadZone = .5;
 
   /**
@@ -147,12 +143,12 @@ export function getPad() {
 let midiAccess;
 let inputs;
 let outputs;
-if (JZZ.requestMIDIAccess) {
-  JZZ.requestMIDIAccess({sysex: false}).then(onMIDISuccess, onMIDIFailure);
-  console.log('There totally is MIDI support in your browser');
-} else {
-  console.warn('No MIDI support in your browser');
-}
+// if (JZZ.requestMIDIAccess) {
+//   JZZ.requestMIDIAccess({sysex: false}).then(onMIDISuccess, onMIDIFailure);
+//   console.log('There totally is MIDI support in your browser');
+// } else {
+//   console.warn('No MIDI support in your browser');
+// }
 
 /**
  * MIDI success procedures

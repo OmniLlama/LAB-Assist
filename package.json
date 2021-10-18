@@ -34,7 +34,6 @@
     "opensheetmusicdisplay": "^1.1.0",
     "rxjs": "^6.6.7",
     "tslib": "^2.0.0",
-    "webdaw-modules": "0.0.26",
     "webmidi": "^2.5.3",
     "zone": "^0.3.4",
     "zone.js": "~0.11.4"

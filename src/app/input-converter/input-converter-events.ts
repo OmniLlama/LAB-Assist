@@ -228,10 +228,8 @@ export class InputConverterEvents {
                     liveUpdate = false) {
     trkr.inpEnd = ticks;
     trackedNotes.push([trkr.inpStart, trkr.inpEnd, pitch]);
-
     trkr.held = false;
     InputEditorFunctions.testFinishNote(trkr);
-
   }
 
 
