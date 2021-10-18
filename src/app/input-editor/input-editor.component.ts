@@ -1,13 +1,4 @@
 import {Component, OnInit, Inject, AfterViewInit} from '@angular/core';
-import {
-  Note,
-  Part,
-  MIDINote,
-  Track,
-  Instrument,
-  Song,
-  KeyEditor,
-} from '../../heartbeat/build';
 import {InputConverterComponent} from '../input-converter/input-converter.component';
 import {InputDisplayComponent} from '../input-display/input-display.component';
 import {InputEditorEvents} from './input-editor-events';
@@ -31,21 +22,13 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
   html: EditorHTMLShell;
   info: EditorInfo;
   midiFile;
-  keyEditor: KeyEditor;
   midiFileList;
   audCntxt: AudioContext;
 
   fps: FPSTracker;
 
   snapAmt;
-  mainTrack: Track;
-  tracks: Track[];
-  instruments: Instrument[];
-  song: Song;
 
-  allNotes: Array<Note> = new Array<Note>(); // stores references to all midi notes;
-  allParts: Array<Part> = new Array<Part>(); // stores references to all midi parts;
-  currPart: Part = null;
   flattenTracksToSingleTrack = true;
 
   edtrView: EditorView;
@@ -72,8 +55,6 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
     InputEditorComponent.inpEdComp = this;
     this.fps = new FPSTracker();
 
-    this.info = new EditorInfo();
-    this.html = new EditorHTMLShell();
   }
 
   ngAfterViewInit(): void {
@@ -85,25 +66,10 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
    */
   init(iec: InputEditorComponent): void {
     const icc = InputConverterComponent.inpConvComp;
-    // iec.info.edHTMLShell = this.html;
-    // iec.HrtbtInit(this);
-
-    // iec.html.txt_BPM.value = iec.song.bpm.toString();
-    // setSliderValues(iec.html.sldr_barsPerPage, iec.bppStart, 1, 32, 1);
     iec.enableGUI(true);
-
-    // iec.html.slct_Snap.selectedIndex = 4;
-
-    // let tmp_event;
-    // tmp_event = document.createEvent('HTMLEvents');
-    // tmp_event.initEvent('change', false, false);
-    // iec.html.slct_Snap.dispatchEvent(tmp_event);
-
-    // InputEditorVisuals.draw(iec);
     iec.edtrView = new EditorView(36, 240, 360,
       icc.div.getBoundingClientRect().height);
     InputEditorEvents.initKeyboard(iec);
-    // document.body.appendChild(iec.edtrView.div);
     InputEditorVisuals.render();
     iec.edtrView.updateDraw();
   }
@@ -120,22 +86,6 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
       tmp_elmt.disabled = !flag;
     });
   }
-
-
-  HrtbtInit(iec: InputEditorComponent){
-    iec.song = InputEditorFunctions.initSong();
-    if (iec.flattenTracksToSingleTrack) {
-      InputEditorFunctions.flattenTracks(iec.song);
-    }
-    iec.keyEditor = InputEditorFunctions.initKeyEditor(iec);
-    iec.instruments = sequencer.getInstruments();
-    setElementValue(iec.html.txt_KeyRangeStart, iec.keyEditor.lowestNote);
-    setElementValue(iec.html.txt_KeyRangeEnd, iec.keyEditor.highestNote);
-    InputEditorVisuals.resize();
-    InputEditorEvents.initContextEvents();
-    InputEditorEvents.initWindowEvents(iec);
-    InputEditorEvents.initInputEvents();
-  }
 }
 
 
@@ -143,7 +93,7 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
  * Returns the two edge HtmlDivElements of a given note
  * @param note
  */
-export function getNoteEdgeDivs(note: MIDINote): [HTMLDivElement, HTMLDivElement, HTMLDivElement] {
+export function getNoteEdgeDivs(note: HTMLNote): [HTMLDivElement, HTMLDivElement, HTMLDivElement] {
   let tmp_noteDiv = document.getElementById(note.id) as HTMLDivElement;
   if (tmp_noteDiv != null) {
     return [tmp_noteDiv, tmp_noteDiv.children[0] as HTMLDivElement, tmp_noteDiv.children[1] as HTMLDivElement];

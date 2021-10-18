@@ -52,9 +52,8 @@ export class GamepadHTMLShell implements HTMLShell {
     this.div.appendChild(this.dirArrowSets[2].div);
 
     // Create Button Icons
-    this.btns_div = document.createElement('div');
+    this.btns_div = Div('', 'btns4x2');
     this.btnShells = new Array<ButtonHTMLShell>();
-    this.btns_div.className = 'btns4x2';
     const btnOrder: number[] = padObj.btnLayout;
     for (const btnNum of btnOrder) {
       const btn = new ButtonHTMLShell(nameButton(btnNum), 'gamepad-buttons', this.btns_div);
@@ -99,8 +98,7 @@ export class DirectionalHTMLShell implements HTMLShell {
     this.u = new ButtonHTMLShell(htmlIdxToDirStr[1], `dirBtns-ortho`, this.div);
     this.ur = new ButtonHTMLShell(htmlIdxToDirStr[2], `dirBtns-diag`, this.div);
     this.l = new ButtonHTMLShell(htmlIdxToDirStr[3], `dirBtns-ortho`, this.div);
-    this.center_gap = document.createElement('div');
-    this.center_gap.id = 'center';
+    this.center_gap = Div('center');
     this.center = new ButtonHTMLShell(htmlIdxToDirStr[4], `dirBtns-ortho`, this.div);
     this.r = new ButtonHTMLShell(htmlIdxToDirStr[5], `dirBtns-ortho`, this.div);
     this.dl = new ButtonHTMLShell(htmlIdxToDirStr[6], `dirBtns-diag`, this.div);

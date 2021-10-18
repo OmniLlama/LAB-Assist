@@ -1,4 +1,3 @@
-import {MIDINote} from '../heartbeat/build';
 import {InputConverterFunctions} from '../app/input-converter/input-converter-functions';
 import {InputConverterComponent} from '../app/input-converter/input-converter.component';
 import {numberToPitchString} from './Func';
@@ -39,6 +38,10 @@ export class BBox {
   }
 
   setHeight(h: number) {
+    this.height = h;
+  }
+  setDimension(w, h){
+    this.width = w;
     this.height = h;
   }
 
@@ -84,6 +87,9 @@ export class Playhead {
     this.bbox = new BBox(x, y, w, h);
     this.bbox.updateElementToBBox(this.div);
   }
+  get xPos(): number {
+    return this.bbox.x;
+  }
 
   set StartPos(pos: [number, number]) {
     this.startPos = pos;
@@ -112,12 +118,23 @@ export class Playhead {
 
 export class Tracker {
   held = false;
-  heldNote: MIDINote; // heldNote, currentTicks
   inpStart: number;
   inpEnd: number;
   htmlNote: HTMLNote;
 }
 
+export class HTMLPart {
+  static idCntr = 0;
+  div: HTMLDivElement;
+  bbox: BBox;
+  constructor() {
+
+  }
+  get id() {
+    return this.div.id;
+  }
+
+}
 export class HTMLNote {
   static idCntr = 0;
   start: number;
@@ -186,8 +203,7 @@ export class EditorView {
 
   updateDraw() {
     let h = InputConverterComponent.inpConvComp.div.getBoundingClientRect().height;
-    this.bbox.setHeight(h);
-    this.bbox.setWidth(window.innerWidth);
+    this.bbox.setDimension(window.innerWidth, h);
     this.bbox.updateElementToBBox(this.div);
     this.bbox.updateElementToBBox(this.score);
     this.pitchHeight = h / this.pitchCount;

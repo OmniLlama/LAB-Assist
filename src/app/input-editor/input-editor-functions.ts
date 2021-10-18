@@ -1,7 +1,6 @@
-import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song} from '../../heartbeat/build';
 // import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song} from 'heartbeat-sequencer';
 import {InputEditorComponent} from './input-editor.component';
-import {BBox, HTMLNote, Tracker} from '../../helpers/Defs';
+import {BBox, HTMLNote, HTMLPart, Tracker} from '../../helpers/Defs';
 import {InputEditorVisuals} from './input-editor-visuals';
 import {InputConverterFunctions} from '../input-converter/input-converter-functions';
 
@@ -49,176 +48,6 @@ export class InputEditorFunctions {
     }
   }
 
-  /**
-   * alternate to createNewMIDINote
-   * @param start
-   * @param end
-   * @param pitch
-   * @param velocity
-   */
-  static createNewNoteEvents(start: number, end: number, pitch: number, velocity?: number): [MIDIEvent, MIDIEvent] {
-    const tmp_velocity = (velocity === undefined ? 127 : velocity);
-    const tmp_noteOn = sequencer.createMidiEvent(start, NOTE_ON, pitch, tmp_velocity);
-    const tmp_noteOff = sequencer.createMidiEvent(end, NOTE_OFF, pitch, tmp_velocity);
-    return [tmp_noteOn, tmp_noteOff];
-  }
-
-  /**
-   * Creates and returns the two events that compose a MIDINote in the sequencer,
-   * @param start - ticks to begin note
-   * @param end - ticks to end note
-   * @param pitch - pitch to assign note
-   * @param vel - velocity to assign note
-   */
-  // static createNoteFromTicks(start: number, end: number, pitch: number, vel: number, part: Part): MIDINote {
-  static createNoteFromTicks(start: number, end: number, pitch: number, vel: number, part: Part): [MIDIEvent, MIDIEvent] {
-    const iec = InputEditorComponent.inpEdComp;
-    if (!iec.song.getPart(part.id)) {
-      iec.mainTrack.addPartAt(part, ['ticks', start]);
-    }
-    const noteEvts = this.createNewNoteEvents(start, end, pitch, vel);
-    if (part) {
-      part.addEvents(noteEvts);
-    } else {
-      part = sequencer.createPart();
-      part.addEvents(noteEvts);
-    }
-    // iec.currPart = part;
-    sequencer.createNote(noteEvts[0], noteEvts[1]);
-    InputEditorFunctions.UpdateTrack(iec);
-    // part.update();
-    // InputEditorFunctions.UpdateSong(iec);
-    return noteEvts;
-  }
-
-  /**
-   * DEBUG - makes a random part for debug purposes
-   * @param iec
-   */
-  static addRandomPartAtPlayhead(iec: InputEditorComponent) {
-    let tmp_ticks = 0;
-    let tmp_numNotes = this.getRandom(4, 8, true);
-    let tmp_spread = 5;
-    let tmp_basePitch = this.getRandom(
-      iec.keyEditor.lowestNote + tmp_spread,
-      iec.keyEditor.highestNote - tmp_spread,
-      true
-    );
-    let tmp_part = sequencer.createPart();
-    let tmp_events = [];
-    let tmp_noteLength = iec.song.ppq / 2;
-    let tmp_pitch;
-    let tmp_velocity;
-
-    for (let i = 0; i < tmp_numNotes; i++) {
-      tmp_pitch = tmp_basePitch + this.getRandom(-tmp_spread, tmp_spread, true);
-      tmp_velocity = this.getRandom(50, 127, true);
-
-      tmp_events.push(sequencer.createMidiEvent(tmp_ticks, NOTE_ON, tmp_pitch, tmp_velocity));
-      tmp_ticks += tmp_noteLength;
-      tmp_events.push(sequencer.createMidiEvent(tmp_ticks, NOTE_OFF, tmp_pitch, 0));
-      tmp_ticks += tmp_noteLength;
-    }
-    tmp_ticks = iec.keyEditor.getTicksAt(iec.keyEditor.getPlayheadX());
-
-    tmp_part.addEvents(tmp_events);
-    iec.mainTrack.addPartAt(tmp_part, ['ticks', tmp_ticks]);
-    InputEditorFunctions.UpdateSong(iec);
-  }
-
-  /**
-   * inits a part with two notes at the pitch and ticks of the mouse's coordinates
-   * @param iec
-   */
-  static addPartAtMouse(iec: InputEditorComponent) {
-    iec.keyEditor.setPlayheadToX(iec.info.clientX - iec.info.editorFrameOffsetX);
-    let i;
-    let tmp_ticks = 0;
-    let tmp_numNotes = 2;
-    let tmp_basePitch = iec.info.mousePitchPos;
-    let tmp_part = sequencer.createPart();
-    let tmp_events = [];
-    let tmp_noteLength = iec.song.ppq * 2;
-    let tmp_pitch;
-    let tmp_velocity;
-
-    for (i = 0; i < tmp_numNotes; i++) {
-      // pitch = basePitch + getRandom(-spread, spread, true);
-      tmp_pitch = tmp_basePitch;
-      tmp_velocity = this.getRandom(50, 127, true);
-
-      tmp_events.push(sequencer.createMidiEvent(tmp_ticks, NOTE_ON, tmp_pitch, tmp_velocity));
-      tmp_ticks += tmp_noteLength;
-      tmp_events.push(sequencer.createMidiEvent(tmp_ticks, NOTE_OFF, tmp_pitch, 0));
-      tmp_ticks += tmp_noteLength;
-    }
-    tmp_ticks = iec.info.totalTicksAtHead;
-
-    tmp_part.addEvents(tmp_events);
-    iec.mainTrack.addPartAt(tmp_part, ['ticks', tmp_ticks]);
-    InputEditorFunctions.UpdateTrack(iec);
-    InputEditorFunctions.UpdateSong(iec);
-  }
-
-  //#endregion
-
-
-  /**
-   * returns a new midinote with the given properties
-   * @param start
-   * @param end
-   * @param pitch
-   */
-  static createNewMIDINote(start: number, end: number, pitch: number): MIDINote {
-    let tmp_velocity = 127;
-    let tmp_noteOn = sequencer.createMidiEvent(start, NOTE_ON, pitch, tmp_velocity);
-    let tmp_noteOff = sequencer.createMidiEvent(end, NOTE_OFF, pitch, 0);
-    let tmp_midiNote = sequencer.createMidiNote(tmp_noteOn, tmp_noteOff);
-    return tmp_midiNote;
-  }
-
-  /**
-   * Adds a note at the mouse's coordinates to the selected part
-   * @param tmp_part
-   * @param iec
-   */
-  static createNewNoteAtMouse(tmp_part, iec: InputEditorComponent) {
-    let tmp_pitch = iec.info.mousePitchPos;
-    let tmp_velocity = 127;
-    let tmp_events = [];
-    let tmp_noteLength = iec.song.ppq/*  * 2 */;
-    let tmp_ticks = iec.info.ticksAtX;
-    let tmp_noteOn;
-    let tmp_noteOff;
-    let tmp_note;
-    // tmp_note = sequencer.createNote(pitch.number);
-    tmp_noteOn = sequencer.createMidiEvent(tmp_ticks, NOTE_ON, tmp_pitch, tmp_velocity);
-    tmp_ticks += tmp_noteLength;
-    tmp_noteOff = sequencer.createMidiEvent(tmp_ticks, NOTE_OFF, tmp_pitch, 0);
-    tmp_events.push(tmp_noteOn, tmp_noteOff);
-    tmp_ticks = iec.keyEditor.getTicksAt(iec.info.screenX);
-    console.log('added new note: \n ' +
-      'pitch: ' + tmp_pitch + '\n' +
-      'at ticks: ' + tmp_ticks + '\n' +
-      'velocity: ' + tmp_velocity + '\n' +
-      'length: ' + tmp_noteLength + '\n'
-    );
-    return tmp_events;
-  }
-
-  /**
-   *  Compacts all song tracks onto single track, set to monitor, and set instrument to piano
-   * @param ref_song
-   */
-  static flattenTracks(ref_song: Song) {
-    ref_song.tracks.forEach((track) => {
-        track.setInstrument('piano');
-        track.monitor = true;
-        track.setMidiInput('all');
-      }
-    );
-  }
-
   //#region [rgba(200, 0, 0, 0.05)] Selection Visuals Methods
   /**
    * Set properties in note required for active state
@@ -232,18 +61,6 @@ export class InputEditorFunctions {
       if (note.active) {
         div_Note.className = 'note note-active';
       } else {
-        div_Note.className = 'note';
-      }
-    }
-  }
-
-  static setNoteActiveStateOld(note: Note, div_Note) {
-    div_Note = document.getElementById(note.id);
-    // if (div_Note !== null && note.part.mute === false && note.mute !== true) {
-    if (div_Note !== null) {
-      if (note.active) {
-        div_Note.className = 'note note-active';
-      } else if (note.active === false) {
         div_Note.className = 'note';
       }
     }
@@ -274,91 +91,26 @@ export class InputEditorFunctions {
   }
 
   /**
-   * set properties in part required for active state
-   * @param part
-   * @param div_Part
-   */
-  static setPartActiveState(part: Part, div_Part: HTMLDivElement) {
-    div_Part = document.getElementById(part.id) as HTMLDivElement;
-    if (div_Part !== null && part.mute !== true) {
-      if (part.active) {
-        div_Part.className = 'part part-active';
-      } else if (part.active === false) {
-        div_Part.className = 'part';
-      }
-    }
-  }
-
-  /**
    *  set properties in part required for selected state
    * @param part
    */
-  static selectPart(part: Part) {
-    let div_Part = document.getElementById(part.id);
-    if (part.mute === false) {
-      div_Part.className = 'part part-selected';
-    }
+  static selectPart(part: HTMLPart) {
+    let div_Part = part.div;
+    div_Part.className = 'part part-selected';
   }
 
   /**
    *  set properties in part required for unselected state
    * @param part
    */
-  static unselectPart(part: Part) {
+  static unselectPart(part: HTMLPart) {
     let div_Part = document.getElementById(part.id);
-    if (part.mute === false) {
-      if (div_Part !== null) {
-        div_Part.className = 'part';
-      }
+    if (div_Part !== null) {
+      div_Part.className = 'part';
     }
   }
 
   //#endregion
-  /**
-   * Initializes Song and its properties in the editor
-   */
-  static initSong(): Song {
-
-    let song: Song;
-    const iec = InputEditorComponent.inpEdComp;
-    let insts = sequencer.getInstruments();
-    song = sequencer.createSong({
-      bpm: 200,
-      nominator: 3,
-      denominator: 4,
-      useMetronome: false,
-      instruments: insts
-    });
-
-    iec.mainTrack = sequencer.createTrack('newTrack');
-    song.addTrack(iec.mainTrack);
-    song.update();
-    return song;
-  }
-
-  static initKeyEditor(iec: InputEditorComponent): KeyEditor {
-    let tmp_icons_w = 128;
-    let tmp_w = window.innerWidth - tmp_icons_w;
-    let tmp_h = iec.info.editorHeight;
-    let keyEditor = sequencer.createKeyEditor(null, {
-      viewportHeight: tmp_h,
-      viewportWidth: tmp_w,
-      pitchHeight: iec.info.pitchHeight,
-      lowestNote: iec.info.pitchStart,
-      highestNote: iec.info.pitchEnd,
-      barsPerPage: iec.bppStart
-    });
-    return keyEditor;
-  }
-
-
-  static UpdateTrack(iec: InputEditorComponent) {
-    iec.mainTrack.update();
-  }
-
-  static UpdateSong(iec: InputEditorComponent) {
-    iec.song.update();
-  }
 
 }
 
@@ -391,11 +143,9 @@ export class EditorInfo {
   snapTotalTicksAtHead: number = 0;
   scrollTicksAtHead: number = 0;
   snapScrollTicksAtHead: number = 0;
-  instruments: Instrument[];
   currNote = null;
   currPart = null;
-  allNotes: Note[];
-  allParts: Part[];
+
   flattenTracksToSingleTrack = true;
   edHTMLShell = new EditorHTMLShell();
 
@@ -405,35 +155,6 @@ export class EditorInfo {
   timeSigNom = 3;
   timeSigDenom = 4;
   editorHeight = ((this.pitchEnd - this.pitchStart + 2) * this.pitchHeight);
-
-  UpdateInfo(me: MouseEvent, ke: KeyEditor) {
-    if (me !== null) {
-      this.screenX = me.screenX;
-      this.screenY = me.screenY;
-      this.pageX = me.pageX;
-      this.pageY = me.pageY;
-      this.clientX = me.clientX;
-      this.clientY = me.clientY;
-      this.editorX = me.pageX - this.editorFrameOffsetX;
-      this.editorY = me.pageY - this.editorFrameOffsetY;
-    }
-    this.mouseBarPos = ke.getPositionAt(this.pageX - (this.editorFrameOffsetX)).barsAsString;
-    this.editorScrollX = this.edHTMLShell.div_Editor.scrollLeft;
-    this.editorScrollY = this.edHTMLShell.div_Editor.scrollTop;
-    this.editorFrameOffsetY = this.edHTMLShell.div_Editor.offsetTop;
-    this.editorFrameOffsetX = this.edHTMLShell.div_Editor.offsetLeft;
-    this.headX = ke.getPlayheadX();
-    this.scrolledHeadX = ke.getPlayheadX(true);
-    this.totalTicksAtHead = ke.getTicksAt(this.headX, false);
-    this.snapTotalTicksAtHead = ke.getTicksAt(this.headX);
-    this.scrollTicksAtHead = ke.getTicksAt(this.scrolledHeadX, false);
-    this.snapScrollTicksAtHead = ke.getTicksAt(this.scrolledHeadX);
-    this.mousePitchPos = ke.getPitchAt(this.pageY - this.edHTMLShell.div_Editor.offsetTop - (this.pitchHeight / 2)).number;
-    this.ticksAtX = ke.getTicksAt(
-      this.clientX - this.editorFrameOffsetX, false);
-    this.snapTicksAtX = ke.getTicksAt(
-      this.clientX - this.editorFrameOffsetX, true);
-  }
 
 }
 

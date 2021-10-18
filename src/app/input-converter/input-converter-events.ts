@@ -5,7 +5,6 @@ import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {InputConverterFunctions} from './input-converter-functions';
 import * as JZZ from 'jzz';
 import {InputConverterVisuals} from './input-converter-visuals';
-import {MIDINote, Part, Track} from '../../heartbeat/build';
 import {Tracker} from '../../helpers/Defs';
 import {numberToPitchString} from '../../helpers/Func';
 
@@ -22,16 +21,13 @@ export class InputConverterEvents {
     const padObj = icc.testPadObj;
     if (iec.playing && icc.recordingPrimed && !icc.trackingNotes) {
       InputConverterEvents.startTrackingNotes(icc);
-      icc.backupPart = sequencer.createPart();
     } else if (!iec.playing && icc.recordingPrimed && icc.trackingNotes) {
       InputConverterEvents.stopTrackingNotes(icc, iec);
     }
-    InputConverterEvents.updateControllerStxTrackers(padObj, iec.info.scrollTicksAtHead);
-    InputConverterEvents.updateControllerDPadTrackers(padObj, iec.info.scrollTicksAtHead);
-    InputConverterEvents.updateControllerButtonTrackers(padObj, iec.info.scrollTicksAtHead);
+    InputConverterEvents.updateControllerStxTrackers(padObj, iec.edtrView.playhead.xPos);
+    InputConverterEvents.updateControllerDPadTrackers(padObj, iec.edtrView.playhead.xPos);
+    InputConverterEvents.updateControllerButtonTrackers(padObj, iec.edtrView.playhead.xPos);
 
-    // InputEditorFunctions.UpdateSong(iec); //DO NOT USE
-    // JZZ().refresh();
     InputConverterVisuals.rAF(InputConverterEvents.updateController);
   }
 
@@ -52,12 +48,9 @@ export class InputConverterEvents {
           pos.held = true;
           neg.held = false;
           if (icc.trackingNotes) {
-            icc.stxPart = icc.stxPart != null ? icc.stxPart : sequencer.createPart();
             InputConverterEvents.startTracker(pos,
               currTicks,
-              pitchNum,
-              icc.stxPart
-              // icc.backupPart
+              pitchNum
             );
           }
         }
@@ -67,12 +60,9 @@ export class InputConverterEvents {
           pos.held = false;
           neg.held = true;
           if (icc.trackingNotes) {
-            icc.stxPart = icc.stxPart != null ? icc.stxPart : sequencer.createPart();
             InputConverterEvents.startTracker(neg,
               currTicks,
-              pitchNum,
-              icc.stxPart
-              // icc.backupPart
+              pitchNum
             );
           }
         }
@@ -123,12 +113,9 @@ export class InputConverterEvents {
         icc.midiOutPort.noteOn(0, pitch, 127);
         // if RECORDING
         if (icc.trackingNotes) {
-          icc.dpadPart = icc.dpadPart != null ? icc.dpadPart : sequencer.createPart();
           InputConverterEvents.startTracker(trkr,
             currTicks,
-            pitch,
-            icc.backupPart
-            // icc.dpadPart
+            pitch
           );
         }
         // if RELEASED this frame
@@ -174,12 +161,9 @@ export class InputConverterEvents {
         icc.midiOutPort.noteOn(0, pitch, 127);
         // if RECORDING
         if (icc.trackingNotes) {
-          icc.btnPart = (icc.btnPart != null ? icc.btnPart : sequencer.createPart());
           InputConverterEvents.startTracker(trkr,
             currTicks,
-            InputConverterFunctions.getButtonPitch(idx),
-            icc.backupPart
-            // icc.btnPart
+            InputConverterFunctions.getButtonPitch(idx)
           );
         }
         // if RELEASED this frame
@@ -223,9 +207,6 @@ export class InputConverterEvents {
 
   static stopTrackingNotes(icc: InputConverterComponent, iec: InputEditorComponent) {
     icc.trackedNotes = null;
-    icc.stxPart = null;
-    icc.dpadPart = null;
-    icc.btnPart = null;
     icc.trackingNotes = false;
   }
 
@@ -237,7 +218,7 @@ export class InputConverterEvents {
     }
   }
 
-  static startTracker(trkr: Tracker, ticks: number, pitch: number, part?: Part) {
+  static startTracker(trkr: Tracker, ticks: number, pitch: number) {
     trkr.held = true;
     trkr.inpStart = ticks;
     InputEditorFunctions.testCreateNote(trkr, pitch);
@@ -249,7 +230,6 @@ export class InputConverterEvents {
     trackedNotes.push([trkr.inpStart, trkr.inpEnd, pitch]);
 
     trkr.held = false;
-    trkr.heldNote = null;
     InputEditorFunctions.testFinishNote(trkr);
 
   }

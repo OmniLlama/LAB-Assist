@@ -1,5 +1,4 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {MIDIEvent, Note, MIDINote, Track, Part} from '../../heartbeat/build';
 import {
   InputDisplayComponent,
   GamepadObject,
@@ -23,8 +22,6 @@ import {BBox, Tracker} from '../../helpers/Defs';
 
 export class InputConverterComponent implements OnInit, AfterViewInit {
   static inpConvComp: InputConverterComponent;
-  events: MIDIEvent[];
-
   div: HTMLDivElement;
   midiWidget;
   midiInKbd;
@@ -36,14 +33,10 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   recordingPrimed: boolean = true;
   trackedNotes: Array<[number, number, number]>; // startTicks, endTicks, pitch
 
-  backupPart: Part;
-  stxPart: Part;
   stxTrackerGroup: Array<Tracker>;
 
-  dpadPart: Part;
   dpadTrackerGroup: Array<Tracker>;
 
-  btnPart: Part;
   btnTrackerGroup: Array<Tracker>;
 
   deadZone = .5;
