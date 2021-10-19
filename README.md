@@ -1,3 +1,4 @@
+# NOTE: for the most updated version, please use the new-editor-implementation branch
 
 # LAB-Assist (Largely Audio-Based Assistant)
 
