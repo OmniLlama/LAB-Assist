@@ -2,6 +2,7 @@ import {InputEditorComponent} from './input-editor.component';
 import {InputEditorEvents} from './input-editor-events';
 import {InputEditorFunctions} from './input-editor-functions';
 import {BBox} from '../../helpers/Defs';
+import {Img} from '../../helpers/Gen';
 
 export class InputEditorVisuals {
   /**
@@ -46,14 +47,9 @@ export class InputEditorVisuals {
 
   static createEdges(bbox, div): [HTMLImageElement, HTMLImageElement] {
     const edgeBBoxes = this.createNoteEdgeBBoxes(bbox, 8);
-    const img_Note_leftEdge = document.createElement('img');
-    const img_Note_rightEdge = document.createElement('img');
-    img_Note_leftEdge.id = div.id;
-    img_Note_rightEdge.id = div.id;
-    img_Note_leftEdge.className = 'note-edge';
-    img_Note_rightEdge.className = 'note-edge';
-    img_Note_leftEdge.src = 'assets/images/Editor-Arrow-Left-Transparent.png';
-    img_Note_rightEdge.src = 'assets/images/Editor-Arrow-Right-Transparent.png';
+    const img_Note_leftEdge = Img('Editor-Arrow-Left-Transparent', div.id, 'note-edge');
+    const img_Note_rightEdge = Img('Editor-Arrow-Right-Transparent', div.id, 'note-edge');
+
     InputEditorVisuals.updateElementBBox(img_Note_leftEdge, edgeBBoxes[0]);
     InputEditorVisuals.updateElementBBox(img_Note_rightEdge, edgeBBoxes[1]);
     // img_Note_leftEdge.addEventListener('mouseover', (e) => {
@@ -118,7 +114,7 @@ export class InputEditorVisuals {
   }
 
   /**
-   * Creates bounding boxes for note
+   * Creates bounding boxes for note edges
    * @param bbox Bounding box of note
    * @param xPx Width of bounding box in pixels
    */

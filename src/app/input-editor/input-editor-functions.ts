@@ -33,20 +33,6 @@ export class InputEditorFunctions {
 
   }
 
-  /**
-   * returns a random value between the min and the max
-   * @param min
-   * @param max
-   * @param round
-   */
-  static getRandom(min: number, max: number, round: boolean) {
-    let rand = Math.random() * (max - min) + min;
-    if (round === true) {
-      return Math.round(rand);
-    } else {
-      return rand;
-    }
-  }
 
   //#region [rgba(200, 0, 0, 0.05)] Selection Visuals Methods
   /**
@@ -55,14 +41,11 @@ export class InputEditorFunctions {
    * @param div_Note
    */
   static setNoteActiveState(note: HTMLNote) {
-    const div_Note = document.getElementById(note.id) as HTMLDivElement;
-    // if (div_Note !== null && note.part.mute === false && note.mute !== true) {
-    if (div_Note !== null) {
-      if (note.active) {
-        div_Note.className = 'note note-active';
-      } else {
-        div_Note.className = 'note';
-      }
+    const div_Note = note.div;
+    if (note.active) {
+      div_Note.className = 'note note-active';
+    } else {
+      div_Note.className = 'note';
     }
   }
 
@@ -71,11 +54,8 @@ export class InputEditorFunctions {
    * @param note
    */
   static selectNote(note: HTMLNote) {
-    let div_Note = document.getElementById(note.id);
-    // if (div_Note !== null && note.part.mute === false && note.mute !== true) {
-    if (div_Note !== null) {
-      div_Note.className = 'note note-selected';
-    }
+    let div_Note = note.div;
+    div_Note.className = 'note note-selected';
   }
 
   /**
@@ -83,11 +63,8 @@ export class InputEditorFunctions {
    * @param note
    */
   static unselectNote(note: HTMLNote) {
-    let div_Note = document.getElementById(note.div.id);
-    // if (note.part.mute === false && note.mute !== true && div_Note !== null) {
-    if (div_Note !== null) {
-      div_Note.className = 'note';
-    }
+    let div_Note = note.div;
+    div_Note.className = 'note';
   }
 
   /**
@@ -104,14 +81,25 @@ export class InputEditorFunctions {
    * @param part
    */
   static unselectPart(part: HTMLPart) {
-    let div_Part = document.getElementById(part.id);
-    if (div_Part !== null) {
-      div_Part.className = 'part';
-    }
+    let div_Part = part.div;
+    div_Part.className = 'part';
   }
 
   //#endregion
-
+  /**
+   * returns a random value between the min and the max
+   * @param min
+   * @param max
+   * @param round
+   */
+  static getRandom(min: number, max: number, round: boolean) {
+    const rand = Math.random() * (max - min) + min;
+    if (round === true) {
+      return Math.round(rand);
+    } else {
+      return rand;
+    }
+  }
 }
 
 

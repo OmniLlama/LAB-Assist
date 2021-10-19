@@ -1,4 +1,5 @@
 import {Div} from '../../helpers/Gen';
+import {Queue} from '../../helpers/Defs';
 
 class TrailDot {
   x;
@@ -21,10 +22,10 @@ class TrailDot {
 export class MovementTrail {
   parent: HTMLDivElement;
   divFrame: HTMLDivElement;
-  dots: TrailDot[] = [];
+  maxDots = 20;
+  dots: Queue<TrailDot> = new Queue<TrailDot>(this.maxDots);
   line: SVGPolylineElement;
   svg: SVGSVGElement;
-  maxDots = 12;
   lastPos = [0, 0];
 
   constructor(parent) {
@@ -36,17 +37,19 @@ export class MovementTrail {
     this.svg.appendChild(this.line);
     this.divFrame.appendChild(this.svg);
   }
-  relPos(dot: TrailDot)
-  {
+
+  relPos(dot: TrailDot) {
     const rect = this.parent.getBoundingClientRect();
+    // const rect = this.divFrame.getBoundingClientRect();
     return [dot.x - rect.left, dot.y - rect.top];
   }
+
   draw(pos) {
     const dot = new TrailDot(pos, this.parent);
     dot.draw();
-    this.dots.push(dot);
-    if (this.dots.length >= this.maxDots) {
-      this.parent.removeChild(this.dots.shift().node);
+    const removed = this.dots.qThru(dot);
+    if (removed) {
+      this.parent.removeChild(removed.node);
     }
     this.drawSVGLine();
   }
@@ -54,9 +57,9 @@ export class MovementTrail {
   drawSVGLine() {
     let pts = '';
 
-    this.dots.forEach((dot, i) => {
+    this.dots.q.forEach((dot, i) => {
       const dotPos = this.relPos(dot);
-      pts += `${dotPos[0] + ',' + dotPos[1] + ' '}`;
+      pts += `${dotPos[0]},${dotPos[1]} `;
     });
     this.line.setAttribute('points', pts);
   }

@@ -2,6 +2,7 @@ import {InputConverterFunctions} from '../app/input-converter/input-converter-fu
 import {InputConverterComponent} from '../app/input-converter/input-converter.component';
 import {numberToPitchString} from './Func';
 import {Div} from './Gen';
+import {InputEditorVisuals} from '../app/input-editor/input-editor-visuals';
 
 export class BBox {
   x: number;
@@ -143,7 +144,8 @@ export class HTMLNote {
   div: HTMLDivElement;
   bbox: BBox;
   active: boolean;
-
+  edgeL: HTMLImageElement;
+  edgeR: HTMLImageElement;
   get name() {
     return numberToPitchString(this.pitch);
   }
@@ -161,6 +163,10 @@ export class HTMLNote {
     this.start = start;
     this.bbox = new BBox(this.start, y, 0, 24);
     this.bbox.updateElementToBBox(this.div);
+    const edges = InputEditorVisuals.createEdges(this.bbox, this.div);
+    this.edgeL = edges[0];
+    this.edgeR = edges[1];
+    this.div.append(this.edgeL, this.edgeR);
   }
 
   updateNoteEnd(end: number) {
@@ -217,8 +223,8 @@ export class EditorView {
 export class FPSTracker {
   fps: number = 0;
   avgFPS: number;
-  fpsHistory: Queue<number> = new Queue<number>();
-  fpsHistCnt: number = 60;
+  fpsHistCnt: number = 15;
+  fpsHistory: Queue<number> = new Queue<number>(this.fpsHistCnt);
   lastNow: number = performance.now();
 
   get average() {
@@ -240,6 +246,9 @@ export class Queue<T> {
   q: T[] = [];
   max: number;
 
+  constructor(max) {
+    this.max = max;
+  }
   push(val: T) {
     this.q.push(val);
   }
@@ -248,10 +257,13 @@ export class Queue<T> {
     return this.q.shift();
   }
 
-  qThru(t: T) {
-    if (this.q.length >= this.max) {
-      this.q.pop();
+  qThru(t: T): T {
+    let pop: T;
+    if (this.q.length === this.max) {
+      pop = this.pop();
     }
-    this.q.push(t);
+    this.push(t);
+    // console.log(pop === t);
+    return pop;
   }
 }

@@ -192,7 +192,7 @@ export class InputDisplayComponent implements OnInit {
         pO.DPad.forEach((d, i) => {
           padArr[i] = d.pressed;
         });
-        // InputDisplayFunctions.processDigitalDirectionalInput(padArr, divs_arrowDP.children);
+        InputDisplayFunctions.processDigitalDirectionalInput(padArr, dpDirShell);
       }
       InputDisplayFunctions.processJoystickDirections(pO.pad.axes[0], pO.pad.axes[1], this.orthoDeadzone, this.diagDeadzone, lDirShell);
       InputDisplayFunctions.processJoystickDirections(pO.pad.axes[2], pO.pad.axes[3], this.orthoDeadzone, this.diagDeadzone, rDirShell);

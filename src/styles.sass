@@ -393,6 +393,22 @@ $btn-height: 60px
 .controller
   overflow: hidden
 
+$orange: #ffa600
+$blue: #82d2e5
+$green:#c1d72e
+$list1: $blue, $green, $orange
+
+$list2: $blue 0%,$blue 33%,$green 33%,$green 66%, $orange 66%, $orange 100%
+
+$list3: $blue 0%,$blue 10%,$green 25%,$green 39%,$orange 79%,$orange 100%
+
+$list4: $blue, $green, $orange, $blue, $green, $orange, $blue, $green, $orange
+@mixin gradientStroke($direction, $list)
+  //stroke: -webkit-linear-gradient($direction, $list)
+  //stroke: -moz-linear-gradient($direction, $list)
+  //stroke: -o-linear-gradient($direction, $list)
+  stroke: linear-gradient($direction, $list)
+
 .trail
   z-index: 260
   position: absolute
@@ -416,5 +432,10 @@ svg
     //position: fixed
     z-index: 300
     stroke: yellowgreen
-    stroke-width: 5px
+    //@include gradientStroke(top, $list4)
     fill: none
+    stroke-width: 5px
+
+
+
+

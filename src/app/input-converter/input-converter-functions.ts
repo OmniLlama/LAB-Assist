@@ -58,13 +58,13 @@ export class InputConverterFunctions {
   static getDirectionPitchFromAxis(ind, val): number {
     switch (ind) {
       case 0:
-        return val > 0 ? 16 : 17;
-      case 1:
-        return val > 0 ? 18 : 19;
-      case 2:
         return val > 0 ? 20 : 21;
-      case 3:
+      case 1:
         return val > 0 ? 22 : 23;
+      case 2:
+        return val > 0 ? 16 : 17;
+      case 3:
+        return val > 0 ? 18 : 19;
     }
   }
 

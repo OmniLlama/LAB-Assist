@@ -7,6 +7,7 @@ import * as JZZ from 'jzz';
 import {InputConverterVisuals} from './input-converter-visuals';
 import {Tracker} from '../../helpers/Defs';
 import {numberToPitchString} from '../../helpers/Func';
+import {IMG_DIR, IMG_EXT} from '../../helpers/Vals';
 
 declare let sequencer: any;
 
@@ -16,14 +17,16 @@ export class InputConverterEvents {
    */
   static updateController(): void {
     const icc = InputConverterComponent.inpConvComp;
-    const idc = InputDisplayComponent.inpDispCmp;
     const iec = InputEditorComponent.inpEdComp;
     const padObj = icc.testPadObj;
-    if (iec.playing && icc.recordingPrimed && !icc.trackingNotes) {
-      InputConverterEvents.startTrackingNotes(icc);
-    } else if (!iec.playing && icc.recordingPrimed && icc.trackingNotes) {
-      InputConverterEvents.stopTrackingNotes(icc, iec);
+    if (icc.recordingPrimed) {
+      if (iec.playing && !icc.trackingNotes) {
+        InputConverterEvents.startTrackingNotes(icc);
+      } else if (!iec.playing && icc.trackingNotes) {
+        InputConverterEvents.stopTrackingNotes(icc, iec);
+      }
     }
+
     InputConverterEvents.updateControllerStxTrackers(padObj, iec.edtrView.playhead.xPos);
     InputConverterEvents.updateControllerDPadTrackers(padObj, iec.edtrView.playhead.xPos);
     InputConverterEvents.updateControllerButtonTrackers(padObj, iec.edtrView.playhead.xPos);
@@ -31,10 +34,10 @@ export class InputConverterEvents {
     InputConverterVisuals.rAF(InputConverterEvents.updateController);
   }
 
+  /**
+   * Update Controller Axes
+   */
   static updateControllerStxTrackers(padObj: GamepadObject, currTicks: number) {
-    /**
-     * Update Controller Axes
-     */
     padObj.pad.axes.forEach((a, ind) => {
       const i = (ind * 2);
       const j = (ind * 2) + 1;
@@ -80,7 +83,6 @@ export class InputConverterEvents {
             currTicks,
             icc.liveUpdateHeldNotes);
         }
-        // // if (!pos.held && pos.heldNote != null) {
         // if (!pos.held && pos.htmlNote != null) {
         //   InputConverterEvents.endTracker(pos,
         //     currTicks,
@@ -88,7 +90,6 @@ export class InputConverterEvents {
         //     icc.trackedNotes,
         //     icc.liveUpdateHeldNotes);
         // }
-        // // if (!neg.held && neg.heldNote != null) {
         // if (!neg.held && pos.htmlNote != null) {
         //   InputConverterEvents.endTracker(neg,
         //     currTicks,
@@ -100,16 +101,17 @@ export class InputConverterEvents {
     });
   }
 
+  /**
+   * Update Controller Digital Pad
+   */
   static updateControllerDPadTrackers(padObj: GamepadObject, currTicks: number) {
-    /**
-     * Update Controller Digital Pad
-     */
+
     let dpadIconDivs = Array.from(document.getElementById('editor-input-icons-dir').querySelectorAll('div'));
     const icc = InputConverterComponent.inpConvComp;
     padObj.DPadURLD.forEach((b, idx) => {
       let trkr = icc.dpadTrackerGroup[idx];
       let pitch = InputConverterFunctions.getDirectionPitchFromDPad(idx);
-      if (b.pressed && (!trkr.held)) {
+      if (b.pressed && !trkr.held) {
         icc.midiOutPort.noteOn(0, pitch, 127);
         // if RECORDING
         if (icc.trackingNotes) {
@@ -140,10 +142,11 @@ export class InputConverterEvents {
     });
   }
 
+  /**
+   * Update Controller Buttons
+   */
   static updateControllerButtonTrackers(padObj: GamepadObject, currTicks: number) {
-    /**
-     * Update Controller Buttons
-     */
+
     const btnIconDivs = document.getElementsByClassName('editor-input-icon');
     const harmMinScaleArr: number[] = [0, 2, 3, 5, 7, 8, 11, 12]; //harmonic minor scale
     const majScaleArr: number[] = [0, 2, 4, 5, 7, 9, 11, 12]; //major scale
@@ -169,7 +172,6 @@ export class InputConverterEvents {
         // if RELEASED this frame
       } else if (!b.pressed && trkr.held) {
         icc.midiOutPort.noteOff(0, pitch, 127);
-
         // if RECORDING
         if (icc.trackingNotes) {
           InputConverterEvents.endTracker(trkr,
@@ -188,15 +190,25 @@ export class InputConverterEvents {
   }
 
   static updateInputVisual(div: HTMLDivElement, btn: GamepadButton, name: string) {
+    let icc = InputConverterComponent.inpConvComp;
     if (div !== undefined) {
       let pressed = btn.value > .8;
       if (typeof (btn) === 'object') {
         pressed = btn.pressed;
       }
-      const imgStr = `assets/images/${pressed ? 'pressed_' : ''}${name}.png`;
+      const imgStr = `${IMG_DIR}${pressed ? 'pressed_' : ''}${name}${IMG_EXT}`;
       const img = (div.firstChild as HTMLImageElement);
       img.id = 'icon-img';
       img.src = imgStr;
+
+      if (pressed) {
+        const clone = img.cloneNode(false);
+        icc.div_inputHistory.insertBefore(clone, icc.div_inputHistory.firstChild);
+        const removed = icc.inputHistoryQueue.qThru(clone);
+        if (removed) {
+          icc.div_inputHistory.removeChild(removed);
+        }
+      }
     }
   }
 

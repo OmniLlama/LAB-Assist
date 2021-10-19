@@ -11,7 +11,7 @@ import * as jzzInpKbd from 'jzz-input-kbd';
 
 import {InputConverterEvents} from './input-converter-events';
 import {InputConverterVisuals} from './input-converter-visuals';
-import {BBox, Tracker} from '../../helpers/Defs';
+import {Queue, Tracker} from '../../helpers/Defs';
 
 
 @Component({
@@ -23,6 +23,9 @@ import {BBox, Tracker} from '../../helpers/Defs';
 export class InputConverterComponent implements OnInit, AfterViewInit {
   static inpConvComp: InputConverterComponent;
   div: HTMLDivElement;
+  div_inputHistory: HTMLDivElement;
+  inputHistoryMax: number = 60;
+  inputHistoryQueue: Queue<Node> = new Queue<Node>(this.inputHistoryMax);
   midiWidget;
   midiInKbd;
   midiOutPort;
@@ -51,6 +54,7 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
     this.midi = JZZ.MIDI;
     console.warn(port.name);
     this.div = document.getElementById('editor-input-icons') as HTMLDivElement;
+    this.div_inputHistory = document.getElementById('input-history') as HTMLDivElement;
   }
 
   ngAfterViewInit() {
@@ -143,12 +147,6 @@ export function getPad() {
 let midiAccess;
 let inputs;
 let outputs;
-// if (JZZ.requestMIDIAccess) {
-//   JZZ.requestMIDIAccess({sysex: false}).then(onMIDISuccess, onMIDIFailure);
-//   console.log('There totally is MIDI support in your browser');
-// } else {
-//   console.warn('No MIDI support in your browser');
-// }
 
 /**
  * MIDI success procedures
