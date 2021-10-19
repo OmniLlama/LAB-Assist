@@ -1,3 +1,10 @@
+export enum ButtonState {
+  Off = 0,
+  Down = 1,
+  Held = 2,
+  Up = 3
+}
+
 export enum ButtonLayoutOrder {
   Linear = 'linear',
   Arcade = 'arcade'

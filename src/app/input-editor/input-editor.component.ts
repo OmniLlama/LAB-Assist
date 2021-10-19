@@ -4,88 +4,96 @@ import {InputDisplayComponent} from '../input-display/input-display.component';
 import {InputEditorEvents} from './input-editor-events';
 import {EditorHTMLShell, EditorInfo, InputEditorFunctions} from './input-editor-functions';
 import {InputEditorVisuals} from './input-editor-visuals';
-import {EditorView, FPSTracker, HTMLNote} from '../../helpers/Defs';
+import {EditorView, FPSTracker, HTMLNote, HTMLPart} from '../../helpers/Defs';
 
 declare let sequencer: any;
 
 
 @Component({
-  selector: 'app-input-editor',
-  templateUrl: './input-editor.component.html',
-  styleUrls: ['./input-editor.component.sass']
+    selector: 'app-input-editor',
+    templateUrl: './input-editor.component.html',
+    styleUrls: ['./input-editor.component.sass']
 })
 export class InputEditorComponent implements OnInit, AfterViewInit {
-  static seq = sequencer;
-  static inpEdComp: InputEditorComponent;
-  static inpEdEvts: InputEditorEvents;
-  midiOutput;
-  html: EditorHTMLShell;
-  info: EditorInfo;
-  midiFile;
-  midiFileList;
-  audCntxt: AudioContext;
+    static seq = sequencer;
+    static inpEdComp: InputEditorComponent;
+    static inpEdEvts: InputEditorEvents;
+    midiOutput;
+    html: EditorHTMLShell;
+    info: EditorInfo;
+    midiFile;
+    midiFileList;
+    audCntxt: AudioContext;
 
-  fps: FPSTracker;
+    fps: FPSTracker;
+    getFPS(): number {
+        return this.fps ? this.fps.average : -1;
+    }
 
-  snapAmt;
+    snapAmt;
 
-  flattenTracksToSingleTrack = true;
+    flattenTracksToSingleTrack = true;
 
-  edtrView: EditorView;
-  playing: boolean;
-  currNote: HTMLNote = null;
-  noteList: Array<HTMLNote> = new Array<HTMLNote>();
+    edtrView: EditorView;
+    playing: boolean;
+    currNote: HTMLNote = null;
 
-  bppStart = 8;  // default: 16
+    currNoteId(): string {
+        return this.currNote ? this.currNote.id : 'none';
+    }
 
-  console: Console = window.console;
-  alert = window.alert;
-  idc = InputDisplayComponent.inpDispCmp;
-  icc = InputConverterComponent.inpConvComp;
-  rAF = window.requestAnimationFrame;
-  output = document.getElementById('console');
-  heldEdge;
-  changingNote;
-  holdingEdge = false;
+    currPart: HTMLPart = null;
+    noteList: Array<HTMLNote> = new Array<HTMLNote>();
 
-  constructor() {
-  }
+    bppStart = 8;  // default: 16
 
-  ngOnInit() {
-    InputEditorComponent.inpEdComp = this;
-    this.fps = new FPSTracker();
+    console: Console = window.console;
+    alert = window.alert;
+    idc = InputDisplayComponent.inpDispCmp;
+    icc = InputConverterComponent.inpConvComp;
+    rAF = window.requestAnimationFrame;
+    output = document.getElementById('console');
+    heldEdge;
+    holdingEdge = false;
 
-  }
+    constructor() {
+    }
 
-  ngAfterViewInit(): void {
-    this.init(this);
-  }
+    ngOnInit() {
+        InputEditorComponent.inpEdComp = this;
+        this.fps = new FPSTracker();
 
-  /**
-   * Initialize Critical Components
-   */
-  init(iec: InputEditorComponent): void {
-    const icc = InputConverterComponent.inpConvComp;
-    iec.enableGUI(true);
-    iec.edtrView = new EditorView(36, 240, 360,
-      icc.div.getBoundingClientRect().height);
-    InputEditorEvents.initKeyboard(iec);
-    InputEditorVisuals.render();
-    iec.edtrView.updateDraw();
-  }
+    }
 
-  /**
-   * turns on GUI elements once all are properly initalized
-   * @param flag - whether to turn on the GUI
-   */
-  enableGUI(flag) {
-    const tmp_elmts = document.querySelectorAll('input, select');
-    let tmp_elmt;
-    tmp_elmts.forEach((e) => {
-      tmp_elmt = e;
-      tmp_elmt.disabled = !flag;
-    });
-  }
+    ngAfterViewInit(): void {
+        this.init(this);
+    }
+
+    /**
+     * Initialize Critical Components
+     */
+    init(iec: InputEditorComponent): void {
+        const icc = InputConverterComponent.inpConvComp;
+        iec.enableGUI(true);
+        iec.edtrView = new EditorView(36, 240, 360,
+            icc.div.getBoundingClientRect().height);
+        InputEditorEvents.initKeyboard(iec);
+        InputEditorVisuals.render();
+        iec.edtrView.updateDraw();
+    }
+
+    /**
+     * turns on GUI elements once all are properly initalized
+     * @param flag - whether to turn on the GUI
+     */
+    enableGUI(flag) {
+        const tmp_elmts = document.querySelectorAll('input, select');
+        let tmp_elmt;
+        tmp_elmts.forEach((e) => {
+            tmp_elmt = e;
+            tmp_elmt.disabled = !flag;
+        });
+    }
 }
 
 
@@ -94,12 +102,12 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
  * @param note
  */
 export function getNoteEdgeDivs(note: HTMLNote): [HTMLDivElement, HTMLDivElement, HTMLDivElement] {
-  let tmp_noteDiv = document.getElementById(note.id) as HTMLDivElement;
-  if (tmp_noteDiv != null) {
-    return [tmp_noteDiv, tmp_noteDiv.children[0] as HTMLDivElement, tmp_noteDiv.children[1] as HTMLDivElement];
-  } else {
-    return null;
-  }
+    let tmp_noteDiv = document.getElementById(note.id) as HTMLDivElement;
+    if (tmp_noteDiv != null) {
+        return [tmp_noteDiv, tmp_noteDiv.children[0] as HTMLDivElement, tmp_noteDiv.children[1] as HTMLDivElement];
+    } else {
+        return null;
+    }
 }
 
 /**
@@ -108,7 +116,7 @@ export function getNoteEdgeDivs(note: HTMLNote): [HTMLDivElement, HTMLDivElement
  * @param val
  */
 export function setElementValue(ref_elmt, val) {
-  ref_elmt.value = val;
+    ref_elmt.value = val;
 }
 
 /**
@@ -120,10 +128,10 @@ export function setElementValue(ref_elmt, val) {
  * @param step
  */
 export function setSliderValues(ref_elmt, val, min, max, step) {
-  ref_elmt.min = min;
-  ref_elmt.max = max;
-  ref_elmt.step = step;
-  ref_elmt.value = val;
+    ref_elmt.min = min;
+    ref_elmt.max = max;
+    ref_elmt.step = step;
+    ref_elmt.value = val;
 }
 
 //#region [rgba(120, 120, 0 ,0.15)] Draw Functions

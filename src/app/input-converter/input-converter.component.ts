@@ -23,9 +23,11 @@ import {Queue, Tracker} from '../../helpers/Defs';
 export class InputConverterComponent implements OnInit, AfterViewInit {
   static inpConvComp: InputConverterComponent;
   div: HTMLDivElement;
+
   div_inputHistory: HTMLDivElement;
   inputHistoryMax: number = 60;
   inputHistoryQueue: Queue<Node> = new Queue<Node>(this.inputHistoryMax);
+
   midiWidget;
   midiInKbd;
   midiOutPort;

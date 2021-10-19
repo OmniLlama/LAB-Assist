@@ -3,6 +3,7 @@ import {InputConverterComponent} from '../app/input-converter/input-converter.co
 import {numberToPitchString} from './Func';
 import {Div} from './Gen';
 import {InputEditorVisuals} from '../app/input-editor/input-editor-visuals';
+import {InputEditorEvents} from '../app/input-editor/input-editor-events';
 
 export class BBox {
   x: number;
@@ -167,6 +168,7 @@ export class HTMLNote {
     this.edgeL = edges[0];
     this.edgeR = edges[1];
     this.div.append(this.edgeL, this.edgeR);
+    this.div.addEventListener('mousedown', (me) => InputEditorEvents.Note_lMouDown(me));
   }
 
   updateNoteEnd(end: number) {
@@ -200,7 +202,6 @@ export class EditorView {
     this.bbox.updateElementToBBox(this.score);
 
     const rect = this.div.getBoundingClientRect();
-    // this.playhead = new Playhead(rect.x, rect.y, 5, h);
     this.playhead = new Playhead(0, 0, 5, h);
     this.pitchHeight = h / this.pitchCount;
     this.div.appendChild(this.playhead.div);
@@ -208,7 +209,7 @@ export class EditorView {
   }
 
   updateDraw() {
-    let h = InputConverterComponent.inpConvComp.div.getBoundingClientRect().height;
+    const h = InputConverterComponent.inpConvComp.div.getBoundingClientRect().height;
     this.bbox.setDimension(window.innerWidth, h);
     this.bbox.updateElementToBBox(this.div);
     this.bbox.updateElementToBBox(this.score);
@@ -223,8 +224,8 @@ export class EditorView {
 export class FPSTracker {
   fps: number = 0;
   avgFPS: number;
-  fpsHistCnt: number = 15;
-  fpsHistory: Queue<number> = new Queue<number>(this.fpsHistCnt);
+  fpsHistMax: number = 15;
+  fpsHistory: Queue<number> = new Queue<number>(this.fpsHistMax);
   lastNow: number = performance.now();
 
   get average() {
@@ -263,7 +264,6 @@ export class Queue<T> {
       pop = this.pop();
     }
     this.push(t);
-    // console.log(pop === t);
     return pop;
   }
 }

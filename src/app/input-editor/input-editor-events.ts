@@ -17,6 +17,7 @@ export class InputEditorEvents {
         case 'Backspace':
           iec.playing = false;
           iec.edtrView.playhead.reset();
+          iec.edtrView.updateDraw();
           break;
         case ' ':
           iec.playing = !iec.playing;
@@ -42,17 +43,37 @@ export class InputEditorEvents {
   //  * Event: left mouse click up on note
   //  * @param e
   //  */
-  // static Note_lMouUp(e: MouseEvent): void {
-  //   let iec = InputEditorComponent.inpEdComp;
-  //   iec.keyEditor.stopMoveNote();
-  //   let elmt = iec.html.divs_AllNotes[iec.currNote.id];
-  //   let tmp_note = iec.allNotes[elmt.id];
-  //   // let pitch = InputEditorFunctions.createNewMIDINote(0, 0, iec.info.mousePitchPos);
-  //   let pitch = numberToPitchString(iec.info.mousePitchPos);
-  //   iec.changingNote = null;
-  //   elmt.setAttribute('pitch', pitch);
-  //   document.removeEventListener('mouseup', InputEditorEvents.Note_lMouUp);
-  // }
+  /**
+   * Event: left mouse click down on note
+   * @param e
+   */
+  static Note_lMouDown(e): void {
+    let iec = InputEditorComponent.inpEdComp;
+    if (!iec.holdingEdge) {
+      let tmp_note = iec.noteList[e.target.id];
+      iec.currNote = tmp_note;
+      if (e.ctrlKey) {
+        delete iec.noteList[e.target.id];
+        iec.currNote = null;
+      } else {
+        // iec.keyEditor.startMoveNote(tmp_note,
+        //   e.clientX + iec.info.editorScrollX,
+        //   0
+        // // );
+        // e.target.setAttribute('pitch', '00');
+        document.addEventListener('mouseup', InputEditorEvents.Note_lMouUp, false);
+      }
+    }
+  }
+  static Note_lMouUp(e: MouseEvent): void {
+    let iec = InputEditorComponent.inpEdComp;
+    let elmt = iec.noteList[iec.currNote.id];
+    let tmp_note = iec.noteList[elmt.id];
+    // let pitch = numberToPitchString(iec.info.mousePitchPos);
+    iec.currNote = null;
+    // elmt.setAttribute('pitch', pitch);
+    document.removeEventListener('mouseup', InputEditorEvents.Note_lMouUp);
+  }
   //
   // /* Note Edge */
   // /** Event: mouse over left note edge

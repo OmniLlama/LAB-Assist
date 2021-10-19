@@ -1,3 +1,4 @@
+@use 'src/helpers/Mixins'
 $converter-bg: #181818
 $converter-icon-height: 28px
 
@@ -36,7 +37,9 @@ $converter-icon-height: 28px
   display: block
   height: $converter-icon-height
 
-#input-history
-  overflow: auto
-  //text-overflow: ellipsis
-  white-space: nowrap
+@include Mixins.scrollbars(4, $converter-bg)
+div #input-history
+    overflow-x: scroll
+    //overflow: auto
+    //text-overflow: ellipsis
+    white-space: nowrap

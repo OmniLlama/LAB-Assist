@@ -2,4 +2,5 @@
 <script src="../../../node_modules/jzz/javascript/JZZ.js"></script>
 <div id="test-editor"></div>
 <div id="console"></div>
-<div [ngStyle]="{'color': (fps.average >= 60) ? 'rgb(115,199,175)' : 'rgba(255,213,0,0.78)'}" >{{fps.average}}</div>
+<div [ngStyle]="{'color': (getFPS() >= 60) ? 'rgba(115,199,175,1.0)' : 'rgba(255,213,0,0.78)'}" >{{getFPS()}}</div>
+<div [ngStyle]="{'color': (currNote) ? 'rgb(244,255,41)' : 'rgba(100,100,255,0.78)'}" >{{currNoteId()}}</div>

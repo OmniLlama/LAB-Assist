@@ -18,7 +18,7 @@ export class InputEditorFunctions {
     trkr.htmlNote = new HTMLNote(pitch, iec.edtrView.playhead.bbox.pageCenter,
       iec.edtrView.playhead.bbox.y + ((iec.edtrView.pitchCount - pitch) * iec.edtrView.pitchHeight));
     iec.edtrView.score.appendChild(trkr.htmlNote.div);
-    iec.noteList.push(trkr.htmlNote);
+    iec.noteList[trkr.htmlNote.id] = trkr.htmlNote;
   }
 
   static testUpdateNote(trkr: Tracker) {
