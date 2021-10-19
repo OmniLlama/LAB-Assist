@@ -24,13 +24,13 @@ export class InputConverterFunctions {
       case 7:
         return 4;
       case 8:
-        return 3;
-      case 9:
-        return 2;
-      case 10:
         return 1;
-      case 11:
+      case 9:
         return 0;
+      case 10:
+        return 3;
+      case 11:
+        return 2;
     }
   }
 

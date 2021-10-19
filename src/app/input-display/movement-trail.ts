@@ -14,14 +14,15 @@ class TrailDot {
   }
 
   draw() {
-    this.node.style.left = 24 + this.x + 'px';
-    this.node.style.top = 24 + this.y + 'px';
+    this.node.style.left = 21 + this.x + 'px';
+    this.node.style.top = 21 + this.y + 'px';
   }
 }
 
 export class MovementTrail {
   parent: HTMLDivElement;
-  divFrame: HTMLDivElement;
+  trailShell: HTMLDivElement;
+  svgShell: HTMLDivElement;
   maxDots = 20;
   dots: Queue<TrailDot> = new Queue<TrailDot>(this.maxDots);
   line: SVGPolylineElement;
@@ -30,26 +31,29 @@ export class MovementTrail {
 
   constructor(parent) {
     this.parent = parent;
-    this.divFrame = Div('', 'svg-shell');
-    parent.appendChild(this.divFrame);
+    this.svgShell = Div('', 'svg-shell');
+    this.trailShell = Div('', 'trail-shell');
+    parent.appendChild(this.svgShell);
+    parent.appendChild(this.trailShell);
     this.line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
     this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.svg.appendChild(this.line);
-    this.divFrame.appendChild(this.svg);
+    this.svgShell.appendChild(this.svg);
   }
 
   relPos(dot: TrailDot) {
     const rect = this.parent.getBoundingClientRect();
     // const rect = this.divFrame.getBoundingClientRect();
-    return [dot.x - rect.left, dot.y - rect.top];
+    return [dot.x - rect.left + 24 - window.scrollX,
+      dot.y - rect.top + 24 - window.scrollY];
   }
 
   draw(pos) {
-    const dot = new TrailDot(pos, this.parent);
+    const dot = new TrailDot(pos, this.trailShell);
     dot.draw();
     const removed = this.dots.qThru(dot);
     if (removed) {
-      this.parent.removeChild(removed.node);
+      this.trailShell.removeChild(removed.node);
     }
     this.drawSVGLine();
   }

@@ -24,7 +24,7 @@ export class InputDisplayVisuals {
       if (i !== idx || i === 4) {
         d.updateImgSrc(htmlIdxToDirStr[i]);
       } else {
-        d.updateImgSrc('pressed_' + htmlIdxToDirStr[i]);
+        d.updateImgSrc(htmlIdxToDirStr[i] + '_pressed' );
       }
     });
   }

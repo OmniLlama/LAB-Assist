@@ -130,6 +130,7 @@ export class DirectionalHTMLShell implements HTMLShell {
 
   getTracerPos() {
     const rect = this.tracer.getBoundingClientRect();
+    // return [rect.left, rect.top];
     return [rect.left + window.pageXOffset, rect.top + window.pageYOffset];
   }
 }

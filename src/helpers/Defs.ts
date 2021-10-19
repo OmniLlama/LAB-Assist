@@ -4,6 +4,7 @@ import {numberToPitchString} from './Func';
 import {Div} from './Gen';
 import {InputEditorVisuals} from '../app/input-editor/input-editor-visuals';
 import {InputEditorEvents} from '../app/input-editor/input-editor-events';
+import {InputEditorComponent} from '../app/input-editor/input-editor.component';
 
 export class BBox {
   x: number;
@@ -18,14 +19,14 @@ export class BBox {
       this.height = h;
   }
 
-  shift(x: number, y: number) {
-    this.x += x;
-    this.y += y;
+  shift(x: number = null, y: number= null) {
+    this.x += x ?? 0;
+    this.y += y ?? 0;
   }
 
-  place(x: number, y: number) {
-    this.x = x;
-    this.y = y;
+  place(x: number = null, y: number = null) {
+    this.x = x ?? this.x;
+    this.y = y ?? this.y;
   }
 
   setAll(x: number, y: number, w: number, h: number) {
@@ -112,8 +113,8 @@ export class Playhead {
     this.bbox.updateElementToBBox(this.div);
   }
 
-  reset() {
-    this.placeUpdate(this.startPos[0], this.startPos[1]);
+  reset(yOnly: boolean) {
+    this.placeUpdate(yOnly ? this.bbox.x : this.startPos[0], this.startPos[1]);
   }
 
 }
@@ -160,7 +161,6 @@ export class HTMLNote {
     HTMLNote.idCntr++;
     this.div = Div(`N${HTMLNote.idCntr}`, 'note');
     this.div.setAttribute('pitch', numberToPitchString(this.pitch));
-    // this.div.addEventListener('mousemove', (me) => this.updateNotePos(me));
     this.start = start;
     this.bbox = new BBox(this.start, y, 0, 24);
     this.bbox.updateElementToBBox(this.div);
@@ -177,7 +177,7 @@ export class HTMLNote {
     this.bbox.updateElementToBBox(this.div);
   }
 
-  updateNotePos(me: MouseEvent) {
+  updateNotePos(me) {
     this.bbox.x = me.pageX - this.bbox.center;
     this.bbox.updateElementToBBox(this.div);
   }
@@ -190,18 +190,19 @@ export class EditorView {
   pitchHeight: number;
   bbox: BBox;
   playhead: Playhead;
+  convX: number = 0;
+  convY: number = 0;
 
   constructor(x, y, w, h) {
+    this.convX = InputConverterComponent.inpConvComp.div.getBoundingClientRect().width;
     this.bbox = new BBox(x, y, w, h);
     this.div = document.getElementById('test-editor') as HTMLDivElement;
     this.score = Div('test-score');
     this.score.addEventListener('click', (me) => this.playhead.xPlaceUpdate(me.x));
-
     this.div.appendChild(this.score);
     this.bbox.updateElementToBBox(this.div);
     this.bbox.updateElementToBBox(this.score);
 
-    const rect = this.div.getBoundingClientRect();
     this.playhead = new Playhead(0, 0, 5, h);
     this.pitchHeight = h / this.pitchCount;
     this.div.appendChild(this.playhead.div);
@@ -209,7 +210,11 @@ export class EditorView {
   }
 
   updateDraw() {
-    const h = InputConverterComponent.inpConvComp.div.getBoundingClientRect().height;
+    const cnvRect = InputConverterComponent.inpConvComp.div.getBoundingClientRect();
+    this.convX = cnvRect.width;
+    this.convY = cnvRect.height;
+    const h = this.convY;
+    this.bbox.place(cnvRect.x + cnvRect.width, null);
     this.bbox.setDimension(window.innerWidth, h);
     this.bbox.updateElementToBBox(this.div);
     this.bbox.updateElementToBBox(this.score);
@@ -217,7 +222,7 @@ export class EditorView {
     const rect = this.score.getBoundingClientRect();
     this.playhead.bbox.setHeight(h);
     this.playhead.StartPos = [rect.x, rect.y];
-    this.playhead.reset();
+    this.playhead.reset(true);
   }
 }
 

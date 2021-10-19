@@ -44,7 +44,7 @@ export enum ButtonNotationType {
   Xbox = 'xb'
 }
 
-export let xbBtns = ['a', 'b', 'x', 'y', 'lb', 'rb', 'lt', 'rt'];
+export let xbBtns = ['a', 'b', 'x', 'y', 'lb', 'rb', 'lt', 'rt', 'select', 'start', 'lsc', 'rsc'];
 export let psBtns = ['X', 'O', '[]', '^', 'l1', 'r1', 'l2', 'r2'];
 export let sfBtns = ['lk', 'mk', 'lp', 'mp', 'l1', 'hp', 'l2', 'hk'];
 export let ggBtns = ['P', 'D', 'K', 'S', 'HS', 'l1', 'l2', 'SP'];

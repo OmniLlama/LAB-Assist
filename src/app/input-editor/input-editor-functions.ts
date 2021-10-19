@@ -4,7 +4,6 @@ import {BBox, HTMLNote, HTMLPart, Tracker} from '../../helpers/Defs';
 import {InputEditorVisuals} from './input-editor-visuals';
 import {InputConverterFunctions} from '../input-converter/input-converter-functions';
 
-;
 declare let sequencer: any;
 
 const NOTE_OFF = 0x80;
@@ -16,7 +15,7 @@ export class InputEditorFunctions {
   static testCreateNote(trkr: Tracker, pitch: number) {
     let iec = InputEditorComponent.inpEdComp;
     trkr.htmlNote = new HTMLNote(pitch, iec.edtrView.playhead.bbox.pageCenter,
-      iec.edtrView.playhead.bbox.y + ((iec.edtrView.pitchCount - pitch) * iec.edtrView.pitchHeight));
+      iec.edtrView.playhead.bbox.y + ((iec.edtrView.pitchCount - pitch - 1) * iec.edtrView.pitchHeight));
     iec.edtrView.score.appendChild(trkr.htmlNote.div);
     iec.noteList[trkr.htmlNote.id] = trkr.htmlNote;
   }

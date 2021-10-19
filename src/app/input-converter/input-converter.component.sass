@@ -2,21 +2,26 @@
 $converter-bg: #181818
 $converter-icon-height: 28px
 
-#record-check
-  background-size: 24px
 
-
-#record-check-label
-  font-size: .8em
-  background-color: rgba(60, 60, 60, .6)
+#record-check-label, #live-update-label
   color: white
-  &:checked
-    background-color: rgba(240, 60, 60, .9)
+  font-size: .8em
+  //background-color: rgba(60, 60, 60, .6)
+
+  #record-check, #live-update-check
+    background-size: 24px
+
+    //&:checked
+    //  background-color: rgba(240, 60, 60, .9)
+
+    &:checked &:disabled
+      background-color: red
 
 #button-divider
   img
     position: absolute
     z-index: 100
+
 #editor-input-icons
   background-color: $converter-bg
   display: block
@@ -25,21 +30,29 @@ $converter-icon-height: 28px
 
 .editor-input-icons-dir
   padding-top: 2px
+
   .editor-input-icon-direction
     display: block
     height: $converter-icon-height - 3
+
     .editor-input-icon:first-of-type
       padding-top: 1px
+
 .editor-input-icons-btn
   .editor-input-icon:first-of-type
     padding-top: 4px
+
 .editor-input-icon
   display: block
   height: $converter-icon-height
 
-@include Mixins.scrollbars(4, $converter-bg)
-div #input-history
-    overflow-x: scroll
-    //overflow: auto
-    //text-overflow: ellipsis
+#input-history-shell
+  background: #343434
+  height: 30px
+  #input-history
+    //overflow-x: scroll
+    @include Mixins.quick-scroll-bar(8px, 6px, 6px, rgb(166, 166, 166))
     white-space: nowrap
+    //text-overflow: ellipsis
+    img
+      @include Mixins.unselectable

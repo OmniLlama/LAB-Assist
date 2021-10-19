@@ -148,8 +148,8 @@ export class InputConverterEvents {
   static updateControllerButtonTrackers(padObj: GamepadObject, currTicks: number) {
 
     const btnIconDivs = document.getElementsByClassName('editor-input-icon');
-    const harmMinScaleArr: number[] = [0, 2, 3, 5, 7, 8, 11, 12]; //harmonic minor scale
-    const majScaleArr: number[] = [0, 2, 4, 5, 7, 9, 11, 12]; //major scale
+    const harmMinScaleArr: number[] = [0, 2, 3, 5, 7, 8, 11, 12, 14, 15, 17, 19]; //harmonic minor scale
+    const majScaleArr: number[] = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19]; //major scale
     const scale: number[] = harmMinScaleArr;
     const rootNote: number = 51;
     const icc = InputConverterComponent.inpConvComp;
@@ -196,7 +196,7 @@ export class InputConverterEvents {
       if (typeof (btn) === 'object') {
         pressed = btn.pressed;
       }
-      const imgStr = `${IMG_DIR}${pressed ? 'pressed_' : ''}${name}${IMG_EXT}`;
+      const imgStr = `${IMG_DIR}${name}${pressed ? '_pressed' : ''}${IMG_EXT}`;
       const img = (div.firstChild as HTMLImageElement);
       img.id = 'icon-img';
       img.src = imgStr;

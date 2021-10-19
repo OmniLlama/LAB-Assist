@@ -1,8 +1,8 @@
+@use 'helpers/Mixins'
 @import 'app/input-converter/input-converter.component'
 @import 'app/input-display/input-display.component'
 @import 'app/input-editor/input-editor.component'
 @import 'app/database-explorer/database-explorer.component'
-
 
 html
   background-color: #4b4b4b
@@ -17,6 +17,7 @@ html
 #test-editor
   //position: absolute
   background-color: rgba(33, 33, 33, 0.82)
+  //@include Mixins.quick-scroll-bar(8px, 6px, 6px, rgb(166, 166, 166))
 
 #test-playhead
   position: absolute
@@ -160,6 +161,18 @@ $clr-c-1: rgba(144, 26, 255, 0.73)
 
 $clr-00: rgba(255, 213, 0, 0.78)
 
+.note[pitch='B0']
+  background-color: $clr-b0
+
+.note[pitch='A#0']
+  background-color: $clr-as0
+
+.note[pitch='A0']
+  background-color: $clr-a0
+
+.note[pitch='G#0']
+  background-color: $clr-gs0
+
 .note[pitch='G0']
   background-color: $clr-g0
 
@@ -229,6 +242,7 @@ $clr-00: rgba(255, 213, 0, 0.78)
   z-index: 10
   background-color: $clr-note-bg
   border: 1px solid $clr-note-border
+  @include Mixins.unselectable
 
 .note-info
 // text-align: center
@@ -251,6 +265,7 @@ $clr-00: rgba(255, 213, 0, 0.78)
 
 .note-edge
   position: absolute
+  @include Mixins.unselectable
 
 .part
   position: absolute
@@ -423,12 +438,12 @@ $list4: $blue, $green, $orange, $blue, $green, $orange, $blue, $green, $orange
   z-index: 300
 
 svg
-  position: absolute
+  //position: absolute
   z-index: 300
 
   polyline
     //position: fixed
-    z-index: 300
+    z-index: 200
     stroke: yellowgreen
     fill: none
     stroke-width: 5px

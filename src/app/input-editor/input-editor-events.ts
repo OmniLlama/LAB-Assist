@@ -16,7 +16,7 @@ export class InputEditorEvents {
       {
         case 'Backspace':
           iec.playing = false;
-          iec.edtrView.playhead.reset();
+          iec.edtrView.playhead.reset(false);
           iec.edtrView.updateDraw();
           break;
         case ' ':
@@ -39,10 +39,7 @@ export class InputEditorEvents {
   }
 
 
-  // /**
-  //  * Event: left mouse click up on note
-  //  * @param e
-  //  */
+
   /**
    * Event: left mouse click down on note
    * @param e
@@ -56,23 +53,29 @@ export class InputEditorEvents {
         delete iec.noteList[e.target.id];
         iec.currNote = null;
       } else {
-        // iec.keyEditor.startMoveNote(tmp_note,
-        //   e.clientX + iec.info.editorScrollX,
-        //   0
-        // // );
         // e.target.setAttribute('pitch', '00');
-        document.addEventListener('mouseup', InputEditorEvents.Note_lMouUp, false);
+        // document.addEventListener('mousemove', (me) => tmp_note.updateNotePos(me));
+        // document.addEventListener('mouseup', InputEditorEvents.Note_lMouUp);
+        tmp_note.div.addEventListener('mousemove', (me) => tmp_note.updateNotePos(me));
+        tmp_note.div.addEventListener('mouseup', InputEditorEvents.Note_lMouUp, false);
       }
     }
   }
+  // /**
+  //  * Event: left mouse click up on note
+  //  * @param e
+  //  */
   static Note_lMouUp(e: MouseEvent): void {
     let iec = InputEditorComponent.inpEdComp;
-    let elmt = iec.noteList[iec.currNote.id];
-    let tmp_note = iec.noteList[elmt.id];
+    // let tmp_note = iec.noteList[iec.currNote.id];
+    let tmp_note = iec.noteList[iec.currNote.id];
     // let pitch = numberToPitchString(iec.info.mousePitchPos);
-    iec.currNote = null;
     // elmt.setAttribute('pitch', pitch);
-    document.removeEventListener('mouseup', InputEditorEvents.Note_lMouUp);
+    // document.removeEventListener('mousemove', (me) => tmp_note.updateNotePos(me));
+    // document.removeEventListener('mouseup', InputEditorEvents.Note_lMouUp);
+    tmp_note.div.removeEventListener('mousemove', (me) => tmp_note.updateNotePos(me));
+    tmp_note.div.removeEventListener('mouseup', InputEditorEvents.Note_lMouUp, false);
+    iec.currNote = null;
   }
   //
   // /* Note Edge */
