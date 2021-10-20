@@ -13,19 +13,13 @@ https://jazz-soft.net/download/Jazz-Plugin/
 run npm update
 
 ***Note To Those who want to run the main branch***
-You need to run the above, and once all dependencies are installed, you will find a file called `index.d.ts_BACKUP` in the root directory, open and copy all of its contents.
-
--then, you must navigate to `/node_modules/heartbeat-sequencer/build/` and find the `index.d.ts` file within. open that and replace all of its contents with the ones copied from the root directory file. save the file, and all compiler errors should be resolved and the project will run as intended, barring any fundamental errors that obviously break intended behavior, which I can be contacted regarding further solutions to get it running.
-
--Also works best with an Xbox 360 / Xbox One / XInput Controller, partial and inaccurate functionality also possible with alternatives, but not guaranteed due to lack of ability to test currently. 
+-Works best with an Xbox 360 / Xbox One / XSX / XInput Controller, partial and inaccurate functionality also possible with alternatives, but not guaranteed due to lack of ability to test currently. 
 
 ## Development server
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`.
 
 ## Hopefully Near-Future Improvements
 
-- Moving Sequencer functionality from heartbeat-sequencer(https://github.com/abudaan/heartbeat) to webDAW(https://github.com/abudaan/webdaw-modules) & making several integration refinements between components
-  - In hopes of using the latest updates and achieve the fastest & lowest-level interoperability between the MIDI Input, Controller events, and audio feedback / playback.
 - Overhauling visual/interface components.
   - Including more customizablility in button arrangement and color schemes, adding different platform schemes and game-dependent labelling
   - Less debug interface garishly on the page (obviously)
