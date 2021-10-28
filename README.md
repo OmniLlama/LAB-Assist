@@ -12,7 +12,8 @@ https://jazz-soft.net/download/Jazz-Plugin/
 
 run npm update
 
-***Note To Those who want to run the main branch***
+***Note To Those who want to run/test***
+
 -Works best with an Xbox 360 / Xbox One / XSX / XInput Controller, partial and inaccurate functionality also possible with alternatives, but not guaranteed due to lack of ability to test currently. 
 
 ## Development server
