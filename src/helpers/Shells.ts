@@ -1,7 +1,7 @@
 import {MovementTrail} from '../app/input-display/movement-trail';
 import {InputDisplayVisuals} from '../app/input-display/input-display-visuals';
 import {Div, SubImg} from './Gen';
-import {IMG_EXT, IMG_DIR} from './Vals';
+import {IMG_EXT, IMG_DIR_BASE} from './Vals';
 import {GamepadObject, htmlIdxToDirStr, nameButton} from '../app/input-display/input-display.component';
 
 interface HTMLShell {
@@ -21,7 +21,7 @@ class ButtonHTMLShell implements HTMLShell {
   }
 
   updateImgSrc(src: string) {
-    this.img.src = `${IMG_DIR + src + IMG_EXT}`;
+    this.img.src = `${IMG_DIR_BASE + src + IMG_EXT}`;
   }
 }
 

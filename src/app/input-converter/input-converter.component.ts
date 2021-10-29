@@ -25,7 +25,7 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   div: HTMLDivElement;
 
   div_inputHistory: HTMLDivElement;
-  inputHistoryMax: number = 60;
+  inputHistoryMax: number = 300;
   inputHistoryQueue: Queue<Node> = new Queue<Node>(this.inputHistoryMax);
 
   midiWidget;

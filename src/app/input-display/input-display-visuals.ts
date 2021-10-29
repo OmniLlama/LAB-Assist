@@ -1,6 +1,6 @@
 import {InputDisplayFunctions} from './input-display-functions';
 import {dirSetId, htmlIdxToDirStr, nameButton, tracerAssnId} from './input-display.component';
-import {IMG_EXT, IMG_DIR} from '../../helpers/Vals';
+import {IMG_EXT, IMG_DIR_BASE} from '../../helpers/Vals';
 import {DirectionalHTMLShell} from '../../helpers/Shells';
 import {Div, Img, SubImg} from '../../helpers/Gen';
 

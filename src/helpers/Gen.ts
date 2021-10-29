@@ -1,8 +1,8 @@
-import {IMG_EXT, IMG_DIR} from './Vals';
+import {IMG_EXT, IMG_DIR_BASE} from './Vals';
 
 export function Img(fileName: string, id: string = null, className: string = null, dirOverride: string = null, extOverride: string = null) {
   const img = document.createElement('img');
-  img.src = `${(dirOverride ?? IMG_DIR) + fileName + (extOverride ?? IMG_EXT)}`;
+  img.src = `${(dirOverride ?? IMG_DIR_BASE) + fileName + (extOverride ?? IMG_EXT)}`;
   img.id = id ?? `${fileName}-img`;
   if (className) {
     img.className = className;

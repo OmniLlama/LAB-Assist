@@ -7,7 +7,7 @@ import * as JZZ from 'jzz';
 import {InputConverterVisuals} from './input-converter-visuals';
 import {Tracker} from '../../helpers/Defs';
 import {numberToPitchString} from '../../helpers/Func';
-import {IMG_DIR, IMG_EXT} from '../../helpers/Vals';
+import {IMG_DIR_BASE, IMG_EXT} from '../../helpers/Vals';
 
 declare let sequencer: any;
 
@@ -196,7 +196,7 @@ export class InputConverterEvents {
       if (typeof (btn) === 'object') {
         pressed = btn.pressed;
       }
-      const imgStr = `${IMG_DIR}${name}${pressed ? '_pressed' : ''}${IMG_EXT}`;
+      const imgStr = `${IMG_DIR_BASE}${name}${pressed ? '_pressed' : ''}${IMG_EXT}`;
       const img = (div.firstChild as HTMLImageElement);
       img.id = 'icon-img';
       img.src = imgStr;
