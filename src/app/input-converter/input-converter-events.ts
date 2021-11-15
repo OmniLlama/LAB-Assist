@@ -8,6 +8,7 @@ import {InputConverterVisuals} from './input-converter-visuals';
 import {Tracker} from '../../helpers/Defs';
 import {numberToPitchString} from '../../helpers/Func';
 import {IMG_DIR_BASE, IMG_EXT} from '../../helpers/Vals';
+import {Div} from '../../helpers/Gen';
 
 declare let sequencer: any;
 
@@ -27,10 +28,19 @@ export class InputConverterEvents {
       }
     }
 
+    icc.div_currInputHistory = Div(null, 'input-history-node');
+
     InputConverterEvents.updateControllerStxTrackers(padObj, iec.edtrView.playhead.xPos);
     InputConverterEvents.updateControllerDPadTrackers(padObj, iec.edtrView.playhead.xPos);
     InputConverterEvents.updateControllerButtonTrackers(padObj, iec.edtrView.playhead.xPos);
 
+    if (icc.div_currInputHistory.firstChild) {
+      icc.div_inputHistory.insertBefore(icc.div_currInputHistory, icc.div_inputHistory.firstChild);
+      const removed = icc.inputHistoryQueue.qThru(icc.div_currInputHistory);
+      if (removed) {
+        icc.div_inputHistory.removeChild(removed);
+      }
+    }
     InputConverterVisuals.rAF(InputConverterEvents.updateController);
   }
 
@@ -203,11 +213,7 @@ export class InputConverterEvents {
 
       if (pressed) {
         const clone = img.cloneNode(false);
-        icc.div_inputHistory.insertBefore(clone, icc.div_inputHistory.firstChild);
-        const removed = icc.inputHistoryQueue.qThru(clone);
-        if (removed) {
-          icc.div_inputHistory.removeChild(removed);
-        }
+        icc.div_currInputHistory.append(clone);
       }
     }
   }

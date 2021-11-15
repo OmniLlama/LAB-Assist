@@ -25,6 +25,8 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   div: HTMLDivElement;
 
   div_inputHistory: HTMLDivElement;
+  div_currInputHistory: HTMLDivElement;
+
   inputHistoryMax: number = 300;
   inputHistoryQueue: Queue<Node> = new Queue<Node>(this.inputHistoryMax);
 

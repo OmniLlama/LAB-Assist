@@ -48,11 +48,22 @@ $converter-icon-height: 28px
 
 #input-history-shell
   background: #343434
-  height: 30px
+  height: 128px
+  //overflow-x: scroll
+  @include Mixins.quick-scroll-bar(8px, 6px, 6px, rgb(166, 166, 166))
   #input-history
     //overflow-x: scroll
-    @include Mixins.quick-scroll-bar(8px, 6px, 6px, rgb(166, 166, 166))
+    //@include Mixins.quick-scroll-bar(8px, 6px, 6px, rgb(166, 166, 166))
     white-space: nowrap
-    //text-overflow: ellipsis
-    img
-      @include Mixins.unselectable
+    height: 128px
+    width: 300 * 24px
+    .input-history-node
+      white-space: nowrap
+      display: grid
+      //display: inline-block
+      //height: 128px
+      grid-auto-rows: auto
+      width: 24px
+      float: left
+      img
+        //@include Mixins.unselectable
