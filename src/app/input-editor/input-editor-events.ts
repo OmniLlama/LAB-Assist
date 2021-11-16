@@ -54,10 +54,8 @@ export class InputEditorEvents {
         iec.currNote = null;
       } else {
         // e.target.setAttribute('pitch', '00');
-        // document.addEventListener('mousemove', (me) => tmp_note.updateNotePos(me));
-        // document.addEventListener('mouseup', InputEditorEvents.Note_lMouUp);
-        tmp_note.div.addEventListener('mousemove', (me) => tmp_note.updateNotePos(me));
-        tmp_note.div.addEventListener('mouseup', InputEditorEvents.Note_lMouUp, false);
+        document.addEventListener('mousemove', (me) => iec.moveNote(me));
+        document.addEventListener('mouseup', InputEditorEvents.Note_lMouUp);
       }
     }
   }
@@ -67,13 +65,10 @@ export class InputEditorEvents {
   //  */
   static Note_lMouUp(e: MouseEvent): void {
     let iec = InputEditorComponent.inpEdComp;
-    // let tmp_note = iec.noteList[iec.currNote.id];
     let tmp_note = iec.noteList[iec.currNote.id];
     // let pitch = numberToPitchString(iec.info.mousePitchPos);
     // elmt.setAttribute('pitch', pitch);
-    // document.removeEventListener('mousemove', (me) => tmp_note.updateNotePos(me));
-    // document.removeEventListener('mouseup', InputEditorEvents.Note_lMouUp);
-    tmp_note.div.removeEventListener('mousemove', (me) => tmp_note.updateNotePos(me));
+    tmp_note.div.removeEventListener('mousemove', (me) => iec.moveNote(me));
     tmp_note.div.removeEventListener('mouseup', InputEditorEvents.Note_lMouUp, false);
     iec.currNote = null;
   }

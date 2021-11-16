@@ -114,7 +114,7 @@ export class Playhead {
   }
 
   reset(yOnly: boolean) {
-    this.placeUpdate(yOnly ? this.bbox.x : this.startPos[0], this.startPos[1]);
+    this.placeUpdate(yOnly ? this.bbox.x : this.startPos[0] + window.scrollX, this.startPos[1] + window.scrollY);
   }
 
 }
@@ -234,7 +234,7 @@ export class FPSTracker {
   lastNow: number = performance.now();
 
   get average() {
-    return Math.floor(this.fpsHistory.q.reduce((a, b) => a + b, 0) / this.fpsHistory.q.length);
+    return Math.ceil(this.fpsHistory.q.reduce((a, b) => a + b, 0) / this.fpsHistory.q.length);
   }
 
   constructor() {

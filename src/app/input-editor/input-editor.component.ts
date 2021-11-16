@@ -25,10 +25,7 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
     midiFileList;
     audCntxt: AudioContext;
 
-    fps: FPSTracker;
-    getFPS(): number {
-        return this.fps ? this.fps.average : -1;
-    }
+
 
     snapAmt;
 
@@ -36,10 +33,14 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
 
     edtrView: EditorView;
     playing: boolean;
+
     currNote: HTMLNote = null;
 
     currNoteId(): string {
         return this.currNote ? this.currNote.id : 'none';
+    }
+    moveNote(me: MouseEvent){
+      this.currNote.updateNotePos(me);
     }
 
     currPart: HTMLPart = null;
@@ -61,7 +62,6 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
 
     ngOnInit() {
         InputEditorComponent.inpEdComp = this;
-        this.fps = new FPSTracker();
 
     }
 

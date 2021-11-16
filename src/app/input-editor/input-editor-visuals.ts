@@ -67,20 +67,6 @@ export class InputEditorVisuals {
     return [img_Note_leftEdge, img_Note_rightEdge];
   }
 
-
-
-  /**
-   * Fits element within its bounding box
-   * @param element
-   * @param bbox
-   */
-  static updateElementBBoxOld(element, bbox: any) {
-    element.style.left = bbox.x + 'px';
-    element.style.top = bbox.y + 'px';
-    element.style.width = bbox.width + 'px';
-    element.style.height = bbox.height + 'px';
-  }
-
   /**
    * Fits element within its bounding box
    * @param element
@@ -109,7 +95,6 @@ export class InputEditorVisuals {
       // iec.info.UpdateInfo(null, iec.keyEditor);
       iec.edtrView.playhead.shiftUpdate(2, 0);
     }
-    iec.fps.update();
     requestAnimationFrame(iev.render);
   }
 

@@ -16,7 +16,6 @@ import {InputDisplayFunctions} from './input-display-functions';
 import {InputDisplayEvents} from './input-display-events';
 import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {GamepadHTMLShell} from '../../helpers/Shells';
-import {FPSTracker} from '../../helpers/Defs';
 import {normalizeVector} from '../../helpers/Func';
 
 export let pads: Array<Gamepad>;
@@ -45,13 +44,11 @@ export class InputDisplayComponent implements OnInit {
   static inpDispCmp: InputDisplayComponent;
   gamepadObjects: Array<GamepadObject>;
   mvNotTy: MovementNotationType;
-  mvNotTypes = MovementNotationType;
   butNotTy: ButtonNotationType = ButtonNotationType.StreetFighter;
   butNotTypes = ButtonNotationType;
   mntKeys = Object.keys(MovementNotationType);
   bntKeys = Object.keys(ButtonNotationType);
-  btnDivs: Array<HTMLDivElement>;
-  dirDivs: Array<HTMLSpanElement>;
+  controllers_div = document.getElementById('controllers');
 
   diagDeadzone = 0.4;
   orthoDeadzone = 0.75;
@@ -63,6 +60,7 @@ export class InputDisplayComponent implements OnInit {
 
   constructor() {
   }
+
   ngOnInit(): void {
     const haveWebkitEvents = 'WebKitGamepadEvent' in window;
     const haveEvents = 'GamepadEvent' in window;
@@ -94,21 +92,6 @@ export class InputDisplayComponent implements OnInit {
   }
 
   /**
-   * The createAxisMeter function gets passed one axis at a time, until there are 2 axes (x and y).
-   * It then assigns each axis a default value of 0, min of -1, and max of 1 so that we can tell the direction of the joystick easily.
-   */
-  createAxisSpanElement(ind): HTMLSpanElement {
-    const axisName = axisToAnalogName[ind];
-    console.log(axisName);
-    const elmt = document.createElement('span');
-    elmt.className = 'axis';
-    elmt.setAttribute('min', '-1');
-    elmt.setAttribute('max', '1');
-    elmt.setAttribute('value', '0');
-    return elmt;
-  }
-
-  /**
    * The addgamepad function is large and does most of the work in this component.
    * First, it sets the current gamepad to the array of controllers.
    * Next, it creates a series of div elements where things such as gamepad info, gamepad buttons, and gamepad arrows will live.
@@ -122,6 +105,16 @@ export class InputDisplayComponent implements OnInit {
     // Hide start message
     document.getElementById('start').style.display = 'none';
     document.getElementById('controllers').appendChild(padObjs[gamepad.index].html.div);
+    InputEditorComponent.inpEdComp.edtrView.updateDraw();
+    InputDisplayComponent.rAF(cb => this.updateStatus());
+  }
+
+  removeHtmlGamepad(gamepad: Gamepad): void {
+    // Hide start message
+    document.getElementById('start').style.display = 'none';
+    document.getElementById('controllers').removeChild(padObjs[gamepad.index].html.div);
+    pads[gamepad.index] = null;
+    padObjs[gamepad.index] = null;
     InputEditorComponent.inpEdComp.edtrView.updateDraw();
     InputDisplayComponent.rAF(cb => this.updateStatus());
   }
@@ -163,26 +156,32 @@ export class InputDisplayComponent implements OnInit {
      * Controller Status Loop
      */
     padObjs.forEach((pO, ind) => {
-      /*
-      REPLACE WITH UPDATE EVENT SOOOOONN
-       */
-      pO.pad = pads[pO.pad.index];
-
-      for (const i of pO.btnLayout) {
-        const val = pO.pad.buttons[i];
+      pO.updateGamepad(pads);
+      pO.btnLayout.forEach((b, i) => {
+        const val = pO.pad.buttons[b];
         const pressed = val.value > 0.8;
-        pO.html.btnShells[i].updateImgSrc(nameButton(i) + (pressed ? '_pressed' : ''));
-      }
+        pO.html.btnShells[i].updateImg(pressed);
+      });
+
       /**
-       * Get Axis Status */
+       * Get Axes Status */
 
       const lDirShell = pO.html.dirArrowSets[0];
       const rDirShell = pO.html.dirArrowSets[1];
       const dpDirShell = pO.html.dirArrowSets[2];
       const dpVec = pO.DPadToVector();
 
+      pO.html.pad2WayAxes[0].updateAxis(pO.axisByIdx(0));
+      pO.html.pad2WayAxes[1].updateAxis(pO.axisByIdx(1));
+      pO.html.pad2WayAxes[2].updateAxis(pO.axisByIdx(2));
+      pO.html.pad2WayAxes[3].updateAxis(pO.axisByIdx(3));
+      // pO.html.padAxes[0].setAttribute('value', `${pO.axisByIdx(0)}`);
+      // pO.html.padAxes[0].style.width = `${((pO.axisByIdx(0) + 1)) * 50}%`;
+      // pO.html.padAxes[1].setAttribute('value', `${pO.axisByIdx(1)}`);
+      // pO.html.padAxes[2].setAttribute('value', `${pO.axisByIdx(2)}`);
+      // pO.html.padAxes[3].setAttribute('value', `${pO.axisByIdx(3)}`);
       lDirShell.div.style.display = this.useLeftStick ? 'inline-block' : 'none';
-      lDirShell.updateTracer([pO.Axes[0], pO.Axes[1]]);
+      lDirShell.updateTracer(pO.axisPair(0));
       rDirShell.div.style.display = this.useRightStick ? 'inline-block' : 'none';
       rDirShell.updateTracer([pO.Axes[2], pO.Axes[3]]);
       dpDirShell.div.style.display = this.useDPad ? 'inline-block' : 'none';
@@ -252,6 +251,13 @@ export class GamepadObject {
     }
   }
 
+  axisByIdx(idx: number): number {
+    return this.pad.axes[idx];
+  }
+  axisPair(idx: number): [number, number]{
+    return [this.axisByIdx(idx * 2), this.axisByIdx(idx * 2 + 1)];
+  }
+
   get Axes(): readonly number[] {
     return this.pad.axes;
   }
@@ -274,13 +280,17 @@ export class GamepadObject {
     return bs;
   }
 
+  updateGamepad(gamepads: Gamepad[]) {
+    this.pad = gamepads[this.pad.index];
+  }
+
   DPadToVector(): [number, number] {
     return normalizeVector(
       (this.DPad[2].pressed ? -1 : 0) +
       (this.DPad[3].pressed ? 1 : 0),
       (this.DPad[0].pressed ? -1 : 0) +
       (this.DPad[1].pressed ? 1 : 0),
-    true);
+      true);
   }
 
   /**

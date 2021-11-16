@@ -30,6 +30,10 @@ export function normalizeVector(v1, v2, zeroCheck: boolean = false): [number, nu
   }
 }
 
+export function clamp(num, min, max) {
+  return Math.min(Math.max(num, min), max);
+}
+
 export function vectorMagnitude(v1, v2): number {
   return Math.sqrt(v1 ** 2 + v2 ** 2);
 }

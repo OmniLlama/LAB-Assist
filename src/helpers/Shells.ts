@@ -1,8 +1,10 @@
 import {MovementTrail} from '../app/input-display/movement-trail';
 import {InputDisplayVisuals} from '../app/input-display/input-display-visuals';
-import {Div, SubImg} from './Gen';
+import {Div, Span, SubImg} from './Gen';
 import {IMG_EXT, IMG_DIR_BASE} from './Vals';
 import {GamepadObject, htmlIdxToDirStr, nameButton} from '../app/input-display/input-display.component';
+import {axisToAnalogName} from './Enums';
+import {clamp} from './Func';
 
 interface HTMLShell {
   div: HTMLDivElement;
@@ -11,17 +13,21 @@ interface HTMLShell {
 class ButtonHTMLShell implements HTMLShell {
   div: HTMLDivElement;
   img: HTMLImageElement;
+  pressedImg: HTMLImageElement;
   name: string;
 
   constructor(name: string, className: string, parent) {
     this.name = name;
     this.div = Div(name, className);
     this.img = SubImg(this.div, name);
+    this.pressedImg = SubImg(this.div, name + '_pressed');
+    this.pressedImg.style.display = 'none';
     parent.appendChild(this.div);
   }
 
-  updateImgSrc(src: string) {
-    this.img.src = `${IMG_DIR_BASE + src + IMG_EXT}`;
+  updateImg(pressed: boolean) {
+    this.img.style.display = pressed ? 'none' : 'block';
+    this.pressedImg.style.display = pressed ? 'block' : 'none';
   }
 }
 
@@ -29,9 +35,10 @@ export class GamepadHTMLShell implements HTMLShell {
   div: HTMLDivElement;
   padInfo: HTMLHeadElement;
   dirArrowSets: DirectionalHTMLShell[];
-  padAxes: HTMLDivElement[];
-  btnShells: ButtonHTMLShell[];
+  axes_div: HTMLDivElement;
+  pad2WayAxes: TwoWayAxisShell[];
   btns_div: HTMLDivElement;
+  btnShells: ButtonHTMLShell[];
 
   constructor(padObj: GamepadObject) {
     this.div = Div('controller' + padObj.pad.index, 'controller');
@@ -44,15 +51,15 @@ export class GamepadHTMLShell implements HTMLShell {
     // Create Arrow Sets
     this.dirArrowSets = new Array<DirectionalHTMLShell>();
     for (let i = 0; i < padObj.pad.axes.length / 2; i++) {
-      this.dirArrowSets[i] = InputDisplayVisuals.CreateDirectionalArrows(i);
+      this.dirArrowSets[i] = InputDisplayVisuals.CreateDirectionalHtmlShell(i);
       this.div.appendChild(this.dirArrowSets[i].div);
     }
-    this.dirArrowSets[2] = InputDisplayVisuals.CreateDirectionalArrows(2);
+    this.dirArrowSets[2] = InputDisplayVisuals.CreateDirectionalHtmlShell(2);
     this.div.appendChild(this.dirArrowSets[2].div);
 
     // Create Button Icons
-    this.btns_div = Div('', 'btns4x2');
     this.btnShells = new Array<ButtonHTMLShell>();
+    this.btns_div = Div(null, 'btns4x2');
     const btnOrder: number[] = padObj.btnLayout;
     for (const btnNum of btnOrder) {
       const btn = new ButtonHTMLShell(nameButton(btnNum), 'gamepad-buttons', this.btns_div);
@@ -62,15 +69,16 @@ export class GamepadHTMLShell implements HTMLShell {
     this.div.appendChild(this.btns_div);
 
     // Create Axis Meters
-    // const div_axes: HTMLDivElement = document.createElement('div');
-    // div_axes.className = 'axes';
-    // for (let i = 0; i < gamepad.axes.length / 4; i++) {
-    //   const sp = this.createAxisSpanElement(i);
-    //   div_axes.appendChild(sp);
-    //   this.dirDivs.push(sp);
-    // }
-    // Append Meters to div
-    // this.div.appendChild(div_axes);
+    this.pad2WayAxes = new Array<TwoWayAxisShell>();
+    this.axes_div = document.createElement('div');
+    this.axes_div.className = 'axes';
+    for (let i = 0; i < padObj.pad.axes.length; i++) {
+      const axis = new TwoWayAxisShell(axisToAnalogName[i]);
+      this.pad2WayAxes.push(axis);
+      this.axes_div.appendChild(axis.div);
+    }
+    //Append Meters to div
+    this.div.appendChild(this.axes_div);
   }
 }
 
@@ -130,7 +138,39 @@ export class DirectionalHTMLShell implements HTMLShell {
 
   getTracerPos() {
     const rect = this.tracer.getBoundingClientRect();
-    // return [rect.left, rect.top];
-    return [rect.left + window.pageXOffset, rect.top + window.pageYOffset];
+    return [rect.left + window.scrollX, rect.top + window.scrollY];
+  }
+}
+
+export class TwoWayAxisShell implements HTMLShell {
+  div: HTMLDivElement;
+  neg_span: HTMLSpanElement;
+  pos_span: HTMLSpanElement;
+
+  constructor(name: string) {
+    this.div = Div(name, 'two-way-axis');
+    this.neg_span = Span(name + '-neg', 'two-way-axis-neg');
+    this.pos_span = Span(name + '-pos', 'two-way-axis-pos');
+    this.div.appendChild(this.neg_span);
+    this.div.appendChild(this.pos_span);
+  }
+
+  updateAxis(val: number) {
+    this.div.setAttribute('value', `${val}`);
+    this.pos_span.style.width = `${clamp(val * 100, 0, 100)}%`;
+    this.neg_span.style.width = `${clamp(-val * 100, 0, 100)}%`;
+  }
+}
+
+export class AxisShell implements HTMLShell {
+  div: HTMLDivElement;
+  span: HTMLSpanElement;
+  constructor(name: string) {
+    this.div = Div(name, 'axis');
+    this.span = Span(name + '-span', 'axis-span');
+  }
+  updateAxis(val: number) {
+    this.div.setAttribute('value', `${val}`);
+    this.span.style.width = `${clamp(val * 100, 0, 100)}%`;
   }
 }
