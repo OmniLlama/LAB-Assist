@@ -2,9 +2,10 @@ import {MovementTrail} from '../app/input-display/movement-trail';
 import {InputDisplayVisuals} from '../app/input-display/input-display-visuals';
 import {Div, Span, SubImg} from './Gen';
 import {IMG_EXT, IMG_DIR_BASE} from './Vals';
-import {GamepadObject, htmlIdxToDirStr, nameButton} from '../app/input-display/input-display.component';
+import {htmlIdxToDirStr, nameButton} from '../app/input-display/input-display.component';
 import {axisToAnalogName} from './Enums';
 import {clamp} from './Func';
+import {GamepadObject} from './Defs';
 
 interface HTMLShell {
   div: HTMLDivElement;

@@ -1,10 +1,10 @@
-import {InputConverterFunctions} from '../app/input-converter/input-converter-functions';
 import {InputConverterComponent} from '../app/input-converter/input-converter.component';
-import {numberToPitchString} from './Func';
+import {normalizeVector, numberToPitchString} from './Func';
 import {Div} from './Gen';
 import {InputEditorVisuals} from '../app/input-editor/input-editor-visuals';
 import {InputEditorEvents} from '../app/input-editor/input-editor-events';
-import {InputEditorComponent} from '../app/input-editor/input-editor.component';
+import {ControllerState, DirectionState, GamepadType, GamepadTypeString} from './Enums';
+import {GamepadHTMLShell} from './Shells';
 
 export class BBox {
   x: number;
@@ -13,13 +13,13 @@ export class BBox {
   height: number;
 
   constructor(x, y, w, h) {
-      this.x = x;
-      this.y = y;
-      this.width = w;
-      this.height = h;
+    this.x = x;
+    this.y = y;
+    this.width = w;
+    this.height = h;
   }
 
-  shift(x: number = null, y: number= null) {
+  shift(x: number = null, y: number = null) {
     this.x += x ?? 0;
     this.y += y ?? 0;
   }
@@ -43,7 +43,8 @@ export class BBox {
   setHeight(h: number) {
     this.height = h;
   }
-  setDimension(w, h){
+
+  setDimension(w, h) {
     this.width = w;
     this.height = h;
   }
@@ -90,6 +91,7 @@ export class Playhead {
     this.bbox = new BBox(x, y, w, h);
     this.bbox.updateElementToBBox(this.div);
   }
+
   get xPos(): number {
     return this.bbox.x;
   }
@@ -130,14 +132,17 @@ export class HTMLPart {
   static idCntr = 0;
   div: HTMLDivElement;
   bbox: BBox;
+
   constructor() {
 
   }
+
   get id() {
     return this.div.id;
   }
 
 }
+
 export class HTMLNote {
   static idCntr = 0;
   start: number;
@@ -148,6 +153,7 @@ export class HTMLNote {
   active: boolean;
   edgeL: HTMLImageElement;
   edgeR: HTMLImageElement;
+
   get name() {
     return numberToPitchString(this.pitch);
   }
@@ -221,7 +227,7 @@ export class EditorView {
     this.pitchHeight = h / this.pitchCount;
     const rect = this.score.getBoundingClientRect();
     this.playhead.bbox.setHeight(h);
-    this.playhead.StartPos = [rect.x, rect.y];
+    this.playhead.StartPos = [this.bbox.x, rect.y];
     this.playhead.reset(true);
   }
 }
@@ -255,6 +261,7 @@ export class Queue<T> {
   constructor(max) {
     this.max = max;
   }
+
   push(val: T) {
     this.q.push(val);
   }
@@ -270,5 +277,114 @@ export class Queue<T> {
     }
     this.push(t);
     return pop;
+  }
+}
+
+/**
+ * layer class to traditional gamepad API, handles many of the adaptations and customizations needed
+ */
+export class GamepadObject {
+  type: GamepadType;
+  pad: Gamepad;
+  html: GamepadHTMLShell;
+  btnLayout: number[];
+  lsDirState: DirectionState;
+  vertDZ: number = .3;
+  horiDZ: number = .3;
+
+  constructor(gp) {
+    if (gp !== null && gp !== undefined) {
+      this.pad = gp;
+      this.type = this.getType(gp.id);
+      this.btnLayout = this.getArcadeLayoutButtonNumbers();
+      this.html = new GamepadHTMLShell(this);
+    } else {
+    }
+  }
+
+  axisByIdx(idx: number): number {
+    return this.pad.axes[idx];
+  }
+
+  axisPair(idx: number): [number, number] {
+    return [this.axisByIdx(idx * 2), this.axisByIdx(idx * 2 + 1)];
+  }
+
+  get Axes(): readonly number[] {
+    return this.pad.axes;
+  }
+
+  get Btns(): readonly GamepadButton[] {
+    return this.pad.buttons;
+  }
+
+  get DPad(): readonly GamepadButton[] {
+    const bs = new Array<GamepadButton>();
+    this.getDPadButtonNumbers().forEach((b, i) => {
+      bs[i] = this.pad.buttons[b];
+    });
+    return bs;
+  }
+
+  get DPadURLD(): readonly GamepadButton[] {
+    const bns = this.getDPadButtonNumbers();
+    const bs = [this.pad.buttons[bns[0]], this.pad.buttons[bns[3]], this.pad.buttons[bns[2]], this.pad.buttons[bns[1]]];
+    return bs;
+  }
+
+  updateGamepad(gamepads: Gamepad[]) {
+    this.pad = gamepads[this.pad.index];
+    this.lsDirState = (this.axisByIdx(1) < -this.vertDZ ? DirectionState.Up : 0) |
+      (this.axisByIdx(0) > this.horiDZ ? DirectionState.Right : 0) |
+      (this.axisByIdx(0) < -this.horiDZ ? DirectionState.Left : 0) |
+      (this.axisByIdx(1) > this.vertDZ ? DirectionState.Down : 0);
+  }
+
+  DPadToVector(): [number, number] {
+    return normalizeVector(
+      (this.DPad[2].pressed ? -1 : 0) +
+      (this.DPad[3].pressed ? 1 : 0),
+      (this.DPad[0].pressed ? -1 : 0) +
+      (this.DPad[1].pressed ? 1 : 0),
+      true);
+  }
+
+  /**
+   * parses the manufacturer and other info to determine the type of layout needed
+   * @param str
+   */
+  getType(str: string): GamepadType {
+    str = str.toLowerCase();
+    if (str.includes(GamepadTypeString.XInput)) {
+      return GamepadType.XInput;
+    } else if (str.includes(GamepadTypeString.Playstation)) {
+      return GamepadType.Playstation;
+    } else if (str.includes(GamepadTypeString.Qanba)) {
+      return GamepadType.Qanba;
+    } else {
+      return GamepadType.Generic;
+    }
+  }
+
+
+  /**
+   * returns the order that the d-pads buttons should be presented, depending upon the manufacturer and standard
+   */
+  getDPadButtonNumbers(): number[] {
+    switch (this.type) {
+      case GamepadType.XInput:
+        return [12, 13, 14, 15];
+      default:
+        return [12, 13, 14, 15];
+    }
+  }
+
+  getArcadeLayoutButtonNumbers(): number[] {
+    switch (this.type) {
+      case GamepadType.XInput:
+        return [2, 3, 5, 4, 0, 1, 7, 6];
+      default:
+        return [0, 1, 2, 3, 4, 5, 6, 7];
+    }
   }
 }

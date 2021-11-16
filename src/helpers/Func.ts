@@ -34,6 +34,9 @@ export function clamp(num, min, max) {
   return Math.min(Math.max(num, min), max);
 }
 
+export function decToBin(dec) {
+  return (dec >>> 0).toString(2);
+}
 export function vectorMagnitude(v1, v2): number {
   return Math.sqrt(v1 ** 2 + v2 ** 2);
 }

@@ -1,11 +1,11 @@
 import {InputEditorFunctions} from '../input-editor/input-editor-functions';
 import {InputConverterComponent} from './input-converter.component';
-import {GamepadObject, InputDisplayComponent, nameButton} from '../input-display/input-display.component';
+import {InputDisplayComponent, nameButton} from '../input-display/input-display.component';
 import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {InputConverterFunctions} from './input-converter-functions';
 import * as JZZ from 'jzz';
 import {InputConverterVisuals} from './input-converter-visuals';
-import {Tracker} from '../../helpers/Defs';
+import {GamepadObject, Tracker} from '../../helpers/Defs';
 import {numberToPitchString} from '../../helpers/Func';
 import {IMG_DIR_BASE, IMG_EXT} from '../../helpers/Vals';
 import {Div} from '../../helpers/Gen';

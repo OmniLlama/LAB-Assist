@@ -11,7 +11,7 @@ import {FPSTracker} from '../helpers/Defs';
 })
 export class AppComponent implements AfterViewInit {
   title = 'LAB-Assist';
-  fps: FPSTracker;
+  fps: FPSTracker = new FPSTracker();
   getFPS(): number {
     return this.fps ? this.fps.average : -1;
   }
@@ -19,7 +19,7 @@ export class AppComponent implements AfterViewInit {
   constructor() { }
 
   ngAfterViewInit(): void {
-    this.fps = new FPSTracker();
+    // this.fps = new FPSTracker();
     requestAnimationFrame((cb) => this.globalFrame(cb));
   }
   globalFrame(callback)

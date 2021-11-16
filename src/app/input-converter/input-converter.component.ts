@@ -1,7 +1,6 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {
   InputDisplayComponent,
-  GamepadObject,
   pads,
   padObjs,
 } from '../input-display/input-display.component';
@@ -11,7 +10,7 @@ import * as jzzInpKbd from 'jzz-input-kbd';
 
 import {InputConverterEvents} from './input-converter-events';
 import {InputConverterVisuals} from './input-converter-visuals';
-import {Queue, Tracker} from '../../helpers/Defs';
+import {GamepadObject, Queue, Tracker} from '../../helpers/Defs';
 
 
 @Component({

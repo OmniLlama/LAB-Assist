@@ -1,10 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {
-  axisToAnalogName,
   ButtonLayoutOrder,
   ButtonNotationType,
-  GamepadType,
-  GamepadTypeString,
+  ControllerState,
   ggBtns,
   MovementNotationType,
   scBtns,
@@ -15,8 +13,8 @@ import {
 import {InputDisplayFunctions} from './input-display-functions';
 import {InputDisplayEvents} from './input-display-events';
 import {InputEditorComponent} from '../input-editor/input-editor.component';
-import {GamepadHTMLShell} from '../../helpers/Shells';
-import {normalizeVector} from '../../helpers/Func';
+import {GamepadObject} from '../../helpers/Defs';
+import {decToBin} from '../../helpers/Func';
 
 export let pads: Array<Gamepad>;
 export let padObjs: Array<GamepadObject>;
@@ -43,6 +41,8 @@ export class InputDisplayComponent implements OnInit {
   static rAF = window.requestAnimationFrame;
   static inpDispCmp: InputDisplayComponent;
   gamepadObjects: Array<GamepadObject>;
+  testState: string = '';
+
   mvNotTy: MovementNotationType;
   butNotTy: ButtonNotationType = ButtonNotationType.StreetFighter;
   butNotTypes = ButtonNotationType;
@@ -175,15 +175,10 @@ export class InputDisplayComponent implements OnInit {
       pO.html.pad2WayAxes[1].updateAxis(pO.axisByIdx(1));
       pO.html.pad2WayAxes[2].updateAxis(pO.axisByIdx(2));
       pO.html.pad2WayAxes[3].updateAxis(pO.axisByIdx(3));
-      // pO.html.padAxes[0].setAttribute('value', `${pO.axisByIdx(0)}`);
-      // pO.html.padAxes[0].style.width = `${((pO.axisByIdx(0) + 1)) * 50}%`;
-      // pO.html.padAxes[1].setAttribute('value', `${pO.axisByIdx(1)}`);
-      // pO.html.padAxes[2].setAttribute('value', `${pO.axisByIdx(2)}`);
-      // pO.html.padAxes[3].setAttribute('value', `${pO.axisByIdx(3)}`);
       lDirShell.div.style.display = this.useLeftStick ? 'inline-block' : 'none';
       lDirShell.updateTracer(pO.axisPair(0));
       rDirShell.div.style.display = this.useRightStick ? 'inline-block' : 'none';
-      rDirShell.updateTracer([pO.Axes[2], pO.Axes[3]]);
+      rDirShell.updateTracer(pO.axisPair(1));
       dpDirShell.div.style.display = this.useDPad ? 'inline-block' : 'none';
       dpDirShell.updateTracer([dpVec[0], dpVec[1]]);
 
@@ -198,6 +193,7 @@ export class InputDisplayComponent implements OnInit {
       }
       InputDisplayFunctions.processJoystickDirections(pO.pad.axes[0], pO.pad.axes[1], this.orthoDeadzone, this.diagDeadzone, lDirShell);
       InputDisplayFunctions.processJoystickDirections(pO.pad.axes[2], pO.pad.axes[3], this.orthoDeadzone, this.diagDeadzone, rDirShell);
+      this.testState = decToBin(pO.lsDirState);
     });
     InputDisplayComponent.rAF(cb => this.updateStatus());
 
@@ -231,105 +227,4 @@ export function nameButton(i: number): any {
   return i;
 }
 
-
-/**
- * layer class to traditional gamepad API, handles many of the adaptations and customizations needed for our highly modular design
- */
-export class GamepadObject {
-  type: GamepadType;
-  pad: Gamepad;
-  html: GamepadHTMLShell;
-  btnLayout: number[];
-
-  constructor(gp) {
-    if (gp !== null && gp !== undefined) {
-      this.pad = gp;
-      this.type = this.getType(gp.id);
-      this.btnLayout = this.getArcadeLayoutButtonNumbers();
-      this.html = new GamepadHTMLShell(this);
-    } else {
-    }
-  }
-
-  axisByIdx(idx: number): number {
-    return this.pad.axes[idx];
-  }
-  axisPair(idx: number): [number, number]{
-    return [this.axisByIdx(idx * 2), this.axisByIdx(idx * 2 + 1)];
-  }
-
-  get Axes(): readonly number[] {
-    return this.pad.axes;
-  }
-
-  get Btns(): readonly GamepadButton[] {
-    return this.pad.buttons;
-  }
-
-  get DPad(): readonly GamepadButton[] {
-    const bs = new Array<GamepadButton>();
-    this.getDPadButtonNumbers().forEach((b, i) => {
-      bs[i] = this.pad.buttons[b];
-    });
-    return bs;
-  }
-
-  get DPadURLD(): readonly GamepadButton[] {
-    const bns = this.getDPadButtonNumbers();
-    const bs = [this.pad.buttons[bns[0]], this.pad.buttons[bns[3]], this.pad.buttons[bns[2]], this.pad.buttons[bns[1]]];
-    return bs;
-  }
-
-  updateGamepad(gamepads: Gamepad[]) {
-    this.pad = gamepads[this.pad.index];
-  }
-
-  DPadToVector(): [number, number] {
-    return normalizeVector(
-      (this.DPad[2].pressed ? -1 : 0) +
-      (this.DPad[3].pressed ? 1 : 0),
-      (this.DPad[0].pressed ? -1 : 0) +
-      (this.DPad[1].pressed ? 1 : 0),
-      true);
-  }
-
-  /**
-   * parses the manufacturer and other info to determine the type of layout needed
-   * @param str
-   */
-  getType(str: string): GamepadType {
-    str = str.toLowerCase();
-    if (str.includes(GamepadTypeString.XInput)) {
-      return GamepadType.XInput;
-    } else if (str.includes(GamepadTypeString.Playstation)) {
-      return GamepadType.Playstation;
-    } else if (str.includes(GamepadTypeString.Qanba)) {
-      return GamepadType.Qanba;
-    } else {
-      return GamepadType.Generic;
-    }
-  }
-
-
-  /**
-   * returns the order that the d-pads buttons should be presented, depending upon the manufacturer and standard
-   */
-  getDPadButtonNumbers(): number[] {
-    switch (this.type) {
-      case GamepadType.XInput:
-        return [12, 13, 14, 15];
-      default:
-        return [12, 13, 14, 15];
-    }
-  }
-
-  getArcadeLayoutButtonNumbers(): number[] {
-    switch (this.type) {
-      case GamepadType.XInput:
-        return [2, 3, 5, 4, 0, 1, 7, 6];
-      default:
-        return [0, 1, 2, 3, 4, 5, 6, 7];
-    }
-  }
-}
 
