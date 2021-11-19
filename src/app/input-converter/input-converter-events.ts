@@ -1,84 +1,113 @@
 import {InputEditorFunctions} from '../input-editor/input-editor-functions';
-import {InputConverterComponent, nameButton, Tracker} from './input-converter.component';
-import {GamepadObject, InputDisplayComponent} from '../input-display/input-display.component';
+import {InputConverterComponent} from './input-converter.component';
 import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {InputConverterFunctions} from './input-converter-functions';
-import * as JZZ from 'jzz';
 import {InputConverterVisuals} from './input-converter-visuals';
-import {MIDINote, Part, Track} from '../../heartbeat/build';
+import {GamepadObject, Tracker} from '../../helpers/Defs';
+import {numberToPitchString} from '../../helpers/Func';
+import {Div, Span} from '../../helpers/Gen';
+import {DirectionState} from '../../helpers/Enums';
+import {ButtonHTMLShell} from '../../helpers/Shells';
+import {Dir} from 'fs';
+import {InputDisplayComponent} from '../input-display/input-display.component';
 
 declare let sequencer: any;
 
 export class InputConverterEvents {
-  /**
-   * Updates all controller values, First, the Axes, then, the D-Pad buttons. finally, the Eight main buttons
-   */
   static updateController(): void {
     const icc = InputConverterComponent.inpConvComp;
-    const idc = InputDisplayComponent.inpDispCmp;
     const iec = InputEditorComponent.inpEdComp;
+    const idc = InputDisplayComponent.inpDispCmp;
     const padObj = icc.testPadObj;
-    if (iec.song.playing && !icc.trackNotes) {
-      InputConverterEvents.startTrackingNotes(icc);
-      icc.backupPart = sequencer.createPart();
-    } else if (!iec.song.playing && icc.trackNotes) {
-      InputConverterEvents.stopTrackingNotes(icc, iec);
+    if (icc.recordingPrimed) {
+      if (iec.playing && !icc.trackingNotes) {
+        InputConverterEvents.startTrackingNotes(icc);
+      } else if (!iec.playing && icc.trackingNotes) {
+        InputConverterEvents.stopTrackingNotes(icc, iec);
+      }
     }
-    InputConverterEvents.updateControllerStxTrackers(padObj, iec.info.scrollTicksAtHead);
-    InputConverterEvents.updateControllerDPadTrackers(padObj, iec.info.scrollTicksAtHead);
-    InputConverterEvents.updateControllerButtonTrackers(padObj, iec.info.scrollTicksAtHead);
 
-    // InputEditorFunctions.UpdateSong(iec); //DO NOT USE
-    // JZZ().refresh();
+    icc.stateChanged = padObj.lsDirState !== (idc.useLeftStick ? icc.lastLSState : padObj.lsDirState) ||
+      padObj.rsDirState !== (idc.useRightStick ? icc.lastRSState : padObj.rsDirState) ||
+      padObj.dpadDirState !== (idc.useDPad ? icc.lastDPadState : padObj.dpadDirState) ||
+      padObj.btnsState !== icc.lastBtnsState;
+    if (icc.stateChanged) {
+      icc.div_currInputHistory = Div(null, 'input-history-node');
+      icc.span_currInputFrameCnt = Span(null, 'input-history-frame-count');
+      icc.div_currInputHistory.append(icc.span_currInputFrameCnt);
+    }
+    if (idc.useLeftStick) {
+      InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(0), icc.lsTrackerGroup, icc.lsBtnShells,
+        padObj.lsDirState, 0, iec.edtrView.playhead.xPos);
+    }
+
+    if (idc.useRightStick) {
+      InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(1), icc.rsTrackerGroup, icc.rsBtnShells,
+        padObj.rsDirState, 2, iec.edtrView.playhead.xPos);
+    }
+    if (idc.useDPad) {
+      InputConverterEvents.updateControllerDPadTrackers(padObj, iec.edtrView.playhead.xPos);
+    }
+    InputConverterEvents.updateControllerButtonTrackers(padObj, iec.edtrView.playhead.xPos);
+
+    icc.lastLSState = padObj.lsDirState;
+    icc.lastRSState = padObj.rsDirState;
+    icc.lastDPadState = padObj.dpadDirState;
+    icc.lastBtnsState = padObj.btnsState;
+    if (icc.stateChanged) {
+      icc.div_inputHistory.insertBefore(icc.div_currInputHistory, icc.div_inputHistory.firstChild);
+      const removed = icc.inputHistoryQueue.qThru(icc.div_currInputHistory);
+      if (removed) {
+        icc.div_inputHistory.removeChild(removed);
+      }
+      icc.stateFrameCnt = 0;
+    }
+    if (icc.stateFrameCnt < 999) {
+      icc.span_currInputFrameCnt.innerHTML = `${++icc.stateFrameCnt}`;
+    }
     InputConverterVisuals.rAF(InputConverterEvents.updateController);
   }
 
-  static updateControllerStxTrackers(padObj: GamepadObject, currTicks: number) {
-    /**
-     * Update Controller Axes
-     */
-    padObj.pad.axes.forEach((a, ind) => {
-      const i = (ind * 2);
-      const j = (ind * 2) + 1;
+  /**
+   * Update Controller Axes
+   */
+  static updateControllerStxTrackers(axes: [number, number], trackerGroup: Tracker[], btnShells: ButtonHTMLShell[],
+                                     dirState: DirectionState, indexOffset: number, currTicks: number) {
+    let icc = InputConverterComponent.inpConvComp;
+    axes.forEach((a, idx) => {
       const icc = InputConverterComponent.inpConvComp;
-      const neg = icc.stxTrackerGroup[i];
-      const pos = icc.stxTrackerGroup[j];
+      const neg = trackerGroup[(idx * 2)];
+      const pos = trackerGroup[(idx * 2) + 1];
       let pitchNum;
       if (a.valueOf() > icc.deadZone) {
-        pitchNum = InputConverterEvents.getDirectionPitchFromAxis(ind, a.valueOf());
+        pitchNum = InputConverterFunctions.getDirectionPitchFromAxis(idx + indexOffset, a.valueOf());
         if (!pos.held) {
           pos.held = true;
           neg.held = false;
-          if (icc.trackNotes) {
-            icc.stxPart = icc.stxPart != null ? icc.stxPart : sequencer.createPart();
+          if (icc.trackingNotes) {
             InputConverterEvents.startTracker(pos,
               currTicks,
-              pitchNum,
-              icc.stxPart
-            // icc.backupPart
-          );
+              pitchNum
+            );
           }
         }
       } else if (a.valueOf() < -icc.deadZone) {
-        pitchNum = InputConverterEvents.getDirectionPitchFromAxis(ind, a.valueOf());
+        pitchNum = InputConverterFunctions.getDirectionPitchFromAxis(idx + indexOffset, a.valueOf());
         if (!neg.held) {
           pos.held = false;
           neg.held = true;
-          if (icc.trackNotes) {
-            icc.stxPart = icc.stxPart != null ? icc.stxPart : sequencer.createPart();
+          if (icc.trackingNotes) {
             InputConverterEvents.startTracker(neg,
               currTicks,
-              pitchNum,
-              icc.stxPart
-            // icc.backupPart
-          );
+              pitchNum
+            );
           }
         }
       } else {
         neg.held = false;
         pos.held = false;
       }
-      if (icc.trackNotes) {
+      if (icc.trackingNotes) {
         if (pos.held) {
           InputConverterEvents.updateTracker(pos,
             currTicks,
@@ -88,14 +117,14 @@ export class InputConverterEvents {
             currTicks,
             icc.liveUpdateHeldNotes);
         }
-        if (!pos.held && pos.heldNote != null) {
+        if (!pos.held && pos.htmlNote != null) {
           InputConverterEvents.endTracker(pos,
             currTicks,
             pitchNum,
             icc.trackedNotes,
             icc.liveUpdateHeldNotes);
         }
-        if (!neg.held && neg.heldNote != null) {
+        if (!neg.held && neg.htmlNote != null) {
           InputConverterEvents.endTracker(neg,
             currTicks,
             pitchNum,
@@ -104,36 +133,39 @@ export class InputConverterEvents {
         }
       }
     });
+    InputConverterEvents.updateConverterButton(btnShells[0],
+      DirectionState.Up === (DirectionState.Up & dirState), icc.stateChanged);
+    InputConverterEvents.updateConverterButton(btnShells[1],
+      DirectionState.Right === (DirectionState.Right & dirState), icc.stateChanged);
+    InputConverterEvents.updateConverterButton(btnShells[2],
+      DirectionState.Left === (DirectionState.Left & dirState), icc.stateChanged);
+    InputConverterEvents.updateConverterButton(btnShells[3],
+      DirectionState.Down === (DirectionState.Down & dirState), icc.stateChanged);
   }
 
+  /**
+   * Update Controller Digital Pad
+   */
   static updateControllerDPadTrackers(padObj: GamepadObject, currTicks: number) {
-    /**
-     * Update Controller Digital Pad
-     */
-      // let dPadBtns: readonly GamepadButton[] = padObj.DPad();
-    let dPadBtns: readonly GamepadButton[] = padObj.DPadURLD();
-    let dpadIconDivs = Array.from(document.getElementById('editor-input-icons-dir').querySelectorAll('div'));
+
     const icc = InputConverterComponent.inpConvComp;
-    dPadBtns.forEach((b, idx) => {
+    padObj.DPadURLD.forEach((b, idx) => {
       let trkr = icc.dpadTrackerGroup[idx];
       let pitch = InputConverterFunctions.getDirectionPitchFromDPad(idx);
       if (b.pressed && !trkr.held) {
         icc.midiOutPort.noteOn(0, pitch, 127);
         // if RECORDING
-        if (icc.trackNotes) {
-          icc.dpadPart = icc.dpadPart != null ? icc.dpadPart : sequencer.createPart();
+        if (icc.trackingNotes) {
           InputConverterEvents.startTracker(trkr,
             currTicks,
-            pitch,
-            icc.backupPart
-          // icc.dpadPart
+            pitch
           );
         }
         // if RELEASED this frame
       } else if (!b.pressed && trkr.held) {
         icc.midiOutPort.noteOff(0, pitch, 127);
         // if RECORDING
-        if (icc.trackNotes) {
+        if (icc.trackingNotes) {
           InputConverterEvents.endTracker(trkr,
             currTicks,
             pitch,
@@ -143,21 +175,20 @@ export class InputConverterEvents {
 
       }
       // EXPERIMENTALISISISMZ
-      if (icc.trackNotes) {
+      if (icc.trackingNotes) {
         InputConverterEvents.updateTracker(trkr, currTicks, icc.liveUpdateHeldNotes);
       }
-      let div = dpadIconDivs[idx] as HTMLDivElement;
-      InputConverterEvents.updateInputVisual(div, b, InputConverterFunctions.nameDPadDirection(idx));
+      InputConverterEvents.updateConverterButton(icc.dpadBtnShells[idx], b.pressed, icc.stateChanged);
     });
   }
 
+  /**
+   * Update Controller Buttons
+   */
   static updateControllerButtonTrackers(padObj: GamepadObject, currTicks: number) {
-    /**
-     * Update Controller Buttons
-     */
-    const btnIconDivs = document.getElementsByClassName('editor-input-icon');
-    const harmMinScaleArr: number[] = [0, 2, 3, 5, 7, 8, 11, 12]; //harmonic minor scale
-    const majScaleArr: number[] = [0, 2, 4, 5, 7, 9, 11, 12]; //major scale
+
+    const harmMinScaleArr: number[] = [0, 2, 3, 5, 7, 8, 11, 12, 14, 15, 17, 19]; //harmonic minor scale
+    const majScaleArr: number[] = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19]; //major scale
     const scale: number[] = harmMinScaleArr;
     const rootNote: number = 51;
     const icc = InputConverterComponent.inpConvComp;
@@ -166,26 +197,22 @@ export class InputConverterEvents {
         return;
       }
       let trkr = icc.btnTrackerGroup[idx];
-      let pitch: string = InputConverterFunctions.numberToPitchString(scale[idx] + rootNote);
+      let pitch: string = numberToPitchString(scale[idx] + rootNote);
       // if PRESSED this frame
       if (b.pressed && !trkr.held) {
         icc.midiOutPort.noteOn(0, pitch, 127);
         // if RECORDING
-        if (icc.trackNotes) {
-          icc.btnPart = (icc.btnPart != null ? icc.btnPart : sequencer.createPart());
+        if (icc.trackingNotes) {
           InputConverterEvents.startTracker(trkr,
             currTicks,
-            InputConverterFunctions.getButtonPitch(idx),
-            icc.backupPart
-          // icc.btnPart
-        );
+            InputConverterFunctions.getButtonPitch(idx)
+          );
         }
         // if RELEASED this frame
       } else if (!b.pressed && trkr.held) {
         icc.midiOutPort.noteOff(0, pitch, 127);
-
         // if RECORDING
-        if (icc.trackNotes) {
+        if (icc.trackingNotes) {
           InputConverterEvents.endTracker(trkr,
             currTicks,
             InputConverterFunctions.getButtonPitch(idx),
@@ -193,106 +220,53 @@ export class InputConverterEvents {
             icc.liveUpdateHeldNotes);
         }
       }
-      if (icc.trackNotes) {
+      if (icc.trackingNotes) {
         InputConverterEvents.updateTracker(trkr, currTicks, icc.liveUpdateHeldNotes);
       }
-      const div = btnIconDivs[idx] as HTMLDivElement;
-      InputConverterEvents.updateInputVisual(div, b, nameButton(idx));
+      InputConverterEvents.updateConverterButton(icc.btnShells[idx], b.pressed, icc.stateChanged);
     });
   }
 
-  static updateInputVisual(div: HTMLDivElement, btn: GamepadButton, name: string) {
-    if (div !== undefined) {
-      let pressed = btn.value > .8;
-      if (typeof (btn) === 'object') {
-        pressed = btn.pressed;
-      }
-      const imgStr = `assets/images/${pressed ? 'pressed_' : ''}${name}.png`;
-      const img = (div.firstChild as HTMLImageElement);
-      img.id = 'icon-img';
-      img.src = imgStr;
+  static updateConverterButton(btnShell: ButtonHTMLShell, pressed: boolean, inputStateChanged: boolean) {
+    let icc = InputConverterComponent.inpConvComp;
+    btnShell.updateImg(pressed);
+
+    if (pressed && inputStateChanged) {
+      const clone = btnShell.pressedImg.cloneNode(false);
+      icc.div_currInputHistory.append(clone);
     }
   }
 
   static startTrackingNotes(icc: InputConverterComponent) {
     icc.trackedNotes = new Array<[number, number, number]>();
-    icc.trackNotes = true;
+    icc.trackingNotes = true;
   }
 
   static stopTrackingNotes(icc: InputConverterComponent, iec: InputEditorComponent) {
     icc.trackedNotes = null;
-    icc.stxPart = null;
-    icc.dpadPart = null;
-    icc.btnPart = null;
-    icc.trackNotes = false;
-    InputEditorFunctions.UpdateSong(iec);
+    icc.trackingNotes = false;
   }
 
   static updateTracker(trkr: Tracker, ticks: number, liveUpdate: boolean) {
     if (trkr.held) {
       if (liveUpdate) {
-        trkr.heldNote.part.moveEvent(trkr.heldNote.noteOff, (ticks - trkr.heldNote.noteOff.ticks));
-        trkr.inpEnd = ticks;
+        InputEditorFunctions.testUpdateNote(trkr);
       }
     }
   }
 
-  static startTracker(trkr: Tracker, ticks: number, pitch: number, part?: Part) {
+  static startTracker(trkr: Tracker, ticks: number, pitch: number) {
     trkr.held = true;
     trkr.inpStart = ticks;
-    let evts = InputEditorFunctions.createNoteFromTicks(ticks, ticks + 128, pitch, undefined, part);
-    InputEditorFunctions.UpdateSong(InputEditorComponent.inpEdComp);
-    trkr.heldNote = evts[0].midiNote;
-    // trkr.heldNote = evts;
+    InputEditorFunctions.testCreateNote(trkr, pitch);
   }
 
   static endTracker(trkr: Tracker, ticks: number, pitch: number, trackedNotes: Array<[number, number, number]>,
                     liveUpdate = false) {
     trkr.inpEnd = ticks;
     trackedNotes.push([trkr.inpStart, trkr.inpEnd, pitch]);
-    if (!liveUpdate) {
-      trkr.heldNote.part.moveEvent(trkr.heldNote.noteOff, (ticks - trkr.heldNote.noteOff.ticks
-        // + 128
-      ));
-    }
     trkr.held = false;
-    trkr.heldNote = null;
-    InputEditorFunctions.UpdateTrack(InputEditorComponent.inpEdComp);
-    InputEditorFunctions.UpdateSong(InputEditorComponent.inpEdComp);
+    InputEditorFunctions.testFinishNote(trkr);
   }
-
-  /**
-   * Sends pitch based on which axis direction was sent
-   * @param ind
-   */
-  static getDirectionPitchFromAxis(ind, val): number {
-    switch (ind) {
-      case 0:
-        if (val > 0) {
-          return 39;
-        } else {
-          return 40;
-        }
-      case 1:
-        if (val > 0) {
-          return 37;
-        } else {
-          return 38;
-        }
-      case 2:
-        if (val > 0) {
-          return 35;
-        } else {
-          return 36;
-        }
-      case 3:
-        if (val > 0) {
-          return 33;
-        } else {
-          return 34;
-        }
-    }
-  }
-
 }
 

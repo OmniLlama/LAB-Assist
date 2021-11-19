@@ -14,6 +14,7 @@ export class InputDisplayEvents {
    * @param e event
    */
   static disconnecthandler(e, idc: InputDisplayComponent): void {
-    idc.removegamepad(e.gamepad);
+    // idc.removegamepad(e.gamepad);
+    idc.removeHtmlGamepad(e.gamepad);
   }
 }

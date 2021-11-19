@@ -1,61 +1,147 @@
 head
   color: white
 
+//Input Display Style
+$dir-width: 48px
+$dir-height: 48px
+$btn-width: 60px
+$btn-height: 60px
 
-// .grid3x3
-//   display: inline-block
-//   height: 180px
-//   width: 180px
+.dirs3x3
+  display: inline-block
+  height: $dir-height * 3
+  width: $dir-width * 3
 
-// .grid3x3
-//   div
-//     float: left
-//     height: 60px
-//     line-height: 60px
-//     text-align: center
-//     width: 60px
+  .dirBtns-ortho
+    // div
+    float: left
+    height: $dir-height
+    line-height: $dir-height
+    text-align: center
+    width: $dir-width
+    position: relative
 
-// .grid3x3
-//   div
-//     img
-//       display: block
-//       vertical-align: middle
-//       max-width: 100%
-//       max-height: 100%
+  .dirBtns-diag
+    // div
+    float: left
+    height: $dir-height
+    line-height: $dir-height
+    text-align: center
+    width: $dir-width
+    position: relative
 
-// .grid4x2
-//   display: block
-//   width: 288px
-//   height: 120px
-//   display: inline-block
-//   padding-left: 2em
+  .dirBtns-center
+    height: $dir-height
+    line-height: $dir-height
+    vertical-align: middle
+    position: relative
+    width: $dir-width
+    z-index: 0
 
-// .grid4x2
-//   div
-//     float: left
-//     height: $btn-height
-//     line-height: $btn-height
-//     text-align: left
-//     width: $btn-width
-//     overflow: hidden
+  .tracer
+    position: absolute
+    height: $dir-height
+    width: $dir-width
+    text-align: center
+    z-index: 25
 
-// .grid4x2
-//   div
-//     img
-//       display: block
-//       vertical-align: middle
-//       max-width: 100%
-//       max-height: 100%
+
+  div img
+    vertical-align: middle
+    max-width: 100%
+    max-height: 100%
+
+.btns4x2
+  display: block
+  width: $btn-width * 4
+  height: $btn-height * 2
+  display: inline-block
+  padding-left: .5em
+
+  div
+    float: left
+    height: $btn-height
+    line-height: $btn-height
+    overflow: hidden
+    text-align: left
+    vertical-align: middle
+    width: $btn-width
+
+    img
+      display: block
+      vertical-align: middle
+      max-width: 100%
+      max-height: 100%
+
+.controller
+  overflow: hidden
+
+$orange: #ffa600
+$blue: #82d2e5
+$green: #c1d72e
+$list1: $blue, $green, $orange
+
+$list2: $blue 0%, $blue 33%, $green 33%, $green 66%, $orange 66%, $orange 100%
+
+$list3: $blue 0%, $blue 10%, $green 25%, $green 39%, $orange 79%, $orange 100%
+
+$list4: $blue, $green, $orange, $blue, $green, $orange, $blue, $green, $orange
+
+
+.trail
+  z-index: 26
+  position: absolute
+  height: 6px
+  width: 6px
+  border-radius: 3px
+  background: teal
+  opacity: 40%
+
+.svg-shell
+  position: absolute
+  height: $dir-height * 3
+  width: $dir-width * 3
+  z-index: 30
+
+  svg
+    width: inherit
+    height: inherit
+    //position: absolute
+    z-index: 2
+
+    polyline
+      //position: fixed
+      z-index: 2
+      stroke: yellowgreen
+      fill: none
+      stroke-width: 5px
 
 .controllerButtons
   padding: 1em
 
 .axes
-  width: 50%
+  display: block
+  float: right
+  width: 30%
 
-.axis
-  min-width: 200px
-  margin: 1em
+  .two-way-axis
+    display: block
+    border-radius: 4px
+    margin: .1em
+    height: 8px
+    background: rgba(199, 199, 199, 0.48) 50% 50%
+    .two-way-axis-neg
+      float: right
+      background: rgba(255, 23, 85, 0.7)
+      height: 8px
+      border-top-left-radius: 4px
+      border-bottom-left-radius: 4px
+    .two-way-axis-pos
+      float: left
+      background: rgba(36, 157, 255, 0.66)
+      height: 8px
+      border-top-right-radius: 4px
+      border-bottom-right-radius: 4px
 
 .button
   padding: 1em

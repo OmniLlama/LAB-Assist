@@ -1,13 +1,17 @@
 <link href="src/app/input-display/input-display.component.sass" type="stylesheet">
-<label>LS<input type="checkbox" [(ngModel)]="useLeftStick" /></label>
-<label>RS<input type="checkbox" [(ngModel)]="useRightStick" /></label>
-<label>D-Pad<input type="checkbox" [(ngModel)]="useDPad" /></label>
 
-<!--<label for="btn-layout"> Choose a button layout: </label>-->
-<!--<select #buttonLayout name="button-layout" id="btn-layout" (change)="arrangeButtons(buttonLayout.value)">-->
-<!--  <option value="linear">Linear</option>-->
-<!--  <option value="arcade">Arcade Stick Default</option>-->
-<!--</select>-->
+<span>
+<label>LS<input type="checkbox" [(ngModel)]="useLeftStick"/></label>
+<label>RS<input type="checkbox" [(ngModel)]="useRightStick"/></label>
+<label>D-Pad<input type="checkbox" [(ngModel)]="useDPad"/></label>
+<div>{{testState}}</div>
+</span>
+
+  <!--<label for="btn-layout"> Choose a button layout: </label>-->
+  <!--<select #buttonLayout name="button-layout" id="btn-layout" (change)="arrangeButtons(buttonLayout.value)">-->
+  <!--  <option value="linear">Linear</option>-->
+  <!--  <option value="arcade">Arcade Stick Default</option>-->
+  <!--</select>-->
 <div id="controllers"></div>
 <h2 id="start">Press a button on your controller to start</h2>
 

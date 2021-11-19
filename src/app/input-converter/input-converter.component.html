@@ -1,91 +1,24 @@
-<h5 id="inputs"></h5>
-<div id="editor-input-icons">
-  <div id="editor-input-icons-left">
-    <div class="editor-input-icon-direction">
-      <img src="assets/images/up.png" width="24"/>
-    </div>
-    <div class="editor-input-icon-direction">
-      <img src="assets/images/right.png" width="24"/>
-    </div>
-    <div class="editor-input-icon-direction">
-      <img src="assets/images/left.png" width="24"/>
-    </div>
-    <div class="editor-input-icon-direction">
-      <img src="assets/images/down.png" width="24"/>
-    </div>
-  </div>
-  <div id="editor-input-icons-right">
-    <div class="editor-input-icon-direction">
-      <img src="assets/images/up.png" width="24"/>
-    </div>
-    <div class="editor-input-icon-direction">
-      <img src="assets/images/right.png" width="24"/>
-    </div>
-    <div class="editor-input-icon-direction">
-      <img src="assets/images/left.png" width="24"/>
-    </div>
-    <div class="editor-input-icon-direction">
-      <img src="assets/images/down.png" width="24"/>
-    </div>
-  </div>
-  <div id="editor-input-icons-dir">
-    <div class="editor-input-icon-direction">
-      <img src="assets/images/up.png" width="24"/>
-    </div>
-    <div class="editor-input-icon-direction">
-      <img src="assets/images/right.png" width="24"/>
-    </div>
-    <div class="editor-input-icon-direction">
-      <img src="assets/images/left.png" width="24"/>
-    </div>
-    <div class="editor-input-icon-direction">
-      <img src="assets/images/down.png" width="24"/>
-    </div>
-  </div>
-  <div id="button-divider">
-    <img src="assets/images/button-divider-long.png"/>
-  </div>
-  <div id="editor-input-icons-btn">
-    <div class="editor-input-icon">
-      <img src="assets/images/x.png" width="24"/>
-    </div>
-    <div class="editor-input-icon">
-      <img src="assets/images/y.png" width="24"/>
-    </div>
-    <div class="editor-input-icon">
-      <img src="assets/images/a.png" width="24"/>
-    </div>
-    <div class="editor-input-icon">
-      <img src="assets/images/b.png" width="24"/>
-    </div>
-    <div class="editor-input-icon">
-      <img src="assets/images/r1.png" width="24"/>
-    </div>
-    <div class="editor-input-icon">
-      <img src="assets/images/r2.png" width="24"/>
-    </div>
-    <div class="editor-input-icon">
-      <img src="assets/images/l1.png" width="24"/>
-    </div>
-    <div class="editor-input-icon">
-      <img src="assets/images/l2.png" width="24"/>
-    </div>
-  </div>
-  <label for="#primeRecording" id="record-check-label">Rec</label>
-  <input
-    id="record-check"
-    #primeRecording
-    [(ngModel)]="recordingPrimed"
-    type="checkbox"
-    data-toggle="toggle"
-  />
-  <input
+<div id="input-history-shell">
+  <div id="input-history"></div>
+</div>
+<div><label id="record-check-label">Rec <input
+  id="record-check"
+  [(ngModel)]="recordingPrimed"
+  type="checkbox"
+/></label>
+  <label id="live-update-label"> <input
     id="live-update-check"
-    #liveUpdate
     [(ngModel)]="liveUpdateHeldNotes"
     type="checkbox"
-    data-toggle="toggle"
-  />
-  <label for="#primeRecording" id="record-check-label">LiveUpdate</label>
+  /> LiveUpdate</label></div>
+<div id="editor-input-icons">
+  <div id="editor-input-icons-left">
+  </div>
+  <div id="editor-input-icons-right">
+  </div>
+  <div id="editor-input-icons-dpad">
+  </div>
+  <div id="editor-input-icons-btn">
+  </div>
 
 </div>

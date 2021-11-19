@@ -1,0 +1,54 @@
+@mixin gradientBG($direction, $list)
+  background: -webkit-linear-gradient($direction, $list)
+  background: -moz-linear-gradient($direction, $list)
+  background: -o-linear-gradient($direction, $list)
+  background: linear-gradient($direction, $list)
+
+
+@mixin quick-scroll-bar($height, $width, $radius, $bar-color, $track-color: mix($bar-color, black,  50%))
+  overflow-x: scroll
+  &::-webkit-scrollbar
+    border-radius: $radius
+    height: $height
+    width: $width
+
+  &::-webkit-scrollbar-thumb
+    background: $bar-color
+    border-radius: $radius
+
+  &::-webkit-scrollbar-track
+    border-radius: $radius
+    background: $track-color
+  // For Internet Explorer - BREAKS IT for some reason? no IE for now
+  //&
+  //  scrollbar-face-color: $foreground-color
+  //  scrollbar-track-color: $background-color
+
+
+// no scroll bar
+@mixin no-scroll-bar()
+  &::-webkit-scrollbar
+    height: 0
+    width: 0
+
+  &::-webkit-scrollbar-thumb
+    height: 0
+    width: 0
+
+  &::-webkit-scrollbar-track
+    height: 0
+    width: 0
+
+
+@mixin unselectable()
+  user-drag: none
+  -webkit-user-drag: none
+  -moz-user-select: none
+  -khtml-user-select: none
+  -webkit-user-select: none
+
+  /*
+    Introduced in IE 10.
+    See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/ */
+  -ms-user-select: none
+  user-select: none
