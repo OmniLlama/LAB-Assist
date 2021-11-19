@@ -2,15 +2,17 @@ import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {
   InputDisplayComponent,
   pads,
-  padObjs,
+  padObjs, URLDStrings, nameButton,
 } from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
-import {GamepadType, ButtonNotationType, DirectionState, ButtonsState} from 'src/helpers/Enums';
+import {GamepadType, ButtonNotationType, DirectionState, ButtonsState, xbBtns} from 'src/helpers/Enums';
 import * as jzzInpKbd from 'jzz-input-kbd';
 
 import {InputConverterEvents} from './input-converter-events';
 import {InputConverterVisuals} from './input-converter-visuals';
 import {GamepadObject, Queue, Tracker} from '../../helpers/Defs';
+import {ButtonHTMLShell} from '../../helpers/Shells';
+import {InputEditorComponent} from '../input-editor/input-editor.component';
 
 
 @Component({
@@ -22,11 +24,21 @@ import {GamepadObject, Queue, Tracker} from '../../helpers/Defs';
 export class InputConverterComponent implements OnInit, AfterViewInit {
   static inpConvComp: InputConverterComponent;
   div: HTMLDivElement;
+  div_ls: HTMLDivElement;
+  div_rs: HTMLDivElement;
+  div_dpad: HTMLDivElement;
+  div_btns: HTMLDivElement;
+  lsBtnShells: ButtonHTMLShell[] = new Array<ButtonHTMLShell>();
+  rsBtnShells: ButtonHTMLShell[] = new Array<ButtonHTMLShell>();
+  dpadBtnShells: ButtonHTMLShell[] = new Array<ButtonHTMLShell>();
+  btnShells: ButtonHTMLShell[] = new Array<ButtonHTMLShell>();
 
+  stateFrameCnt: number;
   stateChanged: boolean;
+  lastLSState: DirectionState;
+  lastRSState: DirectionState;
   lastDPadState: DirectionState;
   lastBtnsState: ButtonsState;
-  stateFrameCnt: number;
   div_inputHistory: HTMLDivElement;
   div_currInputHistory: HTMLDivElement;
   span_currInputFrameCnt: HTMLSpanElement;
@@ -34,7 +46,6 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   inputHistoryQueue: Queue<Node> = new Queue<Node>(this.inputHistoryMax);
 
   midiWidget;
-  midiInKbd;
   midiOutPort;
   testPadObj: GamepadObject;
   midi;
@@ -42,7 +53,8 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   liveUpdateHeldNotes: boolean = true;
   recordingPrimed: boolean = true;
   trackedNotes: Array<[number, number, number]>; // startTicks, endTicks, pitch
-  stxTrackerGroup: Array<Tracker>;
+  lsTrackerGroup: Array<Tracker>;
+  rsTrackerGroup: Array<Tracker>;
   dpadTrackerGroup: Array<Tracker>;
   btnTrackerGroup: Array<Tracker>;
   deadZone = .5;
@@ -84,6 +96,7 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
    */
   getController() {
     const icc = InputConverterComponent.inpConvComp;
+    const iec = InputEditorComponent.inpEdComp;
     if (pads !== undefined && pads.length !== 0 && icc.testPadObj == null) {
       let pad = (pads[0] !== undefined ? pads[0] : pads[1]);
       let padObj = (padObjs[0] !== undefined ? padObjs[0] : padObjs[1]);
@@ -92,11 +105,35 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
       console.log(padType);
 
       icc.playControllerConnectedJingle();
-
-      icc.stxTrackerGroup = createTrackerGroup(getPad().axes.length * 2);
+      icc.div_ls = document.getElementById('editor-input-icons-left') as HTMLDivElement;
+      icc.div_rs = document.getElementById('editor-input-icons-right') as HTMLDivElement;
+      icc.div_dpad = document.getElementById('editor-input-icons-dpad') as HTMLDivElement;
+      icc.div_btns = document.getElementById('editor-input-icons-btn') as HTMLDivElement;
+      URLDStrings.forEach((dir) =>
+      {
+        const shell = new ButtonHTMLShell(dir, 'editor-input-icon-direction', this.div_ls);
+        icc.lsBtnShells.push(shell);
+      });
+      URLDStrings.forEach((name) =>
+      {
+        const shell = new ButtonHTMLShell(name, 'editor-input-icon-direction', this.div_rs);
+        icc.rsBtnShells.push(shell);
+      });
+      URLDStrings.forEach((name) =>
+      {
+        const shell = new ButtonHTMLShell(name, 'editor-input-icon-direction', this.div_dpad);
+        icc.dpadBtnShells.push(shell);
+      });
+      xbBtns.forEach((name) => {
+        const shell = new ButtonHTMLShell(name, 'editor-input-icon-button', this.div_btns);
+        icc.btnShells.push(shell);
+      });
+      icc.lsTrackerGroup = createTrackerGroup(4);
+      icc.rsTrackerGroup = createTrackerGroup(4);
       icc.dpadTrackerGroup = createTrackerGroup(4);
       icc.btnTrackerGroup = createTrackerGroup(getPad().buttons.length);
 
+      iec.edtrView.updateDraw();
       if (getPad()) {
         InputConverterVisuals.rAF((cb) => InputConverterEvents.updateController());
       }

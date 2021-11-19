@@ -36,10 +36,10 @@ export class InputConverterFunctions {
 
   /**
    * Sends pitch based on which d-pad input direction was sent
-   * @param ind
+   * @param idx
    */
-  static getDirectionPitchFromDPad(ind): number {
-    switch (ind) {
+  static getDirectionPitchFromDPad(idx): number {
+    switch (idx) {
       case 0:
         return 15;
       case 1:
@@ -53,18 +53,18 @@ export class InputConverterFunctions {
 
   /**
    * Sends pitch based on which axis direction was sent
-   * @param ind
+   * @param idx
    */
-  static getDirectionPitchFromAxis(ind, val): number {
-    switch (ind) {
+  static getDirectionPitchFromAxis(idx, val): number {
+    switch (idx) {
       case 0:
-        return val > 0 ? 20 : 21;
+        return val > 0 ? 22 : 21;
       case 1:
-        return val > 0 ? 22 : 23;
+        return val > 0 ? 20 : 23;
       case 2:
-        return val > 0 ? 16 : 17;
+        return val > 0 ? 18 : 17;
       case 3:
-        return val > 0 ? 18 : 19;
+        return val > 0 ? 16 : 19;
     }
   }
 

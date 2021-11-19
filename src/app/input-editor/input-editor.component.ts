@@ -10,90 +10,88 @@ declare let sequencer: any;
 
 
 @Component({
-    selector: 'app-input-editor',
-    templateUrl: './input-editor.component.html',
-    styleUrls: ['./input-editor.component.sass']
+  selector: 'app-input-editor',
+  templateUrl: './input-editor.component.html',
+  styleUrls: ['./input-editor.component.sass']
 })
 export class InputEditorComponent implements OnInit, AfterViewInit {
-    static seq = sequencer;
-    static inpEdComp: InputEditorComponent;
-    static inpEdEvts: InputEditorEvents;
-    midiOutput;
-    html: EditorHTMLShell;
-    info: EditorInfo;
-    midiFile;
-    midiFileList;
-    audCntxt: AudioContext;
+  static seq = sequencer;
+  static inpEdComp: InputEditorComponent;
+  static inpEdEvts: InputEditorEvents;
+  midiOutput;
+  html: EditorHTMLShell;
+  info: EditorInfo;
+  midiFile;
+  midiFileList;
+  audCntxt: AudioContext;
+  snapAmt;
 
+  flattenTracksToSingleTrack = true;
 
+  edtrView: EditorView;
+  playing: boolean;
 
-    snapAmt;
+  currNote: HTMLNote = null;
 
-    flattenTracksToSingleTrack = true;
+  currNoteId(): string {
+    return this.currNote ? this.currNote.id : 'none';
+  }
 
-    edtrView: EditorView;
-    playing: boolean;
-
-    currNote: HTMLNote = null;
-
-    currNoteId(): string {
-        return this.currNote ? this.currNote.id : 'none';
-    }
-    moveNote(me: MouseEvent){
+  moveNote(me: MouseEvent) {
+    if (this.currNote) {
       this.currNote.updateNotePos(me);
     }
+  }
 
-    currPart: HTMLPart = null;
-    noteList: Array<HTMLNote> = new Array<HTMLNote>();
+  currPart: HTMLPart = null;
+  noteList: Array<HTMLNote> = new Array<HTMLNote>();
 
-    bppStart = 8;  // default: 16
+  bppStart = 8;  // default: 16
 
-    console: Console = window.console;
-    alert = window.alert;
-    idc = InputDisplayComponent.inpDispCmp;
-    icc = InputConverterComponent.inpConvComp;
-    rAF = window.requestAnimationFrame;
-    output = document.getElementById('console');
-    heldEdge;
-    holdingEdge = false;
+  console: Console = window.console;
+  alert = window.alert;
+  rAF = window.requestAnimationFrame;
+  output = document.getElementById('console');
+  heldEdge;
+  holdingEdge = false;
 
-    constructor() {
-    }
+  constructor() {
+  }
 
-    ngOnInit() {
-        InputEditorComponent.inpEdComp = this;
+  ngOnInit() {
+    InputEditorComponent.inpEdComp = this;
 
-    }
+  }
 
-    ngAfterViewInit(): void {
-        this.init(this);
-    }
+  ngAfterViewInit(): void {
+    this.init(this);
+  }
 
-    /**
-     * Initialize Critical Components
-     */
-    init(iec: InputEditorComponent): void {
-        const icc = InputConverterComponent.inpConvComp;
-        iec.enableGUI(true);
-        iec.edtrView = new EditorView(36, 240, 360,
-            icc.div.getBoundingClientRect().height);
-        InputEditorEvents.initKeyboard(iec);
-        InputEditorVisuals.render();
-        iec.edtrView.updateDraw();
-    }
+  /**
+   * Initialize Critical Components
+   */
+  init(iec: InputEditorComponent): void {
+    const icc = InputConverterComponent.inpConvComp;
+    iec.enableGUI(true);
+    iec.edtrView = new EditorView(36, 240, 360,
+      icc.div.getBoundingClientRect().height);
+    InputEditorEvents.initKeyboard(iec);
+    InputEditorVisuals.render();
+    iec.edtrView.updateDraw();
+  }
 
-    /**
-     * turns on GUI elements once all are properly initalized
-     * @param flag - whether to turn on the GUI
-     */
-    enableGUI(flag) {
-        const tmp_elmts = document.querySelectorAll('input, select');
-        let tmp_elmt;
-        tmp_elmts.forEach((e) => {
-            tmp_elmt = e;
-            tmp_elmt.disabled = !flag;
-        });
-    }
+  /**
+   * turns on GUI elements once all are properly initalized
+   * @param flag - whether to turn on the GUI
+   */
+  enableGUI(flag) {
+    const tmp_elmts = document.querySelectorAll('input, select');
+    let tmp_elmt;
+    tmp_elmts.forEach((e) => {
+      tmp_elmt = e;
+      tmp_elmt.disabled = !flag;
+    });
+  }
 }
 
 
@@ -102,12 +100,12 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
  * @param note
  */
 export function getNoteEdgeDivs(note: HTMLNote): [HTMLDivElement, HTMLDivElement, HTMLDivElement] {
-    let tmp_noteDiv = document.getElementById(note.id) as HTMLDivElement;
-    if (tmp_noteDiv != null) {
-        return [tmp_noteDiv, tmp_noteDiv.children[0] as HTMLDivElement, tmp_noteDiv.children[1] as HTMLDivElement];
-    } else {
-        return null;
-    }
+  let tmp_noteDiv = document.getElementById(note.id) as HTMLDivElement;
+  if (tmp_noteDiv != null) {
+    return [tmp_noteDiv, tmp_noteDiv.children[0] as HTMLDivElement, tmp_noteDiv.children[1] as HTMLDivElement];
+  } else {
+    return null;
+  }
 }
 
 /**
@@ -116,7 +114,7 @@ export function getNoteEdgeDivs(note: HTMLNote): [HTMLDivElement, HTMLDivElement
  * @param val
  */
 export function setElementValue(ref_elmt, val) {
-    ref_elmt.value = val;
+  ref_elmt.value = val;
 }
 
 /**
@@ -128,10 +126,10 @@ export function setElementValue(ref_elmt, val) {
  * @param step
  */
 export function setSliderValues(ref_elmt, val, min, max, step) {
-    ref_elmt.min = min;
-    ref_elmt.max = max;
-    ref_elmt.step = step;
-    ref_elmt.value = val;
+  ref_elmt.min = min;
+  ref_elmt.max = max;
+  ref_elmt.step = step;
+  ref_elmt.value = val;
 }
 
 //#region [rgba(120, 120, 0 ,0.15)] Draw Functions

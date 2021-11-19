@@ -10,7 +10,7 @@ interface HTMLShell {
   div: HTMLDivElement;
 }
 
-class ButtonHTMLShell implements HTMLShell {
+export class ButtonHTMLShell implements HTMLShell {
   div: HTMLDivElement;
   img: HTMLImageElement;
   pressedImg: HTMLImageElement;

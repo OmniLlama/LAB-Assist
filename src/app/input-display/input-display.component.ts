@@ -20,6 +20,8 @@ export let pads: Array<Gamepad>;
 export let padObjs: Array<GamepadObject>;
 export const dirSetId = {0: 'left', 1: 'right', 2: 'dpad'};
 export const tracerAssnId = {0: 'ls', 1: 'rs', 2: 'dpad'};
+
+export const URLDStrings = ['up', 'right', 'left', 'down'];
 export const htmlIdxToDirStr = {
   0: `up_left`,
   1: `up`,
@@ -105,7 +107,7 @@ export class InputDisplayComponent implements OnInit {
     // Hide start message
     document.getElementById('start').style.display = 'none';
     document.getElementById('controllers').appendChild(padObjs[gamepad.index].html.div);
-    InputEditorComponent.inpEdComp.edtrView.updateDraw();
+    // InputEditorComponent.inpEdComp.edtrView.updateDraw();
     InputDisplayComponent.rAF(cb => this.updateStatus());
   }
 
@@ -115,7 +117,7 @@ export class InputDisplayComponent implements OnInit {
     document.getElementById('controllers').removeChild(padObjs[gamepad.index].html.div);
     pads[gamepad.index] = null;
     padObjs[gamepad.index] = null;
-    InputEditorComponent.inpEdComp.edtrView.updateDraw();
+    // InputEditorComponent.inpEdComp.edtrView.updateDraw();
     InputDisplayComponent.rAF(cb => this.updateStatus());
   }
 

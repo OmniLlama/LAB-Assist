@@ -72,13 +72,13 @@ export enum ButtonNotationType {
   Xbox = 'xb'
 }
 
-export let xbBtns = ['a', 'b', 'x', 'y', 'lb', 'rb', 'lt', 'rt', 'select', 'start', 'lsc', 'rsc'];
-export let psBtns = ['X', 'O', '[]', '^', 'l1', 'r1', 'l2', 'r2'];
-export let sfBtns = ['lk', 'mk', 'lp', 'mp', 'l1', 'hp', 'l2', 'hk'];
-export let ggBtns = ['P', 'D', 'K', 'S', 'HS', 'l1', 'l2', 'SP'];
-export let tknBtns = ['LK', 'RK', 'LP', 'RP'];
-export let scBtns = ['G', 'K', 'A', 'B'];
-export let snkBtns = ['B', 'D', 'A', 'C'];
+export const xbBtns = ['a', 'b', 'x', 'y', 'lb', 'rb', 'lt', 'rt', 'select', 'start', 'lsc', 'rsc'];
+export const psBtns = ['X', 'O', '[]', '^', 'l1', 'r1', 'l2', 'r2'];
+export const sfBtns = ['lk', 'mk', 'lp', 'mp', 'l1', 'hp', 'l2', 'hk'];
+export const ggBtns = ['P', 'D', 'K', 'S', 'HS', 'l1', 'l2', 'SP'];
+export const tknBtns = ['LK', 'RK', 'LP', 'RP'];
+export const scBtns = ['G', 'K', 'A', 'B'];
+export const snkBtns = ['B', 'D', 'A', 'C'];
 
 /**
  * Names the axis based on the axis id number

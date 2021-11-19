@@ -68,8 +68,8 @@ export class InputEditorEvents {
     let tmp_note = iec.noteList[iec.currNote.id];
     // let pitch = numberToPitchString(iec.info.mousePitchPos);
     // elmt.setAttribute('pitch', pitch);
-    tmp_note.div.removeEventListener('mousemove', (me) => iec.moveNote(me));
-    tmp_note.div.removeEventListener('mouseup', InputEditorEvents.Note_lMouUp, false);
+    document.removeEventListener('mousemove', (me) => iec.moveNote(me));
+    document.removeEventListener('mouseup', InputEditorEvents.Note_lMouUp);
     iec.currNote = null;
   }
   //
