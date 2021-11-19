@@ -8,7 +8,8 @@ import {InputConverterVisuals} from './input-converter-visuals';
 import {GamepadObject, Tracker} from '../../helpers/Defs';
 import {numberToPitchString} from '../../helpers/Func';
 import {IMG_DIR_BASE, IMG_EXT} from '../../helpers/Vals';
-import {Div} from '../../helpers/Gen';
+import {Div, Span} from '../../helpers/Gen';
+import {AxisToAnalogName} from '../../helpers/Enums';
 
 declare let sequencer: any;
 
@@ -27,19 +28,29 @@ export class InputConverterEvents {
         InputConverterEvents.stopTrackingNotes(icc, iec);
       }
     }
-
-    icc.div_currInputHistory = Div(null, 'input-history-node');
-
+    icc.stateChanged = padObj.dpadDirState !== icc.lastDPadState ||
+      padObj.btnsState !== icc.lastBtnsState;
+    if (icc.stateChanged) {
+      icc.div_currInputHistory = Div(null, 'input-history-node');
+      icc.span_currInputFrameCnt = Span(null, 'input-history-frame-count');
+      icc.div_currInputHistory.append(icc.span_currInputFrameCnt);
+    }
     InputConverterEvents.updateControllerStxTrackers(padObj, iec.edtrView.playhead.xPos);
     InputConverterEvents.updateControllerDPadTrackers(padObj, iec.edtrView.playhead.xPos);
     InputConverterEvents.updateControllerButtonTrackers(padObj, iec.edtrView.playhead.xPos);
 
-    if (icc.div_currInputHistory.firstChild) {
+    icc.lastDPadState = padObj.dpadDirState;
+    icc.lastBtnsState = padObj.btnsState;
+    if (icc.stateChanged) {
       icc.div_inputHistory.insertBefore(icc.div_currInputHistory, icc.div_inputHistory.firstChild);
       const removed = icc.inputHistoryQueue.qThru(icc.div_currInputHistory);
       if (removed) {
         icc.div_inputHistory.removeChild(removed);
       }
+      icc.stateFrameCnt = 0;
+    }
+    if (icc.stateFrameCnt < 999) {
+      icc.span_currInputFrameCnt.innerHTML = `${++icc.stateFrameCnt}`;
     }
     InputConverterVisuals.rAF(InputConverterEvents.updateController);
   }
@@ -48,15 +59,18 @@ export class InputConverterEvents {
    * Update Controller Axes
    */
   static updateControllerStxTrackers(padObj: GamepadObject, currTicks: number) {
-    padObj.pad.axes.forEach((a, ind) => {
-      const i = (ind * 2);
-      const j = (ind * 2) + 1;
+    let leftIconDivs = Array.from(document.getElementById('editor-input-icons-left').querySelectorAll('div'));
+    let rightIconDivs = Array.from(document.getElementById('editor-input-icons-right').querySelectorAll('div'));
+    let icc = InputConverterComponent.inpConvComp;
+    padObj.pad.axes.forEach((a, idx) => {
+      const i = (idx * 2);
+      const j = (idx * 2) + 1;
       const icc = InputConverterComponent.inpConvComp;
       const neg = icc.stxTrackerGroup[i];
       const pos = icc.stxTrackerGroup[j];
       let pitchNum;
       if (a.valueOf() > icc.deadZone) {
-        pitchNum = InputConverterFunctions.getDirectionPitchFromAxis(ind, a.valueOf());
+        pitchNum = InputConverterFunctions.getDirectionPitchFromAxis(idx, a.valueOf());
         if (!pos.held) {
           pos.held = true;
           neg.held = false;
@@ -68,7 +82,7 @@ export class InputConverterEvents {
           }
         }
       } else if (a.valueOf() < -icc.deadZone) {
-        pitchNum = InputConverterFunctions.getDirectionPitchFromAxis(ind, a.valueOf());
+        pitchNum = InputConverterFunctions.getDirectionPitchFromAxis(idx, a.valueOf());
         if (!neg.held) {
           pos.held = false;
           neg.held = true;
@@ -93,21 +107,23 @@ export class InputConverterEvents {
             currTicks,
             icc.liveUpdateHeldNotes);
         }
-        // if (!pos.held && pos.htmlNote != null) {
-        //   InputConverterEvents.endTracker(pos,
-        //     currTicks,
-        //     pitchNum,
-        //     icc.trackedNotes,
-        //     icc.liveUpdateHeldNotes);
-        // }
-        // if (!neg.held && pos.htmlNote != null) {
-        //   InputConverterEvents.endTracker(neg,
-        //     currTicks,
-        //     pitchNum,
-        //     icc.trackedNotes,
-        //     icc.liveUpdateHeldNotes);
-        // }
+        if (!pos.held && pos.htmlNote != null) {
+          InputConverterEvents.endTracker(pos,
+            currTicks,
+            pitchNum,
+            icc.trackedNotes,
+            icc.liveUpdateHeldNotes);
+        }
+        if (!neg.held && neg.htmlNote != null) {
+          InputConverterEvents.endTracker(neg,
+            currTicks,
+            pitchNum,
+            icc.trackedNotes,
+            icc.liveUpdateHeldNotes);
+        }
       }
+      // const left = leftIconDivs[]
+      // InputConverterEvents.updateConverterButton(div, , AxisToAnalogName[idx], icc.stateChanged);
     });
   }
 
@@ -116,7 +132,7 @@ export class InputConverterEvents {
    */
   static updateControllerDPadTrackers(padObj: GamepadObject, currTicks: number) {
 
-    let dpadIconDivs = Array.from(document.getElementById('editor-input-icons-dir').querySelectorAll('div'));
+    let dpadIconDivs = Array.from(document.getElementById('editor-input-icons-dpad').querySelectorAll('div'));
     const icc = InputConverterComponent.inpConvComp;
     padObj.DPadURLD.forEach((b, idx) => {
       let trkr = icc.dpadTrackerGroup[idx];
@@ -148,7 +164,7 @@ export class InputConverterEvents {
         InputConverterEvents.updateTracker(trkr, currTicks, icc.liveUpdateHeldNotes);
       }
       let div = dpadIconDivs[idx] as HTMLDivElement;
-      InputConverterEvents.updateInputVisual(div, b, InputConverterFunctions.nameDPadDirection(idx));
+      InputConverterEvents.updateConverterButton(div, b.pressed, InputConverterFunctions.nameDPadDirection(idx), icc.stateChanged);
     });
   }
 
@@ -195,23 +211,19 @@ export class InputConverterEvents {
         InputConverterEvents.updateTracker(trkr, currTicks, icc.liveUpdateHeldNotes);
       }
       const div = btnIconDivs[idx] as HTMLDivElement;
-      InputConverterEvents.updateInputVisual(div, b, nameButton(idx));
+      InputConverterEvents.updateConverterButton(div, b.pressed, nameButton(idx), icc.stateChanged);
     });
   }
 
-  static updateInputVisual(div: HTMLDivElement, btn: GamepadButton, name: string) {
+  static updateConverterButton(div: HTMLDivElement, pressed: boolean, name: string, inputChanged: boolean) {
     let icc = InputConverterComponent.inpConvComp;
     if (div !== undefined) {
-      let pressed = btn.value > .8;
-      if (typeof (btn) === 'object') {
-        pressed = btn.pressed;
-      }
       const imgStr = `${IMG_DIR_BASE}${name}${pressed ? '_pressed' : ''}${IMG_EXT}`;
       const img = (div.firstChild as HTMLImageElement);
       img.id = 'icon-img';
       img.src = imgStr;
 
-      if (pressed) {
+      if (pressed && inputChanged) {
         const clone = img.cloneNode(false);
         icc.div_currInputHistory.append(clone);
       }

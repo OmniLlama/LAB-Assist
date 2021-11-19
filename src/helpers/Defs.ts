@@ -3,7 +3,7 @@ import {normalizeVector, numberToPitchString} from './Func';
 import {Div} from './Gen';
 import {InputEditorVisuals} from '../app/input-editor/input-editor-visuals';
 import {InputEditorEvents} from '../app/input-editor/input-editor-events';
-import {ControllerState, DirectionState, GamepadType, GamepadTypeString} from './Enums';
+import {ButtonsState, DirectionState, GamepadType, GamepadTypeString} from './Enums';
 import {GamepadHTMLShell} from './Shells';
 
 export class BBox {
@@ -270,7 +270,7 @@ export class Queue<T> {
     return this.q.shift();
   }
 
-  qThru(t: T): T {
+  qThru(t: T): T | undefined {
     let pop: T;
     if (this.q.length === this.max) {
       pop = this.pop();
@@ -289,8 +289,15 @@ export class GamepadObject {
   html: GamepadHTMLShell;
   btnLayout: number[];
   lsDirState: DirectionState;
-  vertDZ: number = .3;
-  horiDZ: number = .3;
+  rsDirState: DirectionState;
+  dpadDirState: DirectionState;
+  dpadBtns: readonly GamepadButton[];
+  vertDZ: number = 0.4;
+  horiDZ: number =  0.5;
+  trigDZ: number = .8;
+  btns: readonly GamepadButton[];
+  btnsState: ButtonsState;
+  btnsOrder: number[];
 
   constructor(gp) {
     if (gp !== null && gp !== undefined) {
@@ -298,6 +305,7 @@ export class GamepadObject {
       this.type = this.getType(gp.id);
       this.btnLayout = this.getArcadeLayoutButtonNumbers();
       this.html = new GamepadHTMLShell(this);
+      this.dpadBtns = this.DPadURLD;
     } else {
     }
   }
@@ -334,10 +342,32 @@ export class GamepadObject {
 
   updateGamepad(gamepads: Gamepad[]) {
     this.pad = gamepads[this.pad.index];
+    this.dpadBtns = this.DPadURLD;
+    this.btns = this.Btns;
     this.lsDirState = (this.axisByIdx(1) < -this.vertDZ ? DirectionState.Up : 0) |
       (this.axisByIdx(0) > this.horiDZ ? DirectionState.Right : 0) |
       (this.axisByIdx(0) < -this.horiDZ ? DirectionState.Left : 0) |
       (this.axisByIdx(1) > this.vertDZ ? DirectionState.Down : 0);
+    this.rsDirState = (this.axisByIdx(3) < -this.vertDZ ? DirectionState.Up : 0) |
+      (this.axisByIdx(2) > this.horiDZ ? DirectionState.Right : 0) |
+      (this.axisByIdx(2) < -this.horiDZ ? DirectionState.Left : 0) |
+      (this.axisByIdx(3) > this.vertDZ ? DirectionState.Down : 0);
+    this.dpadDirState = (this.dpadBtns[0].pressed ? DirectionState.Up : 0) |
+      (this.dpadBtns[1].pressed ? DirectionState.Right : 0) |
+      (this.dpadBtns[2].pressed ? DirectionState.Left : 0) |
+      (this.dpadBtns[3].pressed ? DirectionState.Down : 0);
+    this.btnsState = (this.btns[0].pressed ? ButtonsState.BtnA : 0) |
+      (this.btns[1].pressed ? ButtonsState.BtnB : 0) |
+      (this.btns[2].pressed ? ButtonsState.BtnX : 0) |
+      (this.btns[3].pressed ? ButtonsState.BtnY : 0) |
+      (this.btns[4].pressed ? ButtonsState.BtnLB : 0) |
+      (this.btns[5].pressed ? ButtonsState.BtnRB : 0) |
+      (this.btns[6].pressed ? ButtonsState.BtnLT : 0) |
+      (this.btns[7].pressed ? ButtonsState.BtnRT : 0) |
+      (this.btns[8].pressed ? ButtonsState.BtnLSC : 0) |
+      (this.btns[9].pressed ? ButtonsState.BtnRSC : 0) |
+      (this.btns[10].pressed ? ButtonsState.BtnSel : 0) |
+      (this.btns[11].pressed ? ButtonsState.BtnSta : 0);
   }
 
   DPadToVector(): [number, number] {
@@ -382,9 +412,11 @@ export class GamepadObject {
   getArcadeLayoutButtonNumbers(): number[] {
     switch (this.type) {
       case GamepadType.XInput:
-        return [2, 3, 5, 4, 0, 1, 7, 6];
+        return [2, 3, 5, 4, 0, 1, 7, 6, 8, 9, 10, 11];
+        // return [2, 3, 5, 4, 0, 1, 7, 6];
       default:
-        return [0, 1, 2, 3, 4, 5, 6, 7];
+        return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+        // return [0, 1, 2, 3, 4, 5, 6, 7];
     }
   }
 }

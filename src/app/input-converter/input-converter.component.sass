@@ -28,7 +28,7 @@ $converter-icon-height: 28px
   float: left
   max-width: 24px
 
-.editor-input-icons-dir
+.editor-input-icons-dpad
   padding-top: 2px
 
   .editor-input-icon-direction
@@ -52,18 +52,21 @@ $converter-icon-height: 28px
   //overflow-x: scroll
   @include Mixins.quick-scroll-bar(8px, 6px, 6px, rgb(166, 166, 166))
   #input-history
-    //overflow-x: scroll
-    //@include Mixins.quick-scroll-bar(8px, 6px, 6px, rgb(166, 166, 166))
     white-space: nowrap
     height: 128px
     width: 300 * 24px
     .input-history-node
+      @include Mixins.unselectable
       white-space: nowrap
       display: grid
-      //display: inline-block
-      //height: 128px
       grid-auto-rows: auto
       width: 24px
       float: left
       img
-        //@include Mixins.unselectable
+        @include Mixins.unselectable
+    .input-history-frame-count
+      color: rgb(227, 227, 227)
+      text-align: center
+      vertical-align: bottom
+      transform: rotate(45deg)
+      @include Mixins.unselectable

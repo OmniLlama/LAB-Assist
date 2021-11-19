@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {
   ButtonLayoutOrder,
   ButtonNotationType,
-  ControllerState,
+  ButtonsState,
   ggBtns,
   MovementNotationType,
   scBtns,
@@ -189,11 +189,11 @@ export class InputDisplayComponent implements OnInit {
         pO.DPad.forEach((d, i) => {
           padArr[i] = d.pressed;
         });
-        InputDisplayFunctions.processDigitalDirectionalInput(padArr, dpDirShell);
+        InputDisplayFunctions.updateCurrentDirection(dpDirShell, pO.dpadDirState);
       }
-      InputDisplayFunctions.processJoystickDirections(pO.pad.axes[0], pO.pad.axes[1], this.orthoDeadzone, this.diagDeadzone, lDirShell);
-      InputDisplayFunctions.processJoystickDirections(pO.pad.axes[2], pO.pad.axes[3], this.orthoDeadzone, this.diagDeadzone, rDirShell);
-      this.testState = decToBin(pO.lsDirState);
+      InputDisplayFunctions.updateCurrentDirection(lDirShell, pO.lsDirState);
+      InputDisplayFunctions.updateCurrentDirection(rDirShell, pO.rsDirState);
+      this.testState = `${decToBin(pO.lsDirState)} ${decToBin(pO.rsDirState)} ${decToBin(pO.dpadDirState)} ${decToBin(pO.btnsState)}`;
     });
     InputDisplayComponent.rAF(cb => this.updateStatus());
 

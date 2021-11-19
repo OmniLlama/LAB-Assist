@@ -1,9 +1,8 @@
 import {MovementTrail} from '../app/input-display/movement-trail';
 import {InputDisplayVisuals} from '../app/input-display/input-display-visuals';
 import {Div, Span, SubImg} from './Gen';
-import {IMG_EXT, IMG_DIR_BASE} from './Vals';
 import {htmlIdxToDirStr, nameButton} from '../app/input-display/input-display.component';
-import {axisToAnalogName} from './Enums';
+import {AxisToAnalogName} from './Enums';
 import {clamp} from './Func';
 import {GamepadObject} from './Defs';
 
@@ -36,10 +35,10 @@ export class GamepadHTMLShell implements HTMLShell {
   div: HTMLDivElement;
   padInfo: HTMLHeadElement;
   dirArrowSets: DirectionalHTMLShell[];
-  axes_div: HTMLDivElement;
-  pad2WayAxes: TwoWayAxisShell[];
   btns_div: HTMLDivElement;
   btnShells: ButtonHTMLShell[];
+  axes_div: HTMLDivElement;
+  pad2WayAxes: TwoWayAxisShell[];
 
   constructor(padObj: GamepadObject) {
     this.div = Div('controller' + padObj.pad.index, 'controller');
@@ -74,7 +73,7 @@ export class GamepadHTMLShell implements HTMLShell {
     this.axes_div = document.createElement('div');
     this.axes_div.className = 'axes';
     for (let i = 0; i < padObj.pad.axes.length; i++) {
-      const axis = new TwoWayAxisShell(axisToAnalogName[i]);
+      const axis = new TwoWayAxisShell(AxisToAnalogName[i]);
       this.pad2WayAxes.push(axis);
       this.axes_div.appendChild(axis.div);
     }

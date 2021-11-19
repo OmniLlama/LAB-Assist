@@ -1,5 +1,6 @@
 import {InputDisplayVisuals} from './input-display-visuals';
 import {DirectionalHTMLShell} from '../../helpers/Shells';
+import {DirectionState} from '../../helpers/Enums';
 
 export class InputDisplayFunctions {
   static directionalArrayIndexToDirectionString(i): string {
@@ -39,58 +40,29 @@ export class InputDisplayFunctions {
    * @param odz orthogonal deadzone
    * @param dirShell
    */
-  static processJoystickDirections(horiAxis: number, vertAxis: number, odz: number, ddz: number, dirShell: DirectionalHTMLShell) {
+  static updateCurrentDirection(dirShell: DirectionalHTMLShell, dirState: DirectionState) {
     // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
     let dirIdx = -1;
-    if (horiAxis < -ddz && vertAxis < -ddz) {
+    if (dirState === DirectionState.UpLeft) {
       dirIdx = 0;
-    } else if (horiAxis < -ddz && vertAxis > ddz) {
+    } else if (dirState === DirectionState.DownLeft) {
       dirIdx = 6;
-    } else if (horiAxis > ddz && vertAxis < -ddz) {
+    } else if (dirState === DirectionState.UpRight) {
       dirIdx = 2;
-    } else if (horiAxis > ddz && vertAxis > ddz) {
+    } else if (dirState === DirectionState.DownRight) {
       dirIdx = 8;
     }
 
     // Now handle all the regular directions, if the constraints for diagonal directions are not met
-    else if (horiAxis < -odz && Math.abs(vertAxis) < ddz) {
+    else if (dirState === DirectionState.Left) {
       dirIdx = 3;
-    } else if (vertAxis < -odz && Math.abs(horiAxis) < ddz) {
+    } else if (dirState === DirectionState.Up) {
       dirIdx = 1;
-    } else if (horiAxis > odz && Math.abs(vertAxis) < ddz) {
+    } else if (dirState === DirectionState.Right) {
       dirIdx = 5;
-    } else if (vertAxis > odz && Math.abs(horiAxis) < ddz) {
+    } else if (dirState === DirectionState.Down) {
       dirIdx = 7;
     }
     InputDisplayVisuals.resetDirections(dirShell, dirIdx);
-  }
-
-  static processDigitalDirectionalInput(dirArr: boolean[], dirShell: DirectionalHTMLShell) {
-    // First handle diagonal directions, and override them with Left/Right/Up/Down if needed
-    let dirIdx = -1;
-    if (dirArr[2] && dirArr[0]) {
-      dirIdx = 0;
-    } else if (dirArr[2] && dirArr[1]) {
-      dirIdx = 6;
-    } else if (dirArr[3] && dirArr[0]) {
-      dirIdx = 2;
-    } else if (dirArr[3] && dirArr[1]) {
-      dirIdx = 8;
-    }
-
-    // Now handle all the regular directions, if the constraints for diagonal directions are not met
-    else if (dirArr[2]) {
-      dirIdx = 3;
-    } else if (dirArr[0]) {
-      dirIdx = 1;
-    } else if (dirArr[3]) {
-      dirIdx = 5;
-    } else if (dirArr[1]) {
-      dirIdx = 7;
-    } else {
-      dirIdx = -1;
-    }
-    InputDisplayVisuals.resetDirections(dirShell, dirIdx);
-
   }
 }

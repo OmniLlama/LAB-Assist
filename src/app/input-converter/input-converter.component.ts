@@ -5,7 +5,7 @@ import {
   padObjs,
 } from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
-import {GamepadType, ButtonNotationType} from 'src/helpers/Enums';
+import {GamepadType, ButtonNotationType, DirectionState, ButtonsState} from 'src/helpers/Enums';
 import * as jzzInpKbd from 'jzz-input-kbd';
 
 import {InputConverterEvents} from './input-converter-events';
@@ -23,9 +23,13 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   static inpConvComp: InputConverterComponent;
   div: HTMLDivElement;
 
+  stateChanged: boolean;
+  lastDPadState: DirectionState;
+  lastBtnsState: ButtonsState;
+  stateFrameCnt: number;
   div_inputHistory: HTMLDivElement;
   div_currInputHistory: HTMLDivElement;
-
+  span_currInputFrameCnt: HTMLSpanElement;
   inputHistoryMax: number = 300;
   inputHistoryQueue: Queue<Node> = new Queue<Node>(this.inputHistoryMax);
 
@@ -168,8 +172,6 @@ function onMIDISuccess(mAcc) {
  */
 function onMIDIFailure(data) {
 }
-
-
 
 export function createTrackerGroup(cnt: number): Array<Tracker> {
   const arr = new Array<Tracker>();

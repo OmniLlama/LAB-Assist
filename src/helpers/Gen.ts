@@ -1,5 +1,5 @@
 import {IMG_EXT, IMG_DIR_BASE} from './Vals';
-import {axisToAnalogName} from './Enums';
+import {AxisToAnalogName} from './Enums';
 
 export function Img(fileName: string, id: string = null, className: string = null, dirOverride: string = null, extOverride: string = null) {
   const img = document.createElement('img');

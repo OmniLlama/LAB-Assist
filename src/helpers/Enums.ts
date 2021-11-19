@@ -3,35 +3,27 @@ export enum DirectionState {
   Up = 1 << 0,
   Right = 1 << 1,
   Left = 1 << 2,
-  Down = 1 << 3
+  Down = 1 << 3,
+  UpRight = DirectionState.Up | DirectionState.Right,
+  UpLeft = DirectionState.Up | DirectionState.Left,
+  DownLeft = DirectionState.Down | DirectionState.Left,
+  DownRight = DirectionState.Down | DirectionState.Right
 }
 
-export enum ControllerState {
+export enum ButtonsState {
   None = 0,
-  UpLS = 1 << 0,
-  RightLS = 1 << 1,
-  LeftLS = 1 << 2,
-  DownLS = 1 << 3,
-  UpRS = 1 << 4,
-  RightRS = 1 << 5,
-  LeftRS = 1 << 6,
-  DownRS = 1 << 7,
-  UpDPad = 1 << 8,
-  RightDPad = 1 << 9,
-  LeftDPad = 1 << 10,
-  DownDPad = 1 << 11,
-  BtnA = 1 << 12,
-  BtnB = 1 << 13,
-  BtnX = 1 << 14,
-  BtnY = 1 << 15,
-  BtnLB = 1 << 16,
-  BtnRB = 1 << 17,
-  BtnLT = 1 << 18,
-  BtnRT = 1 << 19,
-  BtnLSC = 1 << 20,
-  BtnRSC = 1 << 21,
-  BtnSel = 1 << 22,
-  BtnSta = 1 << 23,
+  BtnA = 1 << 0,
+  BtnB = 1 << 1,
+  BtnX = 1 << 2,
+  BtnY = 1 << 3,
+  BtnLB = 1 << 4,
+  BtnRB = 1 << 5,
+  BtnLT = 1 << 6,
+  BtnRT = 1 << 7,
+  BtnLSC = 1 << 8,
+  BtnRSC = 1 << 9,
+  BtnSel = 1 << 10,
+  BtnSta = 1 << 11,
 }
 
 export enum ButtonState {
@@ -92,7 +84,7 @@ export let snkBtns = ['B', 'D', 'A', 'C'];
  * Names the axis based on the axis id number
  * @param i - the axis id number
  */
-export const axisToAnalogName = {
+export const AxisToAnalogName = {
   0: 'LS X', 1: 'LS Y', 2: 'RS X', 3: 'RS Y'
 };
 
