@@ -1,4 +1,3 @@
-// import {Instrument, Note, Part, KeyEditor, MIDIEvent, MIDINote, Song} from 'heartbeat-sequencer';
 import {InputEditorComponent} from './input-editor.component';
 import {BBox, HTMLNote, HTMLPart, Tracker} from '../../helpers/Defs';
 import {InputEditorVisuals} from './input-editor-visuals';
