@@ -31,7 +31,6 @@
               "src/styles.sass"
             ],
             "scripts": [
-              "node_modules/heartbeat-sequencer/build/heartbeat.js"
             ],
             "vendorChunk": true,
             "extractLicenses": false,

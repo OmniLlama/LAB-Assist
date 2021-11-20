@@ -179,8 +179,9 @@ export class HTMLNote {
 
   updateNoteEnd(end: number) {
     this.end = end;
-    this.bbox.width = this.end - this.start;
+    this.bbox.setWidth(this.end - this.start);
     this.bbox.updateElementToBBox(this.div);
+    this.edgeR.style.left = `${this.bbox.width}px`;
   }
 
   updateNotePos(me) {

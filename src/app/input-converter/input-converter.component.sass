@@ -6,13 +6,11 @@ $converter-icon-height: 28px
 #record-check-label, #live-update-label
   color: white
   font-size: .8em
-  //background-color: rgba(60, 60, 60, .6)
+  background-color: rgba(60, 60, 60, .6)
 
   #record-check, #live-update-check
     background-size: 24px
 
-    //&:checked
-    //  background-color: rgba(240, 60, 60, .9)
 
     &:checked &:disabled
       background-color: red
@@ -22,6 +20,7 @@ $converter-icon-height: 28px
   display: block
   float: left
   max-width: 24px
+
   div
     padding-top: 2px
 
@@ -31,12 +30,24 @@ $converter-icon-height: 28px
       //max-width: 24px
       img
         max-width: 24px
+
     .editor-input-icon-button
       display: block
       height: $converter-icon-height - 3
       //max-width: 24px
       img
         max-width: 24px
+
+  #editor-input-icons-left
+    background-color: rgba(59, 217, 255, 0.16)
+
+  #editor-input-icons-right
+    background-color: rgba(178, 0, 0, 0.16)
+
+  #editor-input-icons-dpad
+    background-color: rgba(23, 178, 0, 0.16)
+
+
 $input-history-node-width: 20px
 #input-history-shell
   background: #343434
@@ -44,10 +55,12 @@ $input-history-node-width: 20px
   padding-top: 4px
   //overflow-x: scroll
   @include Mixins.quick-scroll-bar(8px, 6px, 6px, rgb(166, 166, 166))
+
   #input-history
     white-space: nowrap
     height: 128px
     width: 300 * ($input-history-node-width + 1)
+
     .input-history-node
       @include Mixins.unselectable
       white-space: nowrap
@@ -55,10 +68,15 @@ $input-history-node-width: 20px
       grid-auto-rows: auto
       max-width: $input-history-node-width
       float: left
-      border-right: rgba(227, 227, 227, .5) 1px solid
+
       img
         @include Mixins.unselectable
+        border-right: rgba(227, 227, 227, .5) 1px solid
         max-width: $input-history-node-width
+
+      img:last-child
+        border-right-style: double
+
     .input-history-frame-count
       @include Mixins.unselectable
       color: rgb(227, 227, 227)

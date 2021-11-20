@@ -23,15 +23,15 @@ export const tracerAssnId = {0: 'ls', 1: 'rs', 2: 'dpad'};
 
 export const URLDStrings = ['up', 'right', 'left', 'down'];
 export const htmlIdxToDirStr = {
-  0: `up_left`,
+  0: `up-left`,
   1: `up`,
-  2: `up_right`,
+  2: `up-right`,
   3: `left`,
   4: `center`,
   5: `right`,
-  6: `down_left`,
+  6: `down-left`,
   7: `down`,
-  8: `down_right`
+  8: `down-right`
 };
 
 @Component({
