@@ -2,7 +2,7 @@
 
 This is an Angular-based web-implementation of a fusion between a controller input viewer and MIDI sequencer / Recorder. It's ultimate intent is to allow the viewing / recording / modifying of inputs with dynamically-generated musical playback to assist in learning timing-intensive games and strategies, e.g. Fighting games, Character-Action games, and Speedrunning.
 
-![LAB-Assist1](E:\Google Drive Omnillama\Visual\Lab-Assist\LAB-Assist2.png)
+![LAB-Assist2](src/assets/LAB-Assist2.png)
 
 ## NOTE: For MIDI Playback
 install the Jazz MIDI Plugin
