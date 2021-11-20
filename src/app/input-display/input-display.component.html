@@ -1,11 +1,6 @@
 <link href="src/app/input-display/input-display.component.sass" type="stylesheet">
 
-<span>
-<label>LS<input type="checkbox" [(ngModel)]="useLeftStick"/></label>
-<label>RS<input type="checkbox" [(ngModel)]="useRightStick"/></label>
-<label>D-Pad<input type="checkbox" [(ngModel)]="useDPad"/></label>
-<div>{{testState}}</div>
-</span>
+
 
   <!--<label for="btn-layout"> Choose a button layout: </label>-->
   <!--<select #buttonLayout name="button-layout" id="btn-layout" (change)="arrangeButtons(buttonLayout.value)">-->
@@ -14,5 +9,10 @@
   <!--</select>-->
 <div id="controllers"></div>
 <h2 id="start">Press a button on your controller to start</h2>
+<div id="direction-input-selection">
+<label>LS<input type="checkbox" [(ngModel)]="useLeftStick"/></label>
+<label>RS<input type="checkbox" [(ngModel)]="useRightStick"/></label>
+<label>D-Pad<input type="checkbox" [(ngModel)]="useDPad"/></label><div>{{testState}}</div>
+</div>
 
 
