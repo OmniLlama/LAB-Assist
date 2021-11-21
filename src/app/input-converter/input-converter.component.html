@@ -1,16 +1,19 @@
 <div id="input-history-shell">
   <div id="input-history"></div>
 </div>
-<div><label id="record-check-label">Rec <input
+<div id="editor-options"><input
   id="record-check"
-  [(ngModel)]="recordingPrimed"
-  type="checkbox"
-/></label>
-  <label id="live-update-label"> <input
+  type="button"
+  [ngStyle]="{'background-color': (recordingPrimed) ? 'rgb(204,32,55)' : 'rgb(91,63,63)'}"
+  (click)="recordingPrimed = !recordingPrimed"
+  value="Rec"/>
+  <input
     id="live-update-check"
-    [(ngModel)]="liveUpdateHeldNotes"
-    type="checkbox"
-  /> LiveUpdate</label></div>
+    type="button"
+    [ngStyle]="{'background-color': (liveUpdateHeldNotes) ? 'rgb(64,175,204)' : 'rgba(83,122,136,0.66)'}"
+    (click)="liveUpdateHeldNotes = !liveUpdateHeldNotes"
+    value="LiveUpdate"
+  /></div>
 <div id="editor-input-icons">
   <div id="editor-input-icons-left">
   </div>

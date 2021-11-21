@@ -11,8 +11,6 @@ import {ButtonHTMLShell} from '../../helpers/Shells';
 import {Dir} from 'fs';
 import {InputDisplayComponent} from '../input-display/input-display.component';
 
-declare let sequencer: any;
-
 export class InputConverterEvents {
   static updateController(): void {
     const icc = InputConverterComponent.inpConvComp;

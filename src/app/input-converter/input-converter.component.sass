@@ -3,40 +3,33 @@ $converter-bg: #181818
 $converter-icon-height: 28px
 
 
-#record-check-label, #live-update-label
-  color: white
-  font-size: .8em
-  background-color: rgba(60, 60, 60, .6)
-
-  #record-check, #live-update-check
-    background-size: 24px
 
 
-    &:checked &:disabled
-      background-color: red
+#editor-options
+  input
+    color: white
+    font-weight: bold
+    font-size: .8em
+
 
 #editor-input-icons
   background-color: $converter-bg
   display: block
   float: left
   max-width: 24px
+  .editor-input-icon-direction
+    display: block
+    height: $converter-icon-height - 3
+    max-height: 24px
+    img
+      max-width: 24px
 
-  div
-    padding-top: 2px
-
-    .editor-input-icon-direction
-      display: block
-      height: $converter-icon-height - 3
-      //max-width: 24px
-      img
-        max-width: 24px
-
-    .editor-input-icon-button
-      display: block
-      height: $converter-icon-height - 3
-      //max-width: 24px
-      img
-        max-width: 24px
+  .editor-input-icon-button
+    display: block
+    height: $converter-icon-height - 3
+    max-height: 24px
+    img
+      max-width: 24px
 
   #editor-input-icons-left
     background-color: rgba(59, 217, 255, 0.16)
@@ -50,15 +43,13 @@ $converter-icon-height: 28px
 
 $input-history-node-width: 20px
 #input-history-shell
-  background: #343434
-  height: 128px
-  padding-top: 4px
-  //overflow-x: scroll
   @include Mixins.quick-scroll-bar(8px, 6px, 6px, rgb(166, 166, 166))
+  background: #343434
+  height: ($input-history-node-width * 7)
+  padding-top: 4px
 
   #input-history
     white-space: nowrap
-    height: 128px
     width: 300 * ($input-history-node-width + 1)
 
     .input-history-node

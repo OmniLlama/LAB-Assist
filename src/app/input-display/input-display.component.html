@@ -1,18 +1,33 @@
 <link href="src/app/input-display/input-display.component.sass" type="stylesheet">
 
 
-
-  <!--<label for="btn-layout"> Choose a button layout: </label>-->
-  <!--<select #buttonLayout name="button-layout" id="btn-layout" (change)="arrangeButtons(buttonLayout.value)">-->
-  <!--  <option value="linear">Linear</option>-->
-  <!--  <option value="arcade">Arcade Stick Default</option>-->
-  <!--</select>-->
+<!--<label for="btn-layout"> Choose a button layout: </label>-->
+<!--<select #buttonLayout name="button-layout" id="btn-layout" (change)="arrangeButtons(buttonLayout.value)">-->
+<!--  <option value="linear">Linear</option>-->
+<!--  <option value="arcade">Arcade Stick Default</option>-->
+<!--</select>-->
 <div id="controllers"></div>
 <h2 id="start">Press a button on your controller to start</h2>
 <div id="direction-input-selection">
-<label>LS<input type="checkbox" [(ngModel)]="useLeftStick"/></label>
-<label>RS<input type="checkbox" [(ngModel)]="useRightStick"/></label>
-<label>D-Pad<input type="checkbox" [(ngModel)]="useDPad"/></label><div>{{testState}}</div>
+  <input
+    id="use-ls"
+    type="button"
+    [ngStyle]="(useLeftStick) ? {'background-color': 'rgba(99,148,255,0.66)', 'color': 'rgb(255,255,255)'} : {'background-color': 'rgba(39,64,148,0.66)'}"
+    (click)="useLeftStick = !useLeftStick"
+    value="LS"/>
+  <input
+    id="use-rs"
+    type="button"
+    [ngStyle]="(useRightStick) ? {'background-color': 'rgba(255,83,83,0.66)', 'color': 'rgb(255,255,255)'} : {'background-color': 'rgba(112,19,19,0.66)'}"
+    (click)="useRightStick = !useRightStick"
+    value="RS"/>
+  <input
+    id="use-dpad"
+    type="button"
+    [ngStyle]="(useDPad) ? {'background-color': 'rgba(70,224,38,0.66)', 'color': 'rgb(255,255,255)'} : {'background-color': 'rgba(14,126,24,0.66)'}"
+    (click)="useDPad = !useDPad"
+    value="DPad"/>
+  <div>{{testState}}</div>
 </div>
 
 

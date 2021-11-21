@@ -3,8 +3,6 @@ import {BBox, HTMLNote, HTMLPart, Tracker} from '../../helpers/Defs';
 import {InputEditorVisuals} from './input-editor-visuals';
 import {InputConverterFunctions} from '../input-converter/input-converter-functions';
 
-declare let sequencer: any;
-
 const NOTE_OFF = 0x80;
 const NOTE_ON = 0x90;
 const MIDI_HEARTBEAT = 0xFE;

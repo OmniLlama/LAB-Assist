@@ -6,22 +6,6 @@ import {Img} from '../../helpers/Gen';
 
 export class InputEditorVisuals {
   /**
-   * Editor Main Draw Function
-   * @param iec
-   */
-  static draw(iec: InputEditorComponent) {
-    iec.html.div_Parts.innerHTML = '';
-    iec.html.div_Notes.innerHTML = '';
-    iec.html.div_PitchLines.innerHTML = '';
-    iec.html.div_BarLines.innerHTML = '';
-    iec.html.div_BeatLines.innerHTML = '';
-    iec.html.div_SixteenthLines.innerHTML = '';
-
-  }
-
-
-
-  /**
    * draw a given note in sequencer
    * @param ref_note
    * @param iec

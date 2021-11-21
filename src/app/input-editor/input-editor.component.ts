@@ -15,7 +15,6 @@ declare let sequencer: any;
   styleUrls: ['./input-editor.component.sass']
 })
 export class InputEditorComponent implements OnInit, AfterViewInit {
-  static seq = sequencer;
   static inpEdComp: InputEditorComponent;
   static inpEdEvts: InputEditorEvents;
   midiOutput;
