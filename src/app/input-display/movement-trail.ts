@@ -43,7 +43,6 @@ export class MovementTrail {
 
   relPos(dot: TrailDot) {
     const rect = this.parent.getBoundingClientRect();
-    // const rect = this.divFrame.getBoundingClientRect();
     return [dot.x - rect.left + 24 - window.scrollX,
       dot.y - rect.top + 24 - window.scrollY];
   }

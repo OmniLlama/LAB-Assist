@@ -76,7 +76,6 @@ export class BBox {
   }
 }
 
-
 export class Playhead {
   div: HTMLDivElement;
   inner: HTMLDivElement;

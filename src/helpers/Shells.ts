@@ -3,7 +3,7 @@ import {InputDisplayVisuals} from '../app/input-display/input-display-visuals';
 import {Div, Span, SubImg} from './Gen';
 import {htmlIdxToDirStr, nameButton} from '../app/input-display/input-display.component';
 import {AxisToAnalogName} from './Enums';
-import {clamp} from './Func';
+import {clamp, pitchNumToFrequency} from './Func';
 import {GamepadObject} from './Defs';
 
 interface HTMLShell {
@@ -165,12 +165,82 @@ export class TwoWayAxisShell implements HTMLShell {
 export class AxisShell implements HTMLShell {
   div: HTMLDivElement;
   span: HTMLSpanElement;
+
   constructor(name: string) {
     this.div = Div(name, 'axis');
     this.span = Span(name + '-span', 'axis-span');
   }
+
   updateAxis(val: number) {
     this.div.setAttribute('value', `${val}`);
     this.span.style.width = `${clamp(val * 100, 0, 100)}%`;
+  }
+}
+
+export class AudioContextShell {
+  ctx: AudioContext;
+  gain: GainNode;
+  oscs: Array<OscillatorShell>;
+
+  constructor(ctx: AudioContext, startGain: number) {
+    this.ctx = ctx;
+    this.gain = new GainNode(this.ctx);
+    this.gain.gain.setValueAtTime(startGain, this.currentTime);
+    this.gain.connect(this.ctx.destination);
+    this.oscs = new Array<OscillatorShell>();
+    for (let i = 0; i < 24; i++) {
+      this.oscs.push(new OscillatorShell(this.ctx, this.gain, 'triangle', pitchNumToFrequency(69 - i)));
+    }
+  }
+
+  get currentTime() {
+    return this.ctx.currentTime;
+  }
+
+  setGlobalGain(val: number) {
+    this.gain.gain.setValueAtTime(val, this.currentTime);
+  }
+  playAtFor(idx: number, delay: number, dur: number): AudioContextShell {
+    this.oscs[idx].start(delay);
+    this.oscs[idx].stop(dur);
+    return this;
+  }
+
+  playFor(idx: number, dur: number): AudioContextShell {
+    this.oscs[idx].start();
+    this.oscs[idx].stop(dur);
+    return this;
+  }
+}
+
+export class OscillatorShell {
+  node: OscillatorNode;
+  ctx: AudioContext;
+  parent: AudioNode;
+
+  constructor(ctx: AudioContext, parentNode: AudioNode, type: OscillatorOptions['type'], freq: OscillatorOptions['frequency']) {
+    this.ctx = ctx;
+    this.node = new OscillatorNode(ctx, {type, frequency: freq});
+    this.parent = parentNode;
+    this.node.connect(parentNode);
+  }
+
+  start(delay: number = 0) {
+    this.node.start(this.ctx.currentTime + delay);
+  }
+
+  stop(delay: number = 0) {
+    this.node.stop(this.ctx.currentTime + delay);
+    this.regenNode();
+    // this.delay(delay).then(() => this.regenNode());
+  }
+
+  delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  regenNode() {
+    this.node = new OscillatorNode(this.ctx, {type: this.node.type, frequency: this.node.frequency.value});
+    this.node.connect(this.parent);
   }
 }

@@ -11,7 +11,7 @@ import * as jzzInpKbd from 'jzz-input-kbd';
 import {InputConverterEvents} from './input-converter-events';
 import {InputConverterVisuals} from './input-converter-visuals';
 import {GamepadObject, Queue, Tracker} from '../../helpers/Defs';
-import {ButtonHTMLShell} from '../../helpers/Shells';
+import {AudioContextShell, ButtonHTMLShell} from '../../helpers/Shells';
 import {InputEditorComponent} from '../input-editor/input-editor.component';
 
 
@@ -49,6 +49,11 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   midiOutPort;
   testPadObj: GamepadObject;
   midi;
+  audioCtx: AudioContextShell;
+  SetGain(val) {
+    this.audioCtx.setGlobalGain(val);
+  }
+
   trackingNotes: boolean;
   liveUpdateHeldNotes: boolean = true;
   recordingPrimed: boolean = true;
@@ -72,6 +77,7 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
     const port = JZZ().openMidiIn(1).or('MIDI-In: Cannot open!');
     this.midi = JZZ.MIDI;
     console.warn(port.name);
+    this.audioCtx = new AudioContextShell(new window.AudioContext(), 0.2);
     this.div = document.getElementById('editor-input-icons') as HTMLDivElement;
     this.div_inputHistory = document.getElementById('input-history') as HTMLDivElement;
   }
@@ -109,18 +115,15 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
       icc.div_rs = document.getElementById('editor-input-icons-right') as HTMLDivElement;
       icc.div_dpad = document.getElementById('editor-input-icons-dpad') as HTMLDivElement;
       icc.div_btns = document.getElementById('editor-input-icons-btn') as HTMLDivElement;
-      URLDStrings.forEach((dir) =>
-      {
+      URLDStrings.forEach((dir) => {
         const shell = new ButtonHTMLShell(dir, 'editor-input-icon-direction', this.div_ls);
         icc.lsBtnShells.push(shell);
       });
-      URLDStrings.forEach((name) =>
-      {
+      URLDStrings.forEach((name) => {
         const shell = new ButtonHTMLShell(name, 'editor-input-icon-direction', this.div_rs);
         icc.rsBtnShells.push(shell);
       });
-      URLDStrings.forEach((name) =>
-      {
+      URLDStrings.forEach((name) => {
         const shell = new ButtonHTMLShell(name, 'editor-input-icon-direction', this.div_dpad);
         icc.dpadBtnShells.push(shell);
       });
@@ -135,6 +138,9 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
 
       iec.edtrView.updateDraw();
       if (getPad()) {
+        icc.audioCtx.playAtFor(7, 0, .4)
+          .playAtFor(5, .15, .3)
+          .playAtFor(0, .3, .5);
         InputConverterVisuals.rAF((cb) => InputConverterEvents.updateController());
       }
     } else {
@@ -177,7 +183,6 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   }
 
 }
-
 
 
 /**

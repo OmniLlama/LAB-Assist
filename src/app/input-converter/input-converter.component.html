@@ -13,7 +13,19 @@
     [ngStyle]="{'background-color': (liveUpdateHeldNotes) ? 'rgb(64,175,204)' : 'rgba(83,122,136,0.66)'}"
     (click)="liveUpdateHeldNotes = !liveUpdateHeldNotes"
     value="LiveUpdate"
-  /></div>
+  />
+  <label>Vol:<input
+    #gainLevel
+    id="gain-level"
+    type="range"
+    min="0"
+    max="1"
+    step=".05"
+    [ngStyle]="{'background-color': 'rgb(87,87,87)'}"
+    (change)=" SetGain(gainLevel.value)"
+    [defaultValue]=".5"
+  ></label>
+</div>
 <div id="editor-input-icons">
   <div id="editor-input-icons-left">
   </div>

@@ -4,7 +4,7 @@ import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {InputConverterFunctions} from './input-converter-functions';
 import {InputConverterVisuals} from './input-converter-visuals';
 import {GamepadObject, Tracker} from '../../helpers/Defs';
-import {numberToPitchString} from '../../helpers/Func';
+import {numberToPitchString, pitchNumToFrequency} from '../../helpers/Func';
 import {Div, Span} from '../../helpers/Gen';
 import {DirectionState} from '../../helpers/Enums';
 import {ButtonHTMLShell} from '../../helpers/Shells';
@@ -151,17 +151,19 @@ export class InputConverterEvents {
       let trkr = icc.dpadTrackerGroup[idx];
       let pitch = InputConverterFunctions.getDirectionPitchFromDPad(idx);
       if (b.pressed && !trkr.held) {
-        icc.midiOutPort.noteOn(0, pitch, 127);
+        icc.audioCtx.oscs[pitch].start();
         // if RECORDING
         if (icc.trackingNotes) {
           InputConverterEvents.startTracker(trkr,
             currTicks,
             pitch
           );
+        } else {
+          trkr.held = true;
         }
         // if RELEASED this frame
       } else if (!b.pressed && trkr.held) {
-        icc.midiOutPort.noteOff(0, pitch, 127);
+        icc.audioCtx.oscs[pitch].stop();
         // if RECORDING
         if (icc.trackingNotes) {
           InputConverterEvents.endTracker(trkr,
@@ -169,8 +171,9 @@ export class InputConverterEvents {
             pitch,
             icc.trackedNotes,
             icc.liveUpdateHeldNotes);
+        } else {
+          trkr.held = false;
         }
-
       }
       // EXPERIMENTALISISISMZ
       if (icc.trackingNotes) {
@@ -188,27 +191,28 @@ export class InputConverterEvents {
     const harmMinScaleArr: number[] = [0, 2, 3, 5, 7, 8, 11, 12, 14, 15, 17, 19]; //harmonic minor scale
     const majScaleArr: number[] = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19]; //major scale
     const scale: number[] = harmMinScaleArr;
-    const rootNote: number = 51;
     const icc = InputConverterComponent.inpConvComp;
     padObj.pad.buttons.forEach((b, idx) => {
       if (idx >= scale.length) {
         return;
       }
       let trkr = icc.btnTrackerGroup[idx];
-      let pitch: string = numberToPitchString(scale[idx] + rootNote);
+      let pitchNum = InputConverterFunctions.getButtonPitch(idx);
       // if PRESSED this frame
       if (b.pressed && !trkr.held) {
-        icc.midiOutPort.noteOn(0, pitch, 127);
+        icc.audioCtx.oscs[pitchNum].start();
         // if RECORDING
         if (icc.trackingNotes) {
           InputConverterEvents.startTracker(trkr,
             currTicks,
             InputConverterFunctions.getButtonPitch(idx)
           );
+        } else {
+          trkr.held = true;
         }
         // if RELEASED this frame
       } else if (!b.pressed && trkr.held) {
-        icc.midiOutPort.noteOff(0, pitch, 127);
+        icc.audioCtx.oscs[pitchNum].stop();
         // if RECORDING
         if (icc.trackingNotes) {
           InputConverterEvents.endTracker(trkr,
@@ -216,6 +220,8 @@ export class InputConverterEvents {
             InputConverterFunctions.getButtonPitch(idx),
             icc.trackedNotes,
             icc.liveUpdateHeldNotes);
+        } else {
+          trkr.held = false;
         }
       }
       if (icc.trackingNotes) {

@@ -37,6 +37,7 @@ export function clamp(num, min, max) {
 export function decToBin(dec) {
   return (dec >>> 0).toString(2);
 }
+
 export function vectorMagnitude(v1, v2): number {
   return Math.sqrt(v1 ** 2 + v2 ** 2);
 }
@@ -87,4 +88,11 @@ export function numberToPitchString(n: number): string {
   }
   str += noteOctave;
   return str;
+}
+
+export function pitchNumToFrequency(pitchNum: number): number {
+  const baseFreq = 440;
+  const nice = 69;
+  const temperment = 2 ** (1 / 12);
+  return baseFreq * temperment ** -(nice - pitchNum);
 }
