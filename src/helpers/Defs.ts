@@ -235,7 +235,7 @@ export class EditorView {
 export class FPSTracker {
   fps: number = 0;
   avgFPS: number;
-  fpsHistMax: number = 15;
+  fpsHistMax: number = 1;
   fpsHistory: Queue<number> = new Queue<number>(this.fpsHistMax);
   now: number = performance.now();
   lastNow: number = performance.now();
