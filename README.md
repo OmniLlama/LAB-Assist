@@ -4,11 +4,7 @@ This is an Angular-based web-implementation of a fusion between a controller inp
 
 ![LAB-Assist2](src/assets/LAB-Assist2.png)
 
-## NOTE: For MIDI Playback
-install the Jazz MIDI Plugin
-https://jazz-soft.net/download/Jazz-Plugin/
-
-***Note To Those who want to run/test***
+## NOTE: To Those who want to run/test
 
 -Works best with an Xbox 360 / Xbox One / XSX / XInput Controller, partial and inaccurate functionality also possible with alternatives, but not guaranteed due to lack of ability to test currently.
 
