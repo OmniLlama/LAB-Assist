@@ -19,12 +19,12 @@ export class AppComponent implements AfterViewInit {
   constructor() { }
 
   ngAfterViewInit(): void {
-    // this.fps = new FPSTracker();
+    this.fps = new FPSTracker();
     requestAnimationFrame((cb) => this.globalFrame(cb));
   }
   globalFrame(callback)
   {
-    this.fps.update();
+    setTimeout(() => this.fps.update());
     requestAnimationFrame((cb) => this.globalFrame(cb));
   }
 }

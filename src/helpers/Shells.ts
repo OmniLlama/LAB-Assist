@@ -35,8 +35,10 @@ export class GamepadHTMLShell implements HTMLShell {
   div: HTMLDivElement;
   padInfo: HTMLHeadElement;
   dirArrowSets: DirectionalHTMLShell[];
-  btns_div: HTMLDivElement;
-  btnShells: ButtonHTMLShell[];
+  acts_div: HTMLDivElement;
+  actBtnShells: ButtonHTMLShell[];
+  funcs_div: HTMLDivElement;
+  funcBtnShells: ButtonHTMLShell[];
   axes_div: HTMLDivElement;
   pad2WayAxes: TwoWayAxisShell[];
 
@@ -57,16 +59,24 @@ export class GamepadHTMLShell implements HTMLShell {
     this.dirArrowSets[2] = InputDisplayVisuals.CreateDirectionalHtmlShell(2);
     this.div.appendChild(this.dirArrowSets[2].div);
 
-    // Create Button Icons
-    this.btnShells = new Array<ButtonHTMLShell>();
-    this.btns_div = Div(null, 'btns4x2');
-    const btnOrder: number[] = padObj.btnLayout;
-    for (const btnNum of btnOrder) {
-      const btn = new ButtonHTMLShell(nameButton(btnNum), 'gamepad-buttons', this.btns_div);
-      this.btnShells.push(btn);
+
+
+    // Create Action Button Icons
+    this.actBtnShells = new Array<ButtonHTMLShell>();
+    this.acts_div = Div(null, 'btns4xY');
+    for (const btnNum of padObj.actionButtonLayout) {
+      const btn = new ButtonHTMLShell(nameButton(btnNum), 'gamepad-buttons', this.acts_div);
+      this.actBtnShells.push(btn);
     }
-    // Append Buttons to div
-    this.div.appendChild(this.btns_div);
+    this.div.appendChild(this.acts_div);
+    // Create Function Button Icons
+    this.funcBtnShells = new Array<ButtonHTMLShell>();
+    this.funcs_div = Div(null, 'funcs1x4');
+    for (const btnNum of padObj.functionButtonLayout) {
+      const btn = new ButtonHTMLShell(nameButton(btnNum), 'gamepad-functions', this.funcs_div);
+      this.funcBtnShells.push(btn);
+    }
+    this.div.appendChild(this.funcs_div);
 
     // Create Axis Meters
     this.pad2WayAxes = new Array<TwoWayAxisShell>();
@@ -179,17 +189,20 @@ export class AxisShell implements HTMLShell {
 
 export class AudioContextShell {
   ctx: AudioContext;
-  gain: GainNode;
+  globalGain: GainNode;
+  globalComp: DynamicsCompressorNode;
   oscs: Array<OscillatorShell>;
 
   constructor(ctx: AudioContext, startGain: number) {
     this.ctx = ctx;
-    this.gain = new GainNode(this.ctx);
-    this.gain.gain.setValueAtTime(startGain, this.currentTime);
-    this.gain.connect(this.ctx.destination);
+    this.globalGain = new GainNode(this.ctx);
+    this.globalGain.gain.setValueAtTime(startGain, this.currentTime);
+    this.globalGain.connect(this.ctx.destination);
+    this.globalComp = new DynamicsCompressorNode(this.ctx);
+    this.globalComp.connect(this.globalGain);
     this.oscs = new Array<OscillatorShell>();
     for (let i = 0; i < 24; i++) {
-      this.oscs.push(new OscillatorShell(this.ctx, this.gain, 'triangle', pitchNumToFrequency(69 - i)));
+      this.oscs.push(new OscillatorShell(this.ctx, this.globalComp, 'triangle', pitchNumToFrequency(69 - i)));
     }
   }
 
@@ -198,7 +211,7 @@ export class AudioContextShell {
   }
 
   setGlobalGain(val: number) {
-    this.gain.gain.setValueAtTime(val, this.currentTime);
+    this.globalGain.gain.setValueAtTime(val, this.currentTime);
   }
   playAtFor(idx: number, delay: number, dur: number): AudioContextShell {
     this.oscs[idx].start(delay);

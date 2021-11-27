@@ -159,12 +159,16 @@ export class InputDisplayComponent implements OnInit {
      */
     padObjs.forEach((pO, ind) => {
       pO.updateGamepad(pads);
-      pO.btnLayout.forEach((b, i) => {
+      pO.actionButtonLayout.forEach((b, i) => {
         const val = pO.pad.buttons[b];
         const pressed = val.value > 0.8;
-        pO.html.btnShells[i].updateImg(pressed);
+        pO.html.actBtnShells[i].updateImg(pressed);
       });
-
+      pO.functionButtonLayout.forEach((b, i) => {
+        const val = pO.pad.buttons[b];
+        const pressed = val.value > 0.8;
+        pO.html.funcBtnShells[i].updateImg(pressed);
+      });
       /**
        * Get Axes Status */
 

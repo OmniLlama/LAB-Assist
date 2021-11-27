@@ -93,6 +93,6 @@ export function numberToPitchString(n: number): string {
 export function pitchNumToFrequency(pitchNum: number): number {
   const baseFreq = 440;
   const nice = 69;
-  const temperment = 2 ** (1 / 12);
-  return baseFreq * temperment ** -(nice - pitchNum);
+  const temperament = 2 ** (1 / 12);
+  return baseFreq * temperament ** -(nice - pitchNum);
 }

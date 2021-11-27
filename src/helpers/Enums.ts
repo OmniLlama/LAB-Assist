@@ -20,10 +20,10 @@ export enum ButtonsState {
   BtnRB = 1 << 5,
   BtnLT = 1 << 6,
   BtnRT = 1 << 7,
-  BtnLSC = 1 << 8,
-  BtnRSC = 1 << 9,
-  BtnSel = 1 << 10,
-  BtnSta = 1 << 11,
+  BtnSel = 1 << 8,
+  BtnSta = 1 << 9,
+  BtnLSC = 1 << 10,
+  BtnRSC = 1 << 11
 }
 
 export enum ButtonState {

@@ -237,6 +237,7 @@ export class FPSTracker {
   avgFPS: number;
   fpsHistMax: number = 15;
   fpsHistory: Queue<number> = new Queue<number>(this.fpsHistMax);
+  now: number = performance.now();
   lastNow: number = performance.now();
 
   get average() {
@@ -246,11 +247,14 @@ export class FPSTracker {
   constructor() {
   }
 
-  update() {
+  update(): number {
+    this.now = performance.now();
+    const dNow = this.now - this.lastNow;
     this.fps = Math.floor(1 / ((performance.now() - this.lastNow) / 1000));
     this.fpsHistory.qThru(this.fps);
     this.avgFPS = this.average;
     this.lastNow = performance.now();
+    return (1 / 60) - dNow;
   }
 }
 
@@ -288,12 +292,22 @@ export class GamepadObject {
   pad: Gamepad;
   html: GamepadHTMLShell;
   btnLayout: number[];
+
+  get actionButtonLayout() {
+    return this.btnLayout.slice(0, -this.funcBtnCnt);
+  }
+
+  get functionButtonLayout() {
+    return this.btnLayout.slice(-this.funcBtnCnt);
+  }
+
+  funcBtnCnt: number = 4;
   lsDirState: DirectionState;
   rsDirState: DirectionState;
   dpadDirState: DirectionState;
   dpadBtns: readonly GamepadButton[];
   vertDZ: number = 0.4;
-  horiDZ: number =  0.5;
+  horiDZ: number = 0.5;
   trigDZ: number = .8;
   btns: readonly GamepadButton[];
   btnsState: ButtonsState;
@@ -303,7 +317,7 @@ export class GamepadObject {
     if (gp !== null && gp !== undefined) {
       this.pad = gp;
       this.type = this.getType(gp.id);
-      this.btnLayout = this.getArcadeLayoutButtonNumbers();
+      this.btnLayout = this.getArcadeLayoutButtonOrder();
       this.html = new GamepadHTMLShell(this);
       this.dpadBtns = this.DPadURLD;
     } else {
@@ -364,10 +378,10 @@ export class GamepadObject {
       (this.btns[5].pressed ? ButtonsState.BtnRB : 0) |
       (this.btns[6].pressed ? ButtonsState.BtnLT : 0) |
       (this.btns[7].pressed ? ButtonsState.BtnRT : 0) |
-      (this.btns[8].pressed ? ButtonsState.BtnLSC : 0) |
-      (this.btns[9].pressed ? ButtonsState.BtnRSC : 0) |
-      (this.btns[10].pressed ? ButtonsState.BtnSel : 0) |
-      (this.btns[11].pressed ? ButtonsState.BtnSta : 0);
+      (this.btns[8].pressed ? ButtonsState.BtnSel : 0) |
+      (this.btns[9].pressed ? ButtonsState.BtnSta : 0) |
+      (this.btns[10].pressed ? ButtonsState.BtnLSC : 0) |
+      (this.btns[11].pressed ? ButtonsState.BtnRSC : 0);
   }
 
   DPadToVector(): [number, number] {
@@ -409,14 +423,12 @@ export class GamepadObject {
     }
   }
 
-  getArcadeLayoutButtonNumbers(): number[] {
+  getArcadeLayoutButtonOrder(): number[] {
     switch (this.type) {
       case GamepadType.XInput:
         return [2, 3, 5, 4, 0, 1, 7, 6, 8, 9, 10, 11];
-        // return [2, 3, 5, 4, 0, 1, 7, 6];
       default:
         return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-        // return [0, 1, 2, 3, 4, 5, 6, 7];
     }
   }
 }

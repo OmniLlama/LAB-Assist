@@ -25,8 +25,6 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
   audCntxt: AudioContext;
   snapAmt;
 
-  flattenTracksToSingleTrack = true;
-
   edtrView: EditorView;
   playing: boolean;
 

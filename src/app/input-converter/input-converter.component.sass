@@ -67,18 +67,28 @@ $input-history-node-width: 20px
 
       img:last-child
         border-right-style: double
-
+    $frame-count-hover-scale: 1.2
+    $frame-count-font-size: 11px
     .input-history-frame-count
       @include Mixins.unselectable
       color: rgb(227, 227, 227)
       background-color: rgba(35, 35, 35, 0.86)
-      border-top-right-radius: 2px
-      border-bottom-right-radius: 6px
+      //border-top-right-radius: 2px
+      //border-bottom-right-radius: 6px
+      border-top-left-radius: 2px
+      border-bottom-left-radius: 6px
       border: rgba(171, 171, 171, 0.71) 2px double
       font-weight: bold
-      font-size: 11px
+      font-size: $frame-count-font-size
       text-align: center
       vertical-align: bottom
       padding-top: 2px
-      transform: rotate(45deg) translate(-6px, 0px)
+      transform: rotate(-45deg) translate(6px, 0px)
       width: $input-history-node-width
+      &:hover
+        z-index: 1
+        font-size: $frame-count-font-size * $frame-count-hover-scale
+        width: $input-history-node-width * $frame-count-hover-scale
+        transform: rotate(-36deg) translate(0px, -3px)
+        background: rgb(68, 68, 68)
+
