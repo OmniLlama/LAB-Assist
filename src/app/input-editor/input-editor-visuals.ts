@@ -30,9 +30,9 @@ export class InputEditorVisuals {
   }
 
   static createEdges(bbox, div): [HTMLImageElement, HTMLImageElement] {
-    const edgeBBoxes = this.createNoteEdgeBBoxes(bbox, 8);
-    const img_Note_leftEdge = Img('Editor-Arrow-Left-Transparent', div.id, 'note-edge');
-    const img_Note_rightEdge = Img('Editor-Arrow-Right-Transparent', div.id, 'note-edge');
+    const edgeBBoxes = this.createNoteEdgeBBoxes(bbox, 6);
+    const img_Note_leftEdge = Img('editor-arrow-left', div.id, 'note-edge');
+    const img_Note_rightEdge = Img('editor-arrow-right', div.id, 'note-edge');
 
     InputEditorVisuals.updateElementBBox(img_Note_leftEdge, edgeBBoxes[0]);
     InputEditorVisuals.updateElementBBox(img_Note_rightEdge, edgeBBoxes[1]);

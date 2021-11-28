@@ -180,6 +180,13 @@ export class HTMLNote {
     this.end = end;
     this.bbox.setWidth(this.end - this.start);
     this.bbox.updateElementToBBox(this.div);
+    // this.edgeR.style.left = `${this.bbox.width}px`;
+  }
+
+  finishNote(end: number) {
+    this.end = end;
+    this.bbox.setWidth(this.end - this.start);
+    this.bbox.updateElementToBBox(this.div);
     this.edgeR.style.left = `${this.bbox.width}px`;
   }
 
@@ -235,26 +242,24 @@ export class EditorView {
 export class FPSTracker {
   fps: number = 0;
   avgFPS: number;
-  fpsHistMax: number = 1;
+  fpsHistMax: number = 5;
   fpsHistory: Queue<number> = new Queue<number>(this.fpsHistMax);
-  now: number = performance.now();
-  lastNow: number = performance.now();
+  now: number = 0;
+  lastNow: number = 0;
+  dNow: number;
 
   get average() {
     return Math.ceil(this.fpsHistory.q.reduce((a, b) => a + b, 0) / this.fpsHistory.q.length);
   }
 
-  constructor() {
-  }
-
   update(): number {
     this.now = performance.now();
-    const dNow = this.now - this.lastNow;
-    this.fps = Math.floor(1 / ((performance.now() - this.lastNow) / 1000));
+    this.dNow = this.now - this.lastNow;
+    this.fps = Math.floor(1 / ((this.now - this.lastNow) / 1000));
     this.fpsHistory.qThru(this.fps);
     this.avgFPS = this.average;
-    this.lastNow = performance.now();
-    return (1 / 60) - dNow;
+    this.lastNow = this.now;
+    return (1 / 60) - this.dNow;
   }
 }
 

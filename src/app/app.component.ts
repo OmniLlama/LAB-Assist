@@ -24,7 +24,9 @@ export class AppComponent implements AfterViewInit {
   }
   globalFrame(callback)
   {
-    setTimeout(() => this.fps.update());
+    // console.log(this.fps.dNow);
+    const frameDelay = this.fps.update();
+    setTimeout( () => {}, frameDelay);
     requestAnimationFrame((cb) => this.globalFrame(cb));
   }
 }

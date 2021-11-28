@@ -34,6 +34,15 @@ export class InputConverterEvents {
       icc.span_currInputFrameCnt = Span(null, 'input-history-frame-count');
       icc.div_currInputHistory.append(icc.span_currInputFrameCnt);
     }
+
+    if (icc.stateChanged || icc.stateFrameCnt >= 999) {
+      icc.div_inputHistory.insertBefore(icc.div_currInputHistory, icc.div_inputHistory.firstChild);
+      const removed = icc.inputHistoryQueue.qThru(icc.div_currInputHistory);
+      if (removed) {
+        icc.div_inputHistory.removeChild(removed);
+      }
+      icc.stateFrameCnt = 0;
+    }
     if (idc.useLeftStick) {
       InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(0), icc.lsTrackerGroup, icc.lsBtnShells,
         padObj.lsDirState, 0, iec.edtrView.playhead.xPos);
@@ -49,14 +58,6 @@ export class InputConverterEvents {
     InputConverterEvents.updateControllerButtonTrackers(padObj, iec.edtrView.playhead.xPos);
 
 
-    if (icc.stateChanged || icc.stateFrameCnt === 999) {
-      icc.div_inputHistory.insertBefore(icc.div_currInputHistory, icc.div_inputHistory.firstChild);
-      const removed = icc.inputHistoryQueue.qThru(icc.div_currInputHistory);
-      if (removed) {
-        icc.div_inputHistory.removeChild(removed);
-      }
-      icc.stateFrameCnt = 0;
-    }
     if (icc.stateFrameCnt < 999) {
       icc.span_currInputFrameCnt.innerHTML = `${++icc.stateFrameCnt}`;
     }

@@ -62,11 +62,13 @@ $input-history-node-width: 20px
 
       img
         @include Mixins.unselectable
-        border-right: rgba(227, 227, 227, .5) 1px solid
+        //border-right: rgba(227, 227, 227, .5) 1px solid
+        border-left: rgba(227, 227, 227, .5) 1px solid
         max-width: $input-history-node-width
 
       img:last-child
-        border-right-style: double
+        //border-right-style: double
+        border-left-style: double
     $frame-count-hover-scale: 1.2
     $frame-count-font-size: 11px
     .input-history-frame-count
