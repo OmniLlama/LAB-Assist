@@ -26,7 +26,6 @@ export class InputEditorVisuals {
 
     div_Note.append(edges[0], edges[1]);
     div_Note.append(div_Note_info);
-    iec.edtrView.score.appendChild(div_Note);
   }
 
   static createEdges(bbox, div): [HTMLImageElement, HTMLImageElement] {
@@ -71,14 +70,8 @@ export class InputEditorVisuals {
     let iec = InputEditorComponent.inpEdComp,
       iev = InputEditorVisuals;
 
-    // InputEditorVisuals.HrtBtRender(iec);
-
     //update head values if playing
-    // if (iec.song.playing) {
-    if (iec.playing) {
-      // iec.info.UpdateInfo(null, iec.keyEditor);
-      iec.edtrView.playhead.shiftUpdate(2, 0);
-    }
+    iec.edtrView.playUpdate();
     requestAnimationFrame(iev.render);
   }
 

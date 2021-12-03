@@ -18,9 +18,9 @@ export class InputConverterEvents {
     const idc = InputDisplayComponent.inpDispCmp;
     const padObj = icc.testPadObj;
     if (icc.recordingPrimed) {
-      if (iec.playing && !icc.trackingNotes) {
+      if (iec.edtrView.playing && !icc.trackingNotes) {
         InputConverterEvents.startTrackingNotes(icc);
-      } else if (!iec.playing && icc.trackingNotes) {
+      } else if (!iec.edtrView.playing && icc.trackingNotes) {
         InputConverterEvents.stopTrackingNotes(icc, iec);
       }
     }

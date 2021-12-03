@@ -1,19 +1,5 @@
 @use 'src/helpers/Mixins'
 
-.test-note
-  background: #1BB2E0
-  position: absolute
-  z-index: 12
-
-#pitch-range
-  // width: 6em
-  font: .2em
-  #key-range-start, #key-range-end
-    width: 4em
-    font: .6em sans-serif
-  #key-range-start-label, #key-range-end-label
-    font: .6em sans-serif
-
 #debug-info-control
   max-width: 10%
 #debug-info
@@ -30,32 +16,6 @@
         color: rgb(20, 20, 20)
 
 
-#editor-controls
-  float: left
-  background-color: #fff
-  width: 100%
-  min-height: 30px
-  border-top: 1px solid #333
-  // overflow: auto
-
-  .editor-control
-    background-color: #6e6e6ec9
-    font-size: 15px
-    font-weight: bold
-    font-family: monospace
-    float: left
-    // height: 30px
-    line-height: 30px
-    margin: 3px
-
-  input[type='button']
-    float: left
-    margin: 5px 3px
-
-  selectF
-    padding: 10px
-    margin-top: 6px
-    height: 20px
 #bar-lines, #tick-lines, #sixteenth-lines
   height: 100%
   position: absolute
@@ -75,13 +35,19 @@
 #notes
   position: absolute
   z-index: 2
+.test-note
+  background: #1BB2E0
+  position: absolute
+  z-index: 12
 #bpm
   width: 32px
 #parts
   position: absolute
   z-index: 1
-#update-range
-  font-size: .6em
+#tracked-notes
+  display: none
+#tracking-notes
+  display: none
 
 
 #play, #stop
@@ -96,11 +62,7 @@
   background-color: #3f7ea8
   font-weight: bold
   color: #fff1f1
-#editor-controls input[type='range']
-  float: left
-  height: 30px
-  margin-top: -3px
-  width: 120px
+
 
 #time-bars-beats
   color: #FF1CAE
@@ -172,7 +134,7 @@
   position: absolute
   z-index: 10
   height: 100%
-  width: 21px
+  //width: 21px
   background-color: #ffffff33
 
 

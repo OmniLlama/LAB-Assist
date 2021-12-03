@@ -39,6 +39,54 @@
     height: 0
     width: 0
 
+@mixin quick-slider($slider-height, $slider-width, $slider-radius, $slider-color, $track-width,$track-radius, $track-color)
+  -webkit-appearance: none /* Hides the slider so that custom slider can be made */
+  width: $track-width /* Specific width is required for Firefox. */
+  background: transparent /* Otherwise white in Chrome */
+  &::-webkit-slider-thumb
+    -webkit-appearance: none
+    height: $slider-height
+    width: $slider-width
+    border-radius: $slider-radius
+    background: $slider-color
+    /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
+    margin-top: -($slider-height) / 4
+  &::-moz-range-thumb
+    height: $slider-height
+    width: $slider-width
+    border-radius: $slider-radius
+    background: $slider-color
+  &::-ms-thumb
+    height: $slider-height
+    width: $slider-width
+    border-radius: $slider-radius
+    background: $slider-color
+
+  &::-webkit-slider-runnable-track
+    height: $slider-height / 2
+    width: $track-width
+    background: $track-color
+    border-radius: $track-radius
+  &::-moz-range-track
+    height: $slider-height / 2
+    width: $track-width
+    background: $track-color
+    border-radius: $track-radius
+  &::-ms-track
+    height: $slider-height / 2
+    width: $track-width
+    background: transparent
+    border-color: transparent
+    border-width: 16px 0
+    color: transparent
+  &::-ms-fill-lower
+    background: $track-color
+    border-radius: $track-radius * 2
+  &::-ms-fill-upper
+    background: $track-color
+    border-radius: $track-radius * 2
+
+
 
 @mixin unselectable()
   user-drag: none

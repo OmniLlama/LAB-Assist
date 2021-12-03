@@ -10,7 +10,7 @@ import * as jzzInpKbd from 'jzz-input-kbd';
 
 import {InputConverterEvents} from './input-converter-events';
 import {InputConverterVisuals} from './input-converter-visuals';
-import {GamepadObject, Queue, Tracker} from '../../helpers/Defs';
+import {EditorView, GamepadObject, Queue, Tracker} from '../../helpers/Defs';
 import {AudioContextShell, ButtonHTMLShell} from '../../helpers/Shells';
 import {InputEditorComponent} from '../input-editor/input-editor.component';
 
@@ -50,8 +50,23 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   testPadObj: GamepadObject;
   midi;
   audioCtx: AudioContextShell;
+
   SetGain(val) {
     this.audioCtx.setGlobalGain(val);
+  }
+
+  get EditorView() {
+    return InputEditorComponent.inpEdComp.edtrView;
+  }
+
+  ToggleEditorPlayState() {
+      this.EditorView.togglePlayState();
+  }
+  StopEditorPlayState() {
+    this.EditorView.stopPlayState();
+  }
+  EditorPlaying(): boolean {
+    return this.EditorView.playing;
   }
 
   trackingNotes: boolean;

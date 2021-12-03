@@ -2,7 +2,29 @@ head
   color: white
 
 #direction-input-selection
-  font-weight: bolder
+  label
+    color: white
+  input
+    color: black
+    border: #3f3f3f 1px solid
+    border-radius: 4px
+  input[use='true']
+    color: white
+    font-weight: bold
+    border-color: #e9e9e9
+  #use-ls
+    background-color: rgba(39,64,148,0.66)
+    &[use='true']
+      background-color: rgba(99,148,255,0.66)
+  #use-rs
+    background-color: rgba(112,19,19,0.66)
+    &[use='true']
+      background-color: rgba(255,83,83,0.66)
+  #use-dpad
+    background-color: rgba(14,126,24,0.66)
+    &[use='true']
+      background-color: rgba(70,224,38,0.66)
+
 
 $dir-width: 48px
 $dir-height: 48px

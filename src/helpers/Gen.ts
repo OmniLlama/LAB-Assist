@@ -21,6 +21,11 @@ export function Div(id = null, className = null): HTMLDivElement {
   }
   return div;
 }
+export function SubDiv(parent, id = null, className = null): HTMLDivElement {
+  const div = Div(id, className);
+  parent.appendChild(div);
+  return div;
+}
 export function Span(id = null, className = null): HTMLSpanElement {
   const span = document.createElement('span');
   if (id) {
@@ -32,7 +37,7 @@ export function Span(id = null, className = null): HTMLSpanElement {
   return span;
 }
 
-export function SubImg(parent, src: string, className: string = null) {
+export function SubImg(parent, src: string, className: string = null): HTMLImageElement {
   const img = Img(src, `${parent.id}-img`, className);
   parent.appendChild(img);
   return img;

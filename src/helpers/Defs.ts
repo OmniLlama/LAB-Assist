@@ -1,9 +1,9 @@
 import {InputConverterComponent} from '../app/input-converter/input-converter.component';
 import {normalizeVector, numberToPitchString} from './Func';
-import {Div} from './Gen';
+import {Div, SubDiv} from './Gen';
 import {InputEditorVisuals} from '../app/input-editor/input-editor-visuals';
 import {InputEditorEvents} from '../app/input-editor/input-editor-events';
-import {ButtonsState, DirectionState, GamepadType, GamepadTypeString} from './Enums';
+import {ButtonLayoutType, ButtonsState, DirectionState, GamepadType, GamepadTypeString} from './Enums';
 import {GamepadHTMLShell} from './Shells';
 
 export class BBox {
@@ -68,6 +68,14 @@ export class BBox {
    * Fits element within this bounding box
    * @param element
    */
+  updateElementTransformToBBox(element: HTMLElement) {
+    element.style.transform = `translate(${this.x}px , ${this.y}px)`;
+  }
+
+  /**
+   * Fits element within this bounding box
+   * @param element
+   */
   updateElementToBBox(element: HTMLElement) {
     element.style.left = this.x + 'px';
     element.style.top = this.y + 'px';
@@ -89,6 +97,7 @@ export class Playhead {
     this.startPos = [x, y];
     this.bbox = new BBox(x, y, w, h);
     this.bbox.updateElementToBBox(this.div);
+    // this.bbox.updateElementTransformToBBox(this.div);
   }
 
   get xPos(): number {
@@ -101,20 +110,24 @@ export class Playhead {
 
   shiftUpdate(x: number, y: number) {
     this.bbox.shift(x, y);
+    // this.bbox.updateElementTransformToBBox(this.div);
     this.bbox.updateElementToBBox(this.div);
   }
 
   xPlaceUpdate(x: number) {
     this.bbox.x = x;
+    // this.bbox.updateElementTransformToBBox(this.div);
     this.bbox.updateElementToBBox(this.div);
   }
 
   placeUpdate(x: number, y: number) {
     this.bbox.place(x, y);
+    // this.bbox.updateElementTransformToBBox(this.div);
     this.bbox.updateElementToBBox(this.div);
   }
 
   reset(yOnly: boolean) {
+    // this.placeUpdate(yOnly ? this.bbox.x : this.startPos[0] - window.scrollX, this.startPos[1] - window.scrollY);
     this.placeUpdate(yOnly ? this.bbox.x : this.startPos[0] + window.scrollX, this.startPos[1] + window.scrollY);
   }
 
@@ -180,18 +193,20 @@ export class HTMLNote {
     this.end = end;
     this.bbox.setWidth(this.end - this.start);
     this.bbox.updateElementToBBox(this.div);
-    // this.edgeR.style.left = `${this.bbox.width}px`;
+    // this.bbox.updateElementTransformToBBox(this.div);
   }
 
   finishNote(end: number) {
     this.end = end;
     this.bbox.setWidth(this.end - this.start);
     this.bbox.updateElementToBBox(this.div);
+    // this.bbox.updateElementTransformToBBox(this.div);
     this.edgeR.style.left = `${this.bbox.width}px`;
   }
 
   updateNotePos(me) {
     this.bbox.x = me.pageX - this.bbox.center;
+    // this.bbox.updateElementTransformToBBox(this.div);
     this.bbox.updateElementToBBox(this.div);
   }
 }
@@ -199,10 +214,14 @@ export class HTMLNote {
 export class EditorView {
   div: HTMLDivElement;
   score: HTMLDivElement;
+  trackedNotes: HTMLDivElement;
+  trackingNotes: HTMLDivElement;
   pitchCount = 24;
   pitchHeight: number;
   bbox: BBox;
   playhead: Playhead;
+  ppf: number;
+  playing: boolean;
   convX: number = 0;
   convY: number = 0;
 
@@ -210,9 +229,10 @@ export class EditorView {
     this.convX = InputConverterComponent.inpConvComp.div.getBoundingClientRect().width;
     this.bbox = new BBox(x, y, w, h);
     this.div = document.getElementById('test-editor') as HTMLDivElement;
-    this.score = Div('test-score');
+    this.score = SubDiv(this.div, 'test-score');
     this.score.addEventListener('click', (me) => this.playhead.xPlaceUpdate(me.x));
-    this.div.appendChild(this.score);
+    this.trackedNotes = SubDiv(this.div, 'tracked-notes');
+    this.trackingNotes = SubDiv(this.div, 'tracking-notes');
     this.bbox.updateElementToBBox(this.div);
     this.bbox.updateElementToBBox(this.score);
 
@@ -227,15 +247,38 @@ export class EditorView {
     this.convX = cnvRect.width;
     this.convY = cnvRect.height;
     const h = this.convY;
-    this.bbox.place(cnvRect.x + cnvRect.width, null);
+    this.bbox.place(cnvRect.x + cnvRect.width, cnvRect.y);
     this.bbox.setDimension(window.innerWidth, h);
     this.bbox.updateElementToBBox(this.div);
+    // this.bbox.updateElementTransformToBBox(this.div);
     this.bbox.updateElementToBBox(this.score);
+    // this.bbox.updateElementTransformToBBox(this.score);
     this.pitchHeight = h / this.pitchCount;
     const rect = this.score.getBoundingClientRect();
     this.playhead.bbox.setHeight(h);
     this.playhead.StartPos = [this.bbox.x, rect.y];
-    this.playhead.reset(true);
+    // this.playhead.StartPos = [this.bbox.x, 0];
+    this.playhead.reset(false);
+  }
+
+  playUpdate() {
+    if (this.playing) {
+      this.playhead.shiftUpdate(2, 0);
+    }
+  }
+
+  stopPlayState() {
+    this.setPlayState(false);
+    this.playhead.reset(false);
+    this.updateDraw();
+  }
+
+  togglePlayState() {
+    this.playing = !this.playing;
+  }
+
+  setPlayState(playing: boolean) {
+    this.playing = playing;
   }
 }
 
@@ -296,6 +339,7 @@ export class GamepadObject {
   type: GamepadType;
   pad: Gamepad;
   html: GamepadHTMLShell;
+  btnLayoutTy: ButtonLayoutType = ButtonLayoutType.Arcade;
   btnLayout: number[];
 
   get actionButtonLayout() {
@@ -316,13 +360,12 @@ export class GamepadObject {
   trigDZ: number = .8;
   btns: readonly GamepadButton[];
   btnsState: ButtonsState;
-  btnsOrder: number[];
 
   constructor(gp) {
     if (gp !== null && gp !== undefined) {
       this.pad = gp;
       this.type = this.getType(gp.id);
-      this.btnLayout = this.getArcadeLayoutButtonOrder();
+      this.btnLayout = this.getButtonLayout();
       this.html = new GamepadHTMLShell(this);
       this.dpadBtns = this.DPadURLD;
     } else {
@@ -428,12 +471,32 @@ export class GamepadObject {
     }
   }
 
-  getArcadeLayoutButtonOrder(): number[] {
-    switch (this.type) {
-      case GamepadType.XInput:
+  getButtonLayout(): number[] {
+    switch (this.btnLayoutTy) {
+      case ButtonLayoutType.Arcade:
         return [2, 3, 5, 4, 0, 1, 7, 6, 8, 9, 10, 11];
-      default:
+      case ButtonLayoutType.Linear:
         return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+      case ButtonLayoutType.FacesLeft:
+        return [2, 3, 4, 5, 0, 1, 6, 7, 8, 9, 10, 11];
+      case ButtonLayoutType.FacesMiddle:
+        return [4, 2, 3, 5, 6, 0, 1, 7, 8, 9, 10, 11];
+    }
+  }
+
+  changeButtonLayout(layoutTy: ButtonLayoutType) {
+    if (layoutTy === this.btnLayoutTy) {
+      return;
+    }
+    this.btnLayoutTy = layoutTy;
+    this.btnLayout = this.getButtonLayout();
+    this.html.acts_div.innerHTML = '';
+    for (const btnNum of this.actionButtonLayout) {
+      this.html.acts_div.appendChild(this.html.btnShells[btnNum].div);
+    }
+    this.html.funcs_div.innerHTML = '';
+    for (const btnNum of this.functionButtonLayout) {
+      this.html.funcs_div.appendChild(this.html.btnShells[btnNum].div);
     }
   }
 }

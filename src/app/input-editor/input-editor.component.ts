@@ -26,7 +26,6 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
   snapAmt;
 
   edtrView: EditorView;
-  playing: boolean;
 
   currNote: HTMLNote = null;
 
@@ -76,7 +75,6 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
     InputEditorVisuals.render();
     iec.edtrView.updateDraw();
   }
-
   /**
    * turns on GUI elements once all are properly initalized
    * @param flag - whether to turn on the GUI

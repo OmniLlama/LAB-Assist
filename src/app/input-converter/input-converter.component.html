@@ -1,14 +1,31 @@
 <div id="input-history-shell">
   <div id="input-history"></div>
 </div>
-<div id="editor-options"><input
+<div id="editor-controls">
+  <input
+    id="stop-button"
+    class="editor-control-toggle-button"
+    type="button"
+
+    (click)="StopEditorPlayState()"
+    value="Stop"/>
+  <input
+    id="play-button"
+    class="editor-control-toggle-button"
+    type="button"
+    [ngStyle]="{'background-color': (trackingNotes) ? 'rgb(106,236,43)' : 'rgb(26,96,21)'}"
+    (click)="ToggleEditorPlayState()"
+    value="Play"/>
+  <input
   id="record-check"
+  class="editor-control-toggle-button"
   type="button"
   [ngStyle]="{'background-color': (recordingPrimed) ? 'rgb(204,32,55)' : 'rgb(91,63,63)'}"
   (click)="recordingPrimed = !recordingPrimed"
   value="Rec"/>
   <input
     id="live-update-check"
+    class="editor-control-toggle-button"
     type="button"
     [ngStyle]="{'background-color': (liveUpdateHeldNotes) ? 'rgb(64,175,204)' : 'rgba(83,122,136,0.66)'}"
     (click)="liveUpdateHeldNotes = !liveUpdateHeldNotes"

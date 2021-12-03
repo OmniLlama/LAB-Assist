@@ -1,6 +1,6 @@
 import {MovementTrail} from '../app/input-display/movement-trail';
 import {InputDisplayVisuals} from '../app/input-display/input-display-visuals';
-import {Div, Span, SubImg} from './Gen';
+import {Div, Span, SubDiv, SubImg} from './Gen';
 import {htmlIdxToDirStr, nameButton} from '../app/input-display/input-display.component';
 import {AxisToAnalogName} from './Enums';
 import {clamp, pitchNumToFrequency} from './Func';
@@ -16,12 +16,18 @@ export class ButtonHTMLShell implements HTMLShell {
   pressedImg: HTMLImageElement;
   name: string;
 
-  constructor(name: string, className: string, parent) {
+  constructor(name: string, className: string, parent = null) {
     this.name = name;
     this.div = Div(name, className);
     this.img = SubImg(this.div, name);
     this.pressedImg = SubImg(this.div, name + '_pressed');
     this.pressedImg.style.display = 'none';
+    if (parent) {
+      parent.appendChild(this.div);
+    }
+  }
+
+  setParent(parent) {
     parent.appendChild(this.div);
   }
 
@@ -36,9 +42,9 @@ export class GamepadHTMLShell implements HTMLShell {
   padInfo: HTMLHeadElement;
   dirArrowSets: DirectionalHTMLShell[];
   acts_div: HTMLDivElement;
-  actBtnShells: ButtonHTMLShell[];
+  btnShells: ButtonHTMLShell[];
   funcs_div: HTMLDivElement;
-  funcBtnShells: ButtonHTMLShell[];
+  // funcBtnShells: ButtonHTMLShell[];
   axes_div: HTMLDivElement;
   pad2WayAxes: TwoWayAxisShell[];
 
@@ -60,23 +66,22 @@ export class GamepadHTMLShell implements HTMLShell {
     this.div.appendChild(this.dirArrowSets[2].div);
 
 
-
-    // Create Action Button Icons
-    this.actBtnShells = new Array<ButtonHTMLShell>();
-    this.acts_div = Div(null, 'btns4xY');
+    // Create Button Icons
+    this.btnShells = new Array<ButtonHTMLShell>();
+    for (let i = 0; i < padObj.Btns.length; i++) {
+      const btn = new ButtonHTMLShell(nameButton(i), 'gamepad-buttons');
+      this.btnShells.push(btn);
+    }
+    // Append Action Button Icons
+    this.acts_div = SubDiv(this.div, null, 'btns4xY');
     for (const btnNum of padObj.actionButtonLayout) {
-      const btn = new ButtonHTMLShell(nameButton(btnNum), 'gamepad-buttons', this.acts_div);
-      this.actBtnShells.push(btn);
+      this.acts_div.appendChild(this.btnShells[btnNum].div);
     }
-    this.div.appendChild(this.acts_div);
-    // Create Function Button Icons
-    this.funcBtnShells = new Array<ButtonHTMLShell>();
-    this.funcs_div = Div(null, 'funcs1x4');
+    // Append Function Button Icons
+    this.funcs_div = SubDiv(this.div, null, 'funcs1x4');
     for (const btnNum of padObj.functionButtonLayout) {
-      const btn = new ButtonHTMLShell(nameButton(btnNum), 'gamepad-functions', this.funcs_div);
-      this.funcBtnShells.push(btn);
+      this.funcs_div.appendChild(this.btnShells[btnNum].div);
     }
-    this.div.appendChild(this.funcs_div);
 
     // Create Axis Meters
     this.pad2WayAxes = new Array<TwoWayAxisShell>();
@@ -213,6 +218,7 @@ export class AudioContextShell {
   setGlobalGain(val: number) {
     this.globalGain.gain.setValueAtTime(val, this.currentTime);
   }
+
   playAtFor(idx: number, delay: number, dur: number): AudioContextShell {
     this.oscs[idx].start(delay);
     this.oscs[idx].stop(dur);

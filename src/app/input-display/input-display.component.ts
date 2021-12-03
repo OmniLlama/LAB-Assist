@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {
-  ButtonLayoutOrder,
+  ButtonLayoutType,
   ButtonNotationType,
   ButtonsState,
   ggBtns,
@@ -46,10 +46,11 @@ export class InputDisplayComponent implements OnInit {
   testState: string = '';
 
   mvNotTy: MovementNotationType;
-  butNotTy: ButtonNotationType = ButtonNotationType.StreetFighter;
+  butNotTy: ButtonNotationType = ButtonNotationType.Xbox;
   butNotTypes = ButtonNotationType;
   mntKeys = Object.keys(MovementNotationType);
   bntKeys = Object.keys(ButtonNotationType);
+  layoutVals = Object.values(ButtonLayoutType);
   controllers_div = document.getElementById('controllers');
 
   diagDeadzone = 0.4;
@@ -58,7 +59,6 @@ export class InputDisplayComponent implements OnInit {
   useLeftStick = true;
   useRightStick = true;
   useDPad = true;
-
 
   constructor() {
   }
@@ -117,7 +117,6 @@ export class InputDisplayComponent implements OnInit {
     document.getElementById('controllers').removeChild(padObjs[gamepad.index].html.div);
     pads[gamepad.index] = null;
     padObjs[gamepad.index] = null;
-    // InputEditorComponent.inpEdComp.edtrView.updateDraw();
     InputDisplayComponent.rAF(cb => this.updateStatus());
   }
 
@@ -162,12 +161,12 @@ export class InputDisplayComponent implements OnInit {
       pO.actionButtonLayout.forEach((b, i) => {
         const val = pO.pad.buttons[b];
         const pressed = val.value > 0.8;
-        pO.html.actBtnShells[i].updateImg(pressed);
+        pO.html.btnShells[b].updateImg(pressed);
       });
       pO.functionButtonLayout.forEach((b, i) => {
         const val = pO.pad.buttons[b];
         const pressed = val.value > 0.8;
-        pO.html.funcBtnShells[i].updateImg(pressed);
+        pO.html.btnShells[b].updateImg(pressed);
       });
       /**
        * Get Axes Status */
@@ -206,7 +205,10 @@ export class InputDisplayComponent implements OnInit {
   }
 
 
-  arrangeButtons(layout: ButtonLayoutOrder) {
+  rearrangeButtons(layout: string) {
+    if (padObjs[0]) {
+      padObjs[0].changeButtonLayout(layout as ButtonLayoutType);
+    }
   }
 
 
@@ -219,6 +221,8 @@ export class InputDisplayComponent implements OnInit {
  */
 export function nameButton(i: number): any {
   switch (InputDisplayComponent.inpDispCmp.butNotTy) {
+    case ButtonNotationType.Xbox:
+      return xbBtns[i] !== undefined ? xbBtns[i] : null;
     case ButtonNotationType.StreetFighter:
       return xbBtns[i] !== undefined ? xbBtns[i] : null;
     case ButtonNotationType.GuiltyGear:

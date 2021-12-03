@@ -2,15 +2,20 @@
 $converter-bg: #181818
 $converter-icon-height: 28px
 
+$control-height: 20px
 
-
-
-#editor-options
+#editor-controls
   input
     color: white
     font-weight: bold
     font-size: .8em
-
+    border-radius: 4px
+  #stop-button
+      background-color: rgb(82, 82, 82)
+  label
+    color: lightgrey
+  input[type='range']
+    @include Mixins.quick-slider($control-height, 8px, 4px, #b4f4ff, 180px, 0px, #26748f)
 
 #editor-input-icons
   background-color: $converter-bg

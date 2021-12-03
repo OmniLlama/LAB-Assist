@@ -33,9 +33,11 @@ export enum ButtonState {
   Up = 3
 }
 
-export enum ButtonLayoutOrder {
+export enum ButtonLayoutType {
+  Arcade = 'arcade',
   Linear = 'linear',
-  Arcade = 'arcade'
+  FacesLeft = 'faces-left',
+  FacesMiddle= 'faces-middle'
 }
 
 export enum GamepadType {

@@ -15,12 +15,11 @@ export class InputEditorEvents {
       switch (e.key)
       {
         case 'Backspace':
-          iec.playing = false;
-          iec.edtrView.playhead.reset(false);
-          iec.edtrView.updateDraw();
+          iec.edtrView.stopPlayState();
           break;
         case ' ':
-          iec.playing = !iec.playing;
+          e.preventDefault();
+          iec.edtrView.togglePlayState();
           break;
         case 'Delete':
         case 'ArrowRight':
