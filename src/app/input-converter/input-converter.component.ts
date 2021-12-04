@@ -5,7 +5,7 @@ import {
   padObjs, URLDStrings, nameButton,
 } from '../input-display/input-display.component';
 import * as JZZ from 'jzz';
-import {GamepadType, ButtonNotationType, DirectionState, ButtonsState, xbBtns} from 'src/helpers/Enums';
+import {GamepadType, ButtonNotationType, DirectionState, ButtonsState, xbBtns, OscillatorType} from 'src/helpers/Enums';
 import * as jzzInpKbd from 'jzz-input-kbd';
 
 import {InputConverterEvents} from './input-converter-events';
@@ -51,6 +51,14 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   midi;
   audioCtx: AudioContextShell;
 
+  get audioOscTypes(): string[] {
+    return Object.values(OscillatorType);
+  }
+
+  changeOscType(ty: string) {
+    this.audioCtx.changeOscType(ty as OscillatorOptions['type']);
+  }
+
   SetGain(val) {
     this.audioCtx.setGlobalGain(val);
   }
@@ -60,11 +68,13 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   }
 
   ToggleEditorPlayState() {
-      this.EditorView.togglePlayState();
+    this.EditorView.togglePlayState();
   }
+
   StopEditorPlayState() {
     this.EditorView.stopPlayState();
   }
+
   EditorPlaying(): boolean {
     return this.EditorView.playing;
   }
@@ -119,7 +129,6 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
     const icc = InputConverterComponent.inpConvComp;
     const iec = InputEditorComponent.inpEdComp;
     if (pads !== undefined && pads.length !== 0 && icc.testPadObj == null) {
-      let pad = (pads[0] !== undefined ? pads[0] : pads[1]);
       let padObj = (padObjs[0] !== undefined ? padObjs[0] : padObjs[1]);
       icc.testPadObj = padObj;
       let padType = GamepadType[icc.testPadObj.type];

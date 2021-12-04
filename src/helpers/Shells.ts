@@ -2,9 +2,10 @@ import {MovementTrail} from '../app/input-display/movement-trail';
 import {InputDisplayVisuals} from '../app/input-display/input-display-visuals';
 import {Div, Span, SubDiv, SubImg} from './Gen';
 import {htmlIdxToDirStr, nameButton} from '../app/input-display/input-display.component';
-import {AxisToAnalogName} from './Enums';
+import {AxisToAnalogName, DirectionState} from './Enums';
 import {clamp, pitchNumToFrequency} from './Func';
 import {GamepadObject} from './Defs';
+import {InputDisplayFunctions} from '../app/input-display/input-display-functions';
 
 interface HTMLShell {
   div: HTMLDivElement;
@@ -41,12 +42,11 @@ export class GamepadHTMLShell implements HTMLShell {
   div: HTMLDivElement;
   padInfo: HTMLHeadElement;
   dirArrowSets: DirectionalHTMLShell[];
-  acts_div: HTMLDivElement;
   btnShells: ButtonHTMLShell[];
-  funcs_div: HTMLDivElement;
-  // funcBtnShells: ButtonHTMLShell[];
-  axes_div: HTMLDivElement;
   pad2WayAxes: TwoWayAxisShell[];
+  acts_div: HTMLDivElement;
+  funcs_div: HTMLDivElement;
+  axes_div: HTMLDivElement;
 
   constructor(padObj: GamepadObject) {
     this.div = Div('controller' + padObj.pad.index, 'controller');
@@ -74,13 +74,13 @@ export class GamepadHTMLShell implements HTMLShell {
     }
     // Append Action Button Icons
     this.acts_div = SubDiv(this.div, null, 'btns4xY');
-    for (const btnNum of padObj.actionButtonLayout) {
-      this.acts_div.appendChild(this.btnShells[btnNum].div);
+    for (const btnNum of padObj.ActionButtonLayout) {
+      this.btnShells[btnNum].setParent(this.acts_div);
     }
     // Append Function Button Icons
     this.funcs_div = SubDiv(this.div, null, 'funcs1x4');
-    for (const btnNum of padObj.functionButtonLayout) {
-      this.funcs_div.appendChild(this.btnShells[btnNum].div);
+    for (const btnNum of padObj.FunctionButtonLayout) {
+      this.btnShells[btnNum].setParent(this.funcs_div);
     }
 
     // Create Axis Meters
@@ -155,6 +155,14 @@ export class DirectionalHTMLShell implements HTMLShell {
     const rect = this.tracer.getBoundingClientRect();
     return [rect.left + window.scrollX, rect.top + window.scrollY];
   }
+
+  updateShell(use: boolean, axes: [number, number], dirState: DirectionState) {
+    this.div.style.display = use ? 'inline-block' : 'none';
+    InputDisplayFunctions.updateCurrentDirection(this, dirState);
+    if (use) {
+      this.updateTracer(axes);
+    }
+  }
 }
 
 export class TwoWayAxisShell implements HTMLShell {
@@ -196,6 +204,7 @@ export class AudioContextShell {
   ctx: AudioContext;
   globalGain: GainNode;
   globalComp: DynamicsCompressorNode;
+  oscTy: OscillatorOptions['type'] = 'triangle';
   oscs: Array<OscillatorShell>;
 
   constructor(ctx: AudioContext, startGain: number) {
@@ -207,7 +216,7 @@ export class AudioContextShell {
     this.globalComp.connect(this.globalGain);
     this.oscs = new Array<OscillatorShell>();
     for (let i = 0; i < 24; i++) {
-      this.oscs.push(new OscillatorShell(this.ctx, this.globalComp, 'triangle', pitchNumToFrequency(69 - i)));
+      this.oscs.push(new OscillatorShell(this.ctx, this.globalComp, this.oscTy, pitchNumToFrequency(69 - i)));
     }
   }
 
@@ -230,6 +239,13 @@ export class AudioContextShell {
     this.oscs[idx].stop(dur);
     return this;
   }
+
+  changeOscType(type: OscillatorOptions['type']) {
+    this.oscTy = type;
+    this.oscs.forEach((osc) => {
+      osc.turnOverType(type);
+    });
+  }
 }
 
 export class OscillatorShell {
@@ -251,15 +267,19 @@ export class OscillatorShell {
   stop(delay: number = 0) {
     this.node.stop(this.ctx.currentTime + delay);
     this.regenNode();
-    // this.delay(delay).then(() => this.regenNode());
+  }
+
+  turnOverType(type: OscillatorOptions['type']) {
+    // this.node.stop();
+    this.regenNode(type);
   }
 
   delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  regenNode() {
-    this.node = new OscillatorNode(this.ctx, {type: this.node.type, frequency: this.node.frequency.value});
+  regenNode(type: OscillatorOptions['type'] = this.node.type) {
+    this.node = new OscillatorNode(this.ctx, {type, frequency: this.node.frequency.value});
     this.node.connect(this.parent);
   }
 }

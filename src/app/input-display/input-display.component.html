@@ -7,20 +7,20 @@
   <input
     id="use-ls"
     type="button"
-    [attr.use]="useLeftStick"
-    (click)="useLeftStick = !useLeftStick"
+    [attr.use]="useLS()"
+    (click)="toggleLS()"
     value="LS"/>
   <input
     id="use-rs"
     type="button"
-    [attr.use]="useRightStick"
-    (click)="useRightStick = !useRightStick"
+    [attr.use]="useRS()"
+    (click)="toggleRS()"
     value="RS"/>
   <input
     id="use-dpad"
     type="button"
-    [attr.use]="useDPad"
-    (click)="useDPad = !useDPad"
+    [attr.use]="useDPad()"
+    (click)="toggleDPad()"
     value="DPad"/>
   <label for="btn-layout">Button Layout:
     <select #buttonLayout name="button-layout" id="btn-layout" (change)="rearrangeButtons(buttonLayout.value)">

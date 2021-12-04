@@ -220,7 +220,7 @@ export class EditorView {
   pitchHeight: number;
   bbox: BBox;
   playhead: Playhead;
-  ppf: number;
+  pxPrFrm: number = 4;
   playing: boolean;
   convX: number = 0;
   convY: number = 0;
@@ -263,7 +263,7 @@ export class EditorView {
 
   playUpdate() {
     if (this.playing) {
-      this.playhead.shiftUpdate(2, 0);
+      this.playhead.shiftUpdate(this.pxPrFrm, 0);
     }
   }
 
@@ -339,27 +339,43 @@ export class GamepadObject {
   type: GamepadType;
   pad: Gamepad;
   html: GamepadHTMLShell;
-  btnLayoutTy: ButtonLayoutType = ButtonLayoutType.Arcade;
-  btnLayout: number[];
 
-  get actionButtonLayout() {
-    return this.btnLayout.slice(0, -this.funcBtnCnt);
+  useLS: boolean = true;
+  useRS: boolean = true;
+  useDPad: boolean = true;
+
+  get UsedDirs(): Array<boolean> {
+    return [this.useLS, this.useRS, this.useDPad];
   }
 
-  get functionButtonLayout() {
-    return this.btnLayout.slice(-this.funcBtnCnt);
-  }
+  activeInEditor: boolean;
 
-  funcBtnCnt: number = 4;
-  lsDirState: DirectionState;
-  rsDirState: DirectionState;
-  dpadDirState: DirectionState;
-  dpadBtns: readonly GamepadButton[];
   vertDZ: number = 0.4;
   horiDZ: number = 0.5;
   trigDZ: number = .8;
+  lsDirState: DirectionState;
+  rsDirState: DirectionState;
+  dpadDirState: DirectionState;
+
+  get DirStates() {
+    return [this.lsDirState, this.rsDirState, this.dpadDirState];
+  }
+
+  dpadBtns: readonly GamepadButton[];
+
+  funcBtnCnt: number = 4;
   btns: readonly GamepadButton[];
   btnsState: ButtonsState;
+  btnLayoutTy: ButtonLayoutType = ButtonLayoutType.Arcade;
+  btnLayout: number[];
+
+  get ActionButtonLayout() {
+    return this.btnLayout.slice(0, -this.funcBtnCnt);
+  }
+
+  get FunctionButtonLayout() {
+    return this.btnLayout.slice(-this.funcBtnCnt);
+  }
 
   constructor(gp) {
     if (gp !== null && gp !== undefined) {
@@ -378,6 +394,14 @@ export class GamepadObject {
 
   axisPair(idx: number): [number, number] {
     return [this.axisByIdx(idx * 2), this.axisByIdx(idx * 2 + 1)];
+  }
+
+  get AxisPairs(): Array<[number, number]> {
+    const pairs = new Array<[number, number]>();
+    for (let i = 0; i < this.Axes.length / 2; i++) {
+      pairs.push(this.axisPair(i));
+    }
+    return pairs;
   }
 
   get Axes(): readonly number[] {
@@ -401,6 +425,11 @@ export class GamepadObject {
     const bs = [this.pad.buttons[bns[0]], this.pad.buttons[bns[3]], this.pad.buttons[bns[2]], this.pad.buttons[bns[1]]];
     return bs;
   }
+
+  get DirVecs(): Array<[number, number]> {
+    return this.AxisPairs.concat(this.DPadToVector());
+  }
+
 
   updateGamepad(gamepads: Gamepad[]) {
     this.pad = gamepads[this.pad.index];
@@ -491,11 +520,11 @@ export class GamepadObject {
     this.btnLayoutTy = layoutTy;
     this.btnLayout = this.getButtonLayout();
     this.html.acts_div.innerHTML = '';
-    for (const btnNum of this.actionButtonLayout) {
+    for (const btnNum of this.ActionButtonLayout) {
       this.html.acts_div.appendChild(this.html.btnShells[btnNum].div);
     }
     this.html.funcs_div.innerHTML = '';
-    for (const btnNum of this.functionButtonLayout) {
+    for (const btnNum of this.FunctionButtonLayout) {
       this.html.funcs_div.appendChild(this.html.btnShells[btnNum].div);
     }
   }

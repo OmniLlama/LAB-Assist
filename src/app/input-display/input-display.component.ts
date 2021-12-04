@@ -16,8 +16,9 @@ import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {GamepadObject} from '../../helpers/Defs';
 import {decToBin} from '../../helpers/Func';
 
-export let pads: Array<Gamepad>;
-export let padObjs: Array<GamepadObject>;
+export let pads: Array<Gamepad> = new Array<Gamepad>();
+export let padObjs: Array<GamepadObject> = new Array<GamepadObject>();
+
 export const dirSetId = {0: 'left', 1: 'right', 2: 'dpad'};
 export const tracerAssnId = {0: 'ls', 1: 'rs', 2: 'dpad'};
 
@@ -42,7 +43,7 @@ export const htmlIdxToDirStr = {
 export class InputDisplayComponent implements OnInit {
   static rAF = window.requestAnimationFrame;
   static inpDispCmp: InputDisplayComponent;
-  gamepadObjects: Array<GamepadObject>;
+
   testState: string = '';
 
   mvNotTy: MovementNotationType;
@@ -51,14 +52,54 @@ export class InputDisplayComponent implements OnInit {
   mntKeys = Object.keys(MovementNotationType);
   bntKeys = Object.keys(ButtonNotationType);
   layoutVals = Object.values(ButtonLayoutType);
-  controllers_div = document.getElementById('controllers');
+  controllers_div: HTMLDivElement;
 
   diagDeadzone = 0.4;
   orthoDeadzone = 0.75;
 
-  useLeftStick = true;
-  useRightStick = true;
-  useDPad = true;
+
+  // useLeftStick = true;
+  // useRightStick = true;
+  // useDPad = true;
+
+  toggleLS() {
+    if (padObjs && padObjs[0]) {
+      padObjs[0].useLS = !padObjs[0].useLS;
+    }
+  }
+
+  toggleRS() {
+    if (padObjs && padObjs[0]) {
+      padObjs[0].useRS = !padObjs[0].useRS;
+    }
+  }
+
+  toggleDPad() {
+    if (padObjs && padObjs[0]) {
+      padObjs[0].useDPad = !padObjs[0].useDPad;
+    }
+  }
+
+  useLS() {
+    if (padObjs && padObjs[0]) {
+      return padObjs[0].useLS;
+    }
+    return false;
+  }
+
+  useRS() {
+    if (padObjs && padObjs[0]) {
+      return padObjs[0].useRS;
+    }
+    return false;
+  }
+
+  useDPad() {
+    if (padObjs && padObjs[0]) {
+      return padObjs[0].useDPad;
+    }
+    return false;
+  }
 
   constructor() {
   }
@@ -67,13 +108,13 @@ export class InputDisplayComponent implements OnInit {
     const haveWebkitEvents = 'WebKitGamepadEvent' in window;
     const haveEvents = 'GamepadEvent' in window;
     InputDisplayComponent.inpDispCmp = this;
+    this.controllers_div = document.getElementById('controllers') as HTMLDivElement;
     pads = new Array<Gamepad>();
     padObjs = new Array<GamepadObject>();
-    /**
-     * EVENTS
-     */
+
     if (haveEvents) {
-      window.addEventListener('gamepadconnected', e => InputDisplayEvents.connecthandler(e, this));
+      window.addEventListener('gamepadconnected', e =>
+        InputDisplayEvents.connecthandler(e, this));
       window.addEventListener('gamepaddisconnected', e =>
         InputDisplayEvents.disconnecthandler(e, this)
       );
@@ -89,45 +130,22 @@ export class InputDisplayComponent implements OnInit {
     }
   }
 
-  getControllers() {
-    return pads;
-  }
-
-  /**
-   * The addgamepad function is large and does most of the work in this component.
-   * First, it sets the current gamepad to the array of controllers.
-   * Next, it creates a series of div elements where things such as gamepad info, gamepad buttons, and gamepad arrows will live.
-   * After the divs, it creates the arrow icons through a switch statement.
-   * After creating the arrows, the gamepad buttons are created through similar means.
-   * @param gamepad gamepad to be added
-   */
   addHtmlGamepad(gamepad: Gamepad): void {
     pads[gamepad.index] = gamepad;
     padObjs[gamepad.index] = new GamepadObject(gamepad);
-    // Hide start message
     document.getElementById('start').style.display = 'none';
-    document.getElementById('controllers').appendChild(padObjs[gamepad.index].html.div);
+    this.controllers_div.appendChild(padObjs[gamepad.index].html.div);
     // InputEditorComponent.inpEdComp.edtrView.updateDraw();
     InputDisplayComponent.rAF(cb => this.updateStatus());
   }
 
   removeHtmlGamepad(gamepad: Gamepad): void {
     // Hide start message
-    document.getElementById('start').style.display = 'none';
-    document.getElementById('controllers').removeChild(padObjs[gamepad.index].html.div);
-    pads[gamepad.index] = null;
-    padObjs[gamepad.index] = null;
-    InputDisplayComponent.rAF(cb => this.updateStatus());
-  }
-
-  /**
-   * Handles the removing of a gamepad element from the controller array
-   * @param gamepad
-   */
-  removegamepad(gamepad): void {
-    const d = document.getElementById('controller' + gamepad.index);
-    document.body.removeChild(d);
+    document.getElementById('start').style.display = 'block';
+    this.controllers_div.removeChild(padObjs[gamepad.index].html.div);
     delete pads[gamepad.index];
+    delete padObjs[gamepad.index];
+    InputDisplayComponent.rAF(cb => this.updateStatus());
   }
 
 
@@ -158,46 +176,23 @@ export class InputDisplayComponent implements OnInit {
      */
     padObjs.forEach((pO, ind) => {
       pO.updateGamepad(pads);
-      pO.actionButtonLayout.forEach((b, i) => {
+      pO.ActionButtonLayout.forEach((b) => {
         const val = pO.pad.buttons[b];
         const pressed = val.value > 0.8;
         pO.html.btnShells[b].updateImg(pressed);
       });
-      pO.functionButtonLayout.forEach((b, i) => {
+      pO.FunctionButtonLayout.forEach((b) => {
         const val = pO.pad.buttons[b];
         const pressed = val.value > 0.8;
         pO.html.btnShells[b].updateImg(pressed);
       });
-      /**
-       * Get Axes Status */
-
-      const lDirShell = pO.html.dirArrowSets[0];
-      const rDirShell = pO.html.dirArrowSets[1];
-      const dpDirShell = pO.html.dirArrowSets[2];
-      const dpVec = pO.DPadToVector();
-
-      pO.html.pad2WayAxes[0].updateAxis(pO.axisByIdx(0));
-      pO.html.pad2WayAxes[1].updateAxis(pO.axisByIdx(1));
-      pO.html.pad2WayAxes[2].updateAxis(pO.axisByIdx(2));
-      pO.html.pad2WayAxes[3].updateAxis(pO.axisByIdx(3));
-      lDirShell.div.style.display = this.useLeftStick ? 'inline-block' : 'none';
-      lDirShell.updateTracer(pO.axisPair(0));
-      rDirShell.div.style.display = this.useRightStick ? 'inline-block' : 'none';
-      rDirShell.updateTracer(pO.axisPair(1));
-      dpDirShell.div.style.display = this.useDPad ? 'inline-block' : 'none';
-      dpDirShell.updateTracer([dpVec[0], dpVec[1]]);
-
-      if (this.useDPad
-        // && pO.DPad.some(dir => dir.pressed)
-      ) {
-        const padArr = new Array<boolean>(4);
-        pO.DPad.forEach((d, i) => {
-          padArr[i] = d.pressed;
-        });
-        InputDisplayFunctions.updateCurrentDirection(dpDirShell, pO.dpadDirState);
-      }
-      InputDisplayFunctions.updateCurrentDirection(lDirShell, pO.lsDirState);
-      InputDisplayFunctions.updateCurrentDirection(rDirShell, pO.rsDirState);
+      pO.html.pad2WayAxes.forEach((axis, idx) => {
+        axis.updateAxis(pO.axisByIdx(idx));
+      });
+      pO.html.dirArrowSets.forEach((dir, idx) => {
+        const vec = pO.DirVecs[idx];
+        dir.updateShell(pO.UsedDirs[idx], (idx === 2 ? pO.DPadToVector() : vec), pO.DirStates[idx]);
+      });
       this.testState = `${decToBin(pO.lsDirState)} ${decToBin(pO.rsDirState)} ${decToBin(pO.dpadDirState)} ${decToBin(pO.btnsState)}`;
     });
     InputDisplayComponent.rAF(cb => this.updateStatus());

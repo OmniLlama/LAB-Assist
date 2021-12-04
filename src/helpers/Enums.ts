@@ -9,6 +9,11 @@ export enum DirectionState {
   DownLeft = DirectionState.Down | DirectionState.Left,
   DownRight = DirectionState.Down | DirectionState.Right
 }
+// export function HTMLDirectionIdx(dir: DirectionState): number {
+//   switch (dir) {
+//
+//   }
+// }
 
 export enum ButtonsState {
   None = 0,
@@ -72,6 +77,13 @@ export enum ButtonNotationType {
   GuiltyGear = 'gg',
   Playstation = 'ps',
   Xbox = 'xb'
+}
+
+export enum OscillatorType{
+  Sine = 'sine',
+  Triangle = 'triangle',
+  Square = 'square',
+  Sawtooth = 'sawtooth'
 }
 
 export const xbBtns = ['a', 'b', 'x', 'y', 'lb', 'rb', 'lt', 'rt', 'select', 'start', 'lsc', 'rsc'];

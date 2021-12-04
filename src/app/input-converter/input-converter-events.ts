@@ -9,7 +9,7 @@ import {Div, Span} from '../../helpers/Gen';
 import {DirectionState} from '../../helpers/Enums';
 import {ButtonHTMLShell} from '../../helpers/Shells';
 import {Dir} from 'fs';
-import {InputDisplayComponent} from '../input-display/input-display.component';
+import {InputDisplayComponent, padObjs} from '../input-display/input-display.component';
 
 export class InputConverterEvents {
   static updateController(): void {
@@ -25,9 +25,9 @@ export class InputConverterEvents {
       }
     }
 
-    icc.stateChanged = padObj.lsDirState !== (idc.useLeftStick ? icc.lastLSState : padObj.lsDirState) ||
-      padObj.rsDirState !== (idc.useRightStick ? icc.lastRSState : padObj.rsDirState) ||
-      padObj.dpadDirState !== (idc.useDPad ? icc.lastDPadState : padObj.dpadDirState) ||
+    icc.stateChanged = padObj.lsDirState !== (padObj.useLS ? icc.lastLSState : padObj.lsDirState) ||
+      padObj.rsDirState !== (padObj.useRS ? icc.lastRSState : padObj.rsDirState) ||
+      padObj.dpadDirState !== (padObj.useDPad ? icc.lastDPadState : padObj.dpadDirState) ||
       padObj.btnsState !== icc.lastBtnsState;
     if (icc.stateChanged || icc.stateFrameCnt === 999) {
       icc.div_currInputHistory = Div(null, 'input-history-node');
@@ -43,19 +43,22 @@ export class InputConverterEvents {
       }
       icc.stateFrameCnt = 0;
     }
-    if (idc.useLeftStick) {
-      InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(0), icc.lsTrackerGroup, icc.lsBtnShells,
-        padObj.lsDirState, 0, iec.edtrView.playhead.xPos);
-    }
 
-    if (idc.useRightStick) {
-      InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(1), icc.rsTrackerGroup, icc.rsBtnShells,
-        padObj.rsDirState, 2, iec.edtrView.playhead.xPos);
+    if (padObjs && padObjs[0]) {
+      if (padObjs[0].useLS) {
+        InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(0), icc.lsTrackerGroup, icc.lsBtnShells,
+          padObj.lsDirState, 0, iec.edtrView.playhead.xPos);
+      }
+
+      if (padObjs[0].useRS) {
+        InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(1), icc.rsTrackerGroup, icc.rsBtnShells,
+          padObj.rsDirState, 2, iec.edtrView.playhead.xPos);
+      }
+      if (padObjs[0].useDPad) {
+        InputConverterEvents.updateControllerDPadTrackers(padObj, iec.edtrView.playhead.xPos);
+      }
+      InputConverterEvents.updateControllerButtonTrackers(padObj, iec.edtrView.playhead.xPos);
     }
-    if (idc.useDPad) {
-      InputConverterEvents.updateControllerDPadTrackers(padObj, iec.edtrView.playhead.xPos);
-    }
-    InputConverterEvents.updateControllerButtonTrackers(padObj, iec.edtrView.playhead.xPos);
 
 
     if (icc.stateFrameCnt < 999) {

@@ -42,6 +42,15 @@
     (change)=" SetGain(gainLevel.value)"
     [defaultValue]=".5"
   ></label>
+  <label for="wave-type-selection">Wave:
+    <select
+      #waveType 
+      name="wave-selection"
+      id="wave-type-selection"
+      (change)="changeOscType(waveType.value)">
+      <option *ngFor="let oscTy of audioOscTypes">{{oscTy}}</option>
+    </select>
+  </label>
 </div>
 <div id="editor-input-icons">
   <div id="editor-input-icons-left">
