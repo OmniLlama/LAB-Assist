@@ -13,6 +13,7 @@ import {InputConverterVisuals} from './input-converter-visuals';
 import {EditorView, GamepadObject, Queue, Tracker} from '../../helpers/Defs';
 import {AudioContextShell, ButtonHTMLShell} from '../../helpers/Shells';
 import {InputEditorComponent} from '../input-editor/input-editor.component';
+import {SubDiv} from '../../helpers/Gen';
 
 
 @Component({
@@ -23,6 +24,7 @@ import {InputEditorComponent} from '../input-editor/input-editor.component';
 
 export class InputConverterComponent implements OnInit, AfterViewInit {
   static inpConvComp: InputConverterComponent;
+  activePadObj: GamepadObject;
   div: HTMLDivElement;
   div_ls: HTMLDivElement;
   div_rs: HTMLDivElement;
@@ -47,7 +49,6 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
 
   midiWidget;
   midiOutPort;
-  testPadObj: GamepadObject;
   midi;
   audioCtx: AudioContextShell;
 
@@ -99,25 +100,13 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     InputConverterComponent.inpConvComp = this;
-    const port = JZZ().openMidiIn(1).or('MIDI-In: Cannot open!');
-    this.midi = JZZ.MIDI;
-    console.warn(port.name);
     this.audioCtx = new AudioContextShell(new window.AudioContext(), 0.2);
-    this.div = document.getElementById('editor-input-icons') as HTMLDivElement;
-    this.div_inputHistory = document.getElementById('input-history') as HTMLDivElement;
+
   }
 
   ngAfterViewInit() {
-    jzzInpKbd(JZZ);
-    this.midiOutPort =
-      JZZ().or('Cannot start MIDI engine!')
-        .openMidiOut().or('Cannot open MIDI Out port!')
-        .and(function() {
-          console.log('MIDI-Out:', this.name());
-        });
-    this.midiWidget = JZZ.Widget();
-    this.playStartJingle();
-    JZZ().refresh();
+    this.div = document.getElementById('editor-input-icons') as HTMLDivElement;
+    this.div_inputHistory = document.getElementById('input-history') as HTMLDivElement;
     InputConverterVisuals.rAF((cb) => this.getController());
   }
 
@@ -128,17 +117,15 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   getController() {
     const icc = InputConverterComponent.inpConvComp;
     const iec = InputEditorComponent.inpEdComp;
-    if (pads !== undefined && pads.length !== 0 && icc.testPadObj == null) {
-      let padObj = (padObjs[0] !== undefined ? padObjs[0] : padObjs[1]);
-      icc.testPadObj = padObj;
-      let padType = GamepadType[icc.testPadObj.type];
+    if (padObjs.length > 0 && !this.activePadObj) {
+      this.activePadObj = padObjs[0];
+      let padType = GamepadType[icc.activePadObj.type];
       console.log(padType);
+      icc.div_ls = SubDiv(icc.div, 'editor-input-icons-left');
+      icc.div_rs = SubDiv(icc.div, 'editor-input-icons-right');
+      icc.div_dpad = SubDiv(icc.div, 'editor-input-icons-dpad');
+      icc.div_btns = SubDiv(icc.div, 'editor-input-icons-btn');
 
-      icc.playControllerConnectedJingle();
-      icc.div_ls = document.getElementById('editor-input-icons-left') as HTMLDivElement;
-      icc.div_rs = document.getElementById('editor-input-icons-right') as HTMLDivElement;
-      icc.div_dpad = document.getElementById('editor-input-icons-dpad') as HTMLDivElement;
-      icc.div_btns = document.getElementById('editor-input-icons-btn') as HTMLDivElement;
       URLDStrings.forEach((dir) => {
         const shell = new ButtonHTMLShell(dir, 'editor-input-icon-direction', this.div_ls);
         icc.lsBtnShells.push(shell);
@@ -158,10 +145,10 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
       icc.lsTrackerGroup = createTrackerGroup(4);
       icc.rsTrackerGroup = createTrackerGroup(4);
       icc.dpadTrackerGroup = createTrackerGroup(4);
-      icc.btnTrackerGroup = createTrackerGroup(getPad().buttons.length);
+      icc.btnTrackerGroup = createTrackerGroup(this.activePadObj.Btns.length);
 
       iec.edtrView.updateDraw();
-      if (getPad()) {
+      if (this.activePadObj) {
         icc.audioCtx.playAtFor(7, 0, .4)
           .playAtFor(5, .15, .3)
           .playAtFor(0, .3, .5);
@@ -171,72 +158,6 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
       InputConverterVisuals.rAF((cb) => icc.getController());
     }
   }
-
-  /**
-   * Boot Jingle
-   */
-  playStartJingle() {
-    if (!this.playJingles) {
-      return;
-    }
-    const mtop = InputConverterComponent.inpConvComp.midiOutPort;
-    mtop
-      .wait(200)
-      .note(0, 'C5', 127, 100).wait(66)
-      .note(0, 'C4', 127, 100).wait(66)
-      .note(0, 'A#4', 127, 100).wait(99)
-      .note(0, 'C#5', 127, 100).wait(33);
-  }
-
-  /**
-   * Controller Connected Jingle
-   */
-  playControllerConnectedJingle() {
-    if (!this.playJingles) {
-      return;
-    }
-    const mtop = InputConverterComponent.inpConvComp.midiOutPort;
-    mtop
-      .note(0, 'A4', 127, 100).wait(33)
-      .note(0, 'C#5', 127, 100).wait(33)
-      .note(0, 'F5', 127, 100).wait(33)
-      .note(0, 'G6', 127, 100).wait(66)
-      .note(0, 'A6', 127, 100).wait(33)
-      .note(0, 'C6', 127, 100).wait(166)
-      .note(0, 'F6', 127, 100);
-  }
-
-}
-
-
-/**
- * returns first likely instance of a controller to act as main interface
- */
-export function getPad() {
-  return pads[0] !== undefined ? pads[0] : pads[1];
-}
-
-
-let midiAccess;
-let inputs;
-let outputs;
-
-/**
- * MIDI success procedures
- * @param mAcc
- */
-function onMIDISuccess(mAcc) {
-  midiAccess = mAcc;
-  inputs = midiAccess.inputs;
-  outputs = midiAccess.outputs;
-  midiAccess.onstatechange += JZZ().onChange;
-}
-
-/**
- * MIDI Failure procedures
- * @param data
- */
-function onMIDIFailure(data) {
 }
 
 export function createTrackerGroup(cnt: number): Array<Tracker> {

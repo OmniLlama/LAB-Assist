@@ -1,3 +1,8 @@
+import {EnumValue} from '@angular/compiler-cli/src/ngtsc/partial_evaluator';
+
+export function hasFlag(e: number, v: number): boolean{
+  return (e & v) === v;
+}
 export enum DirectionState {
   None = 0,
   Up = 1 << 0,

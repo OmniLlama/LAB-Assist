@@ -1,6 +1,6 @@
 import {MovementTrail} from '../app/input-display/movement-trail';
 import {InputDisplayVisuals} from '../app/input-display/input-display-visuals';
-import {Div, Span, SubDiv, SubImg} from './Gen';
+import {Div, Span, SubDiv, SubImg, SubSpan} from './Gen';
 import {htmlIdxToDirStr, nameButton} from '../app/input-display/input-display.component';
 import {AxisToAnalogName, DirectionState} from './Enums';
 import {clamp, pitchNumToFrequency} from './Func';
@@ -172,10 +172,8 @@ export class TwoWayAxisShell implements HTMLShell {
 
   constructor(name: string) {
     this.div = Div(name, 'two-way-axis');
-    this.neg_span = Span(name + '-neg', 'two-way-axis-neg');
-    this.pos_span = Span(name + '-pos', 'two-way-axis-pos');
-    this.div.appendChild(this.neg_span);
-    this.div.appendChild(this.pos_span);
+    this.neg_span = SubSpan(this.div, `${name}-neg`, 'two-way-axis-neg');
+    this.pos_span = SubSpan(this.div, `${name}-pos`, 'two-way-axis-pos');
   }
 
   updateAxis(val: number) {
@@ -278,8 +276,8 @@ export class OscillatorShell {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  regenNode(type: OscillatorOptions['type'] = this.node.type) {
-    this.node = new OscillatorNode(this.ctx, {type, frequency: this.node.frequency.value});
+  regenNode(type: OscillatorOptions['type'] = this.node.type, freq: OscillatorOptions['frequency'] = this.node.frequency.value) {
+    this.node = new OscillatorNode(this.ctx, {type, frequency: freq});
     this.node.connect(this.parent);
   }
 }

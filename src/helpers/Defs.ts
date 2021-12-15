@@ -5,6 +5,8 @@ import {InputEditorVisuals} from '../app/input-editor/input-editor-visuals';
 import {InputEditorEvents} from '../app/input-editor/input-editor-events';
 import {ButtonLayoutType, ButtonsState, DirectionState, GamepadType, GamepadTypeString} from './Enums';
 import {GamepadHTMLShell} from './Shells';
+import {frameDelayMS, dNowMS, frameJitter} from '../app/app.component';
+import {FPS_60_MS} from './Vals';
 
 export class BBox {
   x: number;
@@ -66,7 +68,6 @@ export class BBox {
 
   /**
    * Fits element within this bounding box
-   * @param element
    */
   updateElementTransformToBBox(element: HTMLElement) {
     element.style.transform = `translate(${this.x}px , ${this.y}px)`;
@@ -74,7 +75,6 @@ export class BBox {
 
   /**
    * Fits element within this bounding box
-   * @param element
    */
   updateElementToBBox(element: HTMLElement) {
     element.style.left = this.x + 'px';
@@ -85,12 +85,14 @@ export class BBox {
 }
 
 export class Playhead {
+  edtrView: EditorView;
   div: HTMLDivElement;
   inner: HTMLDivElement;
   bbox: BBox;
   startPos: [number, number];
 
-  constructor(x, y, w, h) {
+  constructor(view: EditorView, x, y, w, h) {
+    this.edtrView = view;
     this.div = Div('test-playhead');
     this.inner = Div('test-playhead-line');
     this.div.appendChild(this.inner);
@@ -106,6 +108,11 @@ export class Playhead {
 
   set StartPos(pos: [number, number]) {
     this.startPos = pos;
+  }
+
+  playUpdate() {
+    this.bbox.shift(this.edtrView.pxPrFrm - (this.edtrView.pxPrFrm * frameJitter));
+    this.bbox.updateElementToBBox(this.div);
   }
 
   shiftUpdate(x: number, y: number) {
@@ -127,7 +134,6 @@ export class Playhead {
   }
 
   reset(yOnly: boolean) {
-    // this.placeUpdate(yOnly ? this.bbox.x : this.startPos[0] - window.scrollX, this.startPos[1] - window.scrollY);
     this.placeUpdate(yOnly ? this.bbox.x : this.startPos[0] + window.scrollX, this.startPos[1] + window.scrollY);
   }
 
@@ -236,7 +242,7 @@ export class EditorView {
     this.bbox.updateElementToBBox(this.div);
     this.bbox.updateElementToBBox(this.score);
 
-    this.playhead = new Playhead(0, 0, 5, h);
+    this.playhead = new Playhead(this, 0, 0, 5, h);
     this.pitchHeight = h / this.pitchCount;
     this.div.appendChild(this.playhead.div);
     window.addEventListener('resize', (uie) => this.updateDraw());
@@ -263,7 +269,7 @@ export class EditorView {
 
   playUpdate() {
     if (this.playing) {
-      this.playhead.shiftUpdate(this.pxPrFrm, 0);
+      this.playhead.playUpdate();
     }
   }
 
@@ -285,7 +291,7 @@ export class EditorView {
 export class FPSTracker {
   fps: number = 0;
   avgFPS: number;
-  fpsHistMax: number = 5;
+  fpsHistMax: number = 1;
   fpsHistory: Queue<number> = new Queue<number>(this.fpsHistMax);
   now: number = 0;
   lastNow: number = 0;
@@ -302,7 +308,7 @@ export class FPSTracker {
     this.fpsHistory.qThru(this.fps);
     this.avgFPS = this.average;
     this.lastNow = this.now;
-    return (1 / 60) - this.dNow;
+    return FPS_60_MS - this.dNow;
   }
 }
 
@@ -330,6 +336,7 @@ export class Queue<T> {
     this.push(t);
     return pop;
   }
+
 }
 
 /**

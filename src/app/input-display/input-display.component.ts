@@ -10,9 +10,7 @@ import {
   tknBtns,
   xbBtns
 } from 'src/helpers/Enums';
-import {InputDisplayFunctions} from './input-display-functions';
 import {InputDisplayEvents} from './input-display-events';
-import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {GamepadObject} from '../../helpers/Defs';
 import {decToBin} from '../../helpers/Func';
 
@@ -53,14 +51,6 @@ export class InputDisplayComponent implements OnInit {
   bntKeys = Object.keys(ButtonNotationType);
   layoutVals = Object.values(ButtonLayoutType);
   controllers_div: HTMLDivElement;
-
-  diagDeadzone = 0.4;
-  orthoDeadzone = 0.75;
-
-
-  // useLeftStick = true;
-  // useRightStick = true;
-  // useDPad = true;
 
   toggleLS() {
     if (padObjs && padObjs[0]) {

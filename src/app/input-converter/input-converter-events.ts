@@ -6,17 +6,15 @@ import {InputConverterVisuals} from './input-converter-visuals';
 import {GamepadObject, Tracker} from '../../helpers/Defs';
 import {numberToPitchString, pitchNumToFrequency} from '../../helpers/Func';
 import {Div, Span} from '../../helpers/Gen';
-import {DirectionState} from '../../helpers/Enums';
+import {DirectionState, hasFlag} from '../../helpers/Enums';
 import {ButtonHTMLShell} from '../../helpers/Shells';
-import {Dir} from 'fs';
 import {InputDisplayComponent, padObjs} from '../input-display/input-display.component';
 
 export class InputConverterEvents {
   static updateController(): void {
     const icc = InputConverterComponent.inpConvComp;
     const iec = InputEditorComponent.inpEdComp;
-    const idc = InputDisplayComponent.inpDispCmp;
-    const padObj = icc.testPadObj;
+    const padObj = icc.activePadObj;
     if (icc.recordingPrimed) {
       if (iec.edtrView.playing && !icc.trackingNotes) {
         InputConverterEvents.startTrackingNotes(icc);
@@ -44,17 +42,17 @@ export class InputConverterEvents {
       icc.stateFrameCnt = 0;
     }
 
-    if (padObjs && padObjs[0]) {
-      if (padObjs[0].useLS) {
+    if (padObj) {
+      if (padObj.useLS) {
         InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(0), icc.lsTrackerGroup, icc.lsBtnShells,
           padObj.lsDirState, 0, iec.edtrView.playhead.xPos);
       }
 
-      if (padObjs[0].useRS) {
+      if (padObj.useRS) {
         InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(1), icc.rsTrackerGroup, icc.rsBtnShells,
           padObj.rsDirState, 2, iec.edtrView.playhead.xPos);
       }
-      if (padObjs[0].useDPad) {
+      if (padObj.useDPad) {
         InputConverterEvents.updateControllerDPadTrackers(padObj, iec.edtrView.playhead.xPos);
       }
       InputConverterEvents.updateControllerButtonTrackers(padObj, iec.edtrView.playhead.xPos);

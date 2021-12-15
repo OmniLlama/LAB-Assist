@@ -46,6 +46,11 @@ export function Span(id = null, className = null): HTMLSpanElement {
   }
   return span;
 }
+export function SubSpan(parent, id = null, className = null): HTMLSpanElement {
+  const span = Span(id, className);
+  parent.appendChild(span);
+  return span;
+}
 
 
 

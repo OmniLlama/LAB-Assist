@@ -69,8 +69,6 @@ export class InputEditorVisuals {
   static render() {
     let iec = InputEditorComponent.inpEdComp,
       iev = InputEditorVisuals;
-
-    //update head values if playing
     iec.edtrView.playUpdate();
     requestAnimationFrame(iev.render);
   }
