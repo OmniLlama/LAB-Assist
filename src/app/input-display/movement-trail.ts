@@ -1,4 +1,4 @@
-import {Div} from '../../helpers/Gen';
+import {Div, SubDiv} from '../../helpers/Gen';
 import {Queue} from '../../helpers/Defs';
 
 class TrailDot {
@@ -31,12 +31,10 @@ export class MovementTrail {
 
   constructor(parent) {
     this.parent = parent;
-    this.svgShell = Div('', 'svg-shell');
-    this.trailShell = Div('', 'trail-shell');
-    parent.appendChild(this.svgShell);
-    parent.appendChild(this.trailShell);
-    this.line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-    this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    this.svgShell = SubDiv(this.parent, '', 'svg-shell');
+    this.trailShell = SubDiv(this.parent, '', 'trail-shell');
+    this.line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline') as SVGPolylineElement;
+    this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg') as SVGSVGElement;
     this.svg.appendChild(this.line);
     this.svgShell.appendChild(this.svg);
   }

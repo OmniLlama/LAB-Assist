@@ -6,14 +6,13 @@
     id="stop-button"
     class="editor-control-toggle-button"
     type="button"
-
     (click)="StopEditorPlayState()"
     value="Stop"/>
   <input
     id="play-button"
     class="editor-control-toggle-button"
     type="button"
-    [ngStyle]="{'background-color': (trackingNotes) ? 'rgb(106,236,43)' : 'rgb(26,96,21)'}"
+    [ngStyle]="{'background-color': (trackingNotes) ? 'rgb(106,236,43)' : 'rgb(16,75,12)'}"
     (click)="ToggleEditorPlayState()"
     value="Play"/>
   <input

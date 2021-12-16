@@ -90,12 +90,20 @@ export class Playhead {
   inner: HTMLDivElement;
   bbox: BBox;
   startPos: [number, number];
+  playPos: number;
+
+  get scrolledXStartPos() {
+    return this.startPos[0] + window.scrollX;
+  }
+
+  get scrolledYStartPos() {
+    return this.startPos[1] + window.scrollY;
+  }
 
   constructor(view: EditorView, x, y, w, h) {
     this.edtrView = view;
     this.div = Div('test-playhead');
-    this.inner = Div('test-playhead-line');
-    this.div.appendChild(this.inner);
+    this.inner = SubDiv(this.div, 'test-playhead-line');
     this.startPos = [x, y];
     this.bbox = new BBox(x, y, w, h);
     this.bbox.updateElementToBBox(this.div);
@@ -121,8 +129,16 @@ export class Playhead {
     this.bbox.updateElementToBBox(this.div);
   }
 
+  xShiftUpdate(x: number) {
+    this.bbox.shift(
+      x + this.bbox.x < this.startPos[0] ? this.startPos[0] : x
+    );
+    // this.bbox.updateElementTransformToBBox(this.div);
+    this.bbox.updateElementToBBox(this.div);
+  }
+
   xPlaceUpdate(x: number) {
-    this.bbox.x = x;
+    this.bbox.place(x);
     // this.bbox.updateElementTransformToBBox(this.div);
     this.bbox.updateElementToBBox(this.div);
   }
@@ -131,12 +147,16 @@ export class Playhead {
     this.bbox.place(x, y);
     // this.bbox.updateElementTransformToBBox(this.div);
     this.bbox.updateElementToBBox(this.div);
+    this.playPos = this.getPlayheadFramePos();
   }
 
   reset(yOnly: boolean) {
-    this.placeUpdate(yOnly ? this.bbox.x : this.startPos[0] + window.scrollX, this.startPos[1] + window.scrollY);
+    this.placeUpdate(yOnly ? this.bbox.x : this.scrolledXStartPos, this.scrolledYStartPos);
   }
 
+  getPlayheadFramePos() {
+    return (this.bbox.x - this.startPos[0]) / this.edtrView.pxPrFrm;
+  }
 }
 
 export class Tracker {
@@ -188,11 +208,34 @@ export class HTMLNote {
     this.start = start;
     this.bbox = new BBox(this.start, y, 0, 24);
     this.bbox.updateElementToBBox(this.div);
-    const edges = InputEditorVisuals.createEdges(this.bbox, this.div);
+    const edges = InputEditorVisuals.createEdges(this, this.bbox, this.div);
     this.edgeL = edges[0];
     this.edgeR = edges[1];
     this.div.append(this.edgeL, this.edgeR);
-    this.div.addEventListener('mousedown', (me) => InputEditorEvents.Note_lMouDown(me));
+    this.div.addEventListener('mousedown', (me) =>
+      InputEditorEvents.Note_lMouDown(me));
+    this.edgeL.addEventListener('mousedown', (me) =>
+      InputEditorEvents.NoteEdge_Left_lMouDown(me));
+    this.edgeR.addEventListener('mousedown', (me) =>
+      InputEditorEvents.NoteEdge_Right_lMouDown(me));
+  }
+
+  modifyNoteStart(start: number) {
+    this.updateNoteStart(start);
+    this.finishNote(start, this.end);
+  }
+
+  modifyNoteEnd(end: number) {
+    this.updateNoteEnd(end);
+    this.finishNote(this.start, end);
+  }
+
+  updateNoteStart(start: number) {
+    this.bbox.place(start);
+    this.start = start;
+    this.bbox.setWidth(this.end - this.start);
+    this.bbox.updateElementToBBox(this.div);
+    // this.bbox.updateElementTransformToBBox(this.div);
   }
 
   updateNoteEnd(end: number) {
@@ -202,7 +245,8 @@ export class HTMLNote {
     // this.bbox.updateElementTransformToBBox(this.div);
   }
 
-  finishNote(end: number) {
+  finishNote(start: number, end: number) {
+    this.start = start;
     this.end = end;
     this.bbox.setWidth(this.end - this.start);
     this.bbox.updateElementToBBox(this.div);
@@ -215,8 +259,14 @@ export class HTMLNote {
     // this.bbox.updateElementTransformToBBox(this.div);
     this.bbox.updateElementToBBox(this.div);
   }
-}
 
+}
+class HTMLNoteEdge {
+  note: HTMLNote;
+  constructor(note: HTMLNote) {
+    this.note = note;
+  }
+}
 export class EditorView {
   div: HTMLDivElement;
   score: HTMLDivElement;
@@ -226,17 +276,17 @@ export class EditorView {
   pitchHeight: number;
   bbox: BBox;
   playhead: Playhead;
-  pxPrFrm: number = 4;
   playing: boolean;
   convX: number = 0;
   convY: number = 0;
+  pxPrFrm: number = 4;
 
   constructor(x, y, w, h) {
     this.convX = InputConverterComponent.inpConvComp.div.getBoundingClientRect().width;
     this.bbox = new BBox(x, y, w, h);
     this.div = document.getElementById('test-editor') as HTMLDivElement;
     this.score = SubDiv(this.div, 'test-score');
-    this.score.addEventListener('click', (me) => this.playhead.xPlaceUpdate(me.x));
+    this.score.addEventListener('click', (me) => this.playhead.xPlaceUpdate(this.snapX(me.x)));
     this.trackedNotes = SubDiv(this.div, 'tracked-notes');
     this.trackingNotes = SubDiv(this.div, 'tracking-notes');
     this.bbox.updateElementToBBox(this.div);
@@ -286,12 +336,16 @@ export class EditorView {
   setPlayState(playing: boolean) {
     this.playing = playing;
   }
+
+  snapX(xPos: number) {
+    return Math.max(Math.floor(xPos / this.pxPrFrm) * this.pxPrFrm, 0);
+  }
 }
 
 export class FPSTracker {
   fps: number = 0;
   avgFPS: number;
-  fpsHistMax: number = 1;
+  fpsHistMax: number = 5;
   fpsHistory: Queue<number> = new Queue<number>(this.fpsHistMax);
   now: number = 0;
   lastNow: number = 0;

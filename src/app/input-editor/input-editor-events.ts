@@ -7,27 +7,34 @@ import {numberToPitchString} from '../../helpers/Func';
 export class InputEditorEvents {
 
   iec = InputEditorComponent.inpEdComp as InputEditorComponent;
-  static initKeyboard(iec: InputEditorComponent){
-    /**
-     * Keyboard Shortcuts
-     */
-    window.addEventListener('keydown', (e) => {
-      switch (e.key)
-      {
-        case 'Backspace':
-          iec.edtrView.stopPlayState();
-          break;
-        case ' ':
-          e.preventDefault();
-          iec.edtrView.togglePlayState();
-          break;
-        case 'Delete':
-        case 'ArrowRight':
-        case 'ArrowLeft':
-          break;
-      }
-    });
+
+  static initKeyboard(iec: InputEditorComponent) {
+    window.addEventListener('keydown', (ke) => InputEditorEvents.KeyBrd(ke, iec));
   }
+
+  static KeyBrd(ke: KeyboardEvent, iec: InputEditorComponent) {
+    switch (ke.key) {
+      case 'Backspace':
+        ke.preventDefault();
+        iec.edtrView.stopPlayState();
+        break;
+      case ' ':
+        ke.preventDefault();
+        iec.edtrView.togglePlayState();
+        break;
+      case 'Delete':
+        break;
+      case 'ArrowRight':
+        ke.preventDefault();
+        iec.edtrView.playhead.xShiftUpdate(iec.edtrView.pxPrFrm);
+        break;
+      case 'ArrowLeft':
+        ke.preventDefault();
+        iec.edtrView.playhead.xShiftUpdate(-iec.edtrView.pxPrFrm);
+        break;
+    }
+  }
+
   //#region [rgba(0,100,0,0.2)] Grid Element Event Functions
   /**
    * Event: mouse hover over note
@@ -36,7 +43,6 @@ export class InputEditorEvents {
   static Note_MouOver(e): void {
     (e.target as HTMLDivElement).style.cursor = 'move';
   }
-
 
 
   /**
@@ -58,139 +64,91 @@ export class InputEditorEvents {
       }
     }
   }
-  // /**
-  //  * Event: left mouse click up on note
-  //  * @param e
-  //  */
+
+  /**
+   * Event: left mouse click up on note
+   */
   static Note_lMouUp(e: MouseEvent): void {
     let iec = InputEditorComponent.inpEdComp;
     let tmp_note = iec.noteList[iec.currNote.id];
-    // let pitch = numberToPitchString(iec.info.mousePitchPos);
-    // elmt.setAttribute('pitch', pitch);
     document.removeEventListener('mousemove', (me) => iec.moveNote(me));
     document.removeEventListener('mouseup', InputEditorEvents.Note_lMouUp);
     iec.currNote = null;
   }
-  //
-  // /* Note Edge */
-  // /** Event: mouse over left note edge
-  //  * @param e
-  //  */
-  // static NoteEdge_Left_MouOver(e: MouseEvent): void {
-  //   (e.target as HTMLDivElement).style.cursor = 'w-resize';
-  // }
-  //
-  // /** Event: mouse over right note edge
-  //  * @param e
-  //  */
-  // static NoteEdge_Right_MouOver(e: MouseEvent): void {
-  //   (e.target as HTMLDivElement).style.cursor = 'e-resize';
-  // }
-  //
-  // /** Event: mouse left click on left note edge
-  //  * @param e
-  //  */
-  // static NoteEdge_Left_lMouDown(e: MouseEvent): void {
-  //   let iec = InputEditorComponent.inpEdComp;
-  //   iec.holdingEdge = true;
-  //   (e.target as HTMLDivElement).style.cursor = 'w-resize';
-  //   // let tmp_note = InputEditorComponent.inpEdComp.allNotes[(e.target as HTMLDivElement).id];
-  //   let tmp_note = InputEditorComponent.inpEdComp.noteList[(e.target as HTMLDivElement).id];
-  //   if (tmp_note == undefined) {
-  //     tmp_note = iec.changingNote;
-  //   } else if (iec.changingNote == null) {
-  //     iec.changingNote = tmp_note;
-  //   }
-  //   if (iec.heldEdge == null) {
-  //     iec.heldEdge = e.target;
-  //   }
-  //   document.addEventListener('mousemove', InputEditorEvents.NoteEdge_Left_MouMove, false);
-  //   document.addEventListener('mouseup', InputEditorEvents.NoteEdge_Left_lMouUp);
-  // }
-  //
-  // /** Event: mouse left click on right note edge
-  //  * @param e
-  //  */
-  // static NoteEdge_Right_lMouDown(e: MouseEvent) {
-  //   const iec = InputEditorComponent.inpEdComp;
-  //   let tmp_note = InputEditorComponent.inpEdComp.allNotes[(e.target as HTMLDivElement).id];
-  //   iec.holdingEdge = true;
-  //   (e.target as HTMLDivElement).style.cursor = 'e-resize';
-  //   // InputEditorComponent.inpEdComp.keyEditor.gripX = e.clientX;
-  //   if (tmp_note == undefined) {
-  //     tmp_note = iec.changingNote;
-  //   } else if (iec.changingNote == null) {
-  //     iec.changingNote = tmp_note;
-  //   }
-  //   if (iec.heldEdge == null) {
-  //     iec.heldEdge = e.target;
-  //   }
-  //   document.addEventListener('mousemove', InputEditorEvents.NoteEdge_Right_MouMove, false);
-  //   document.addEventListener('mouseup', InputEditorEvents.NoteEdge_Right_lMouUp);
-  // }
-  //
-  // /** Event: mouse move over left note edge
-  //  * @param e
-  //  */
-  // static NoteEdge_Left_MouMove(e: MouseEvent) {
-  //   let iec = InputEditorComponent.inpEdComp,
-  //     tmp_ticks = iec.info.snapTicksAtX,
-  //     tmp_rightEdge = iec.heldEdge.parentElement.childNodes[1];
-  //   (e.target as HTMLDivElement).style.cursor = 'w-resize';
-  //
-  //   if (iec.changingNote !== null && tmp_ticks <= iec.changingNote.noteOff.ticks) {
-  //     iec.changingNote.part.moveEvent(iec.changingNote.noteOn, tmp_ticks - iec.changingNote.noteOn.ticks);
-  //     InputEditorFunctions.UpdateSong(iec);
-  //     let edgeBBoxes = InputEditorVisuals.createNoteEdgeBBoxes(iec.changingNote.bbox, 8);
-  //     InputEditorVisuals.updateElementBBox(iec.heldEdge, edgeBBoxes[0]);
-  //     InputEditorVisuals.updateElementBBox(tmp_rightEdge, edgeBBoxes[1]);
-  //   } else {
-  //   }
-  // }
-  //
-  // /** Event: mouse move over right note edge
-  //  * @param e
-  //  */
-  // static NoteEdge_Right_MouMove(e: MouseEvent) {
-  //   let iec = InputEditorComponent.inpEdComp,
-  //     tmp_ticks = iec.info.snapTicksAtX,
-  //     tmp_leftEdge = iec.heldEdge.parentElement.childNodes[0];
-  //   (e.target as HTMLDivElement).style.cursor = 'e-resize';
-  //   if (iec.changingNote !== null && tmp_ticks >= iec.changingNote.noteOn.ticks) {
-  //     iec.changingNote.part.moveEvent(iec.changingNote.noteOff, tmp_ticks - iec.changingNote.noteOff.ticks);
-  //     InputEditorFunctions.UpdateSong(iec);
-  //     let edgeBBoxes = InputEditorVisuals.createNoteEdgeBBoxes(iec.changingNote.bbox, 8);
-  //     InputEditorVisuals.updateElementBBox(tmp_leftEdge, edgeBBoxes[0]);
-  //     InputEditorVisuals.updateElementBBox(iec.heldEdge, edgeBBoxes[1]);
-  //   } else {
-  //
-  //   }
-  // }
-  //
-  // /** Event: left mouse click up on left note edge
-  //  * @param e
-  //  */
-  // static NoteEdge_Left_lMouUp(e: MouseEvent) {
-  //   let iec = InputEditorComponent.inpEdComp;
-  //   iec.holdingEdge = false;
-  //   iec.changingNote = null;
-  //   iec.heldEdge = null;
-  //   document.removeEventListener('mousemove', InputEditorEvents.NoteEdge_Left_MouMove, false);
-  //   document.removeEventListener('mouseup', InputEditorEvents.NoteEdge_Left_lMouUp);
-  //   (e.target as HTMLDivElement).style.cursor = 'default';
-  // }
-  //
-  // /** Event: left mouse click up on right note edge
-  //  * @param e
-  //  */
-  // static NoteEdge_Right_lMouUp(e: MouseEvent) {
-  //   let iec = InputEditorComponent.inpEdComp;
-  //   iec.holdingEdge = false;
-  //   iec.changingNote = null;
-  //   iec.heldEdge = null;
-  //   document.removeEventListener('mousemove', InputEditorEvents.NoteEdge_Right_MouMove, false);
-  //   document.removeEventListener('mouseup', InputEditorEvents.NoteEdge_Right_lMouUp);
-  // }
+
+  /* Note Edge */
+  /** Event: mouse left click on left note edge
+   * @param e
+   */
+  static NoteEdge_Left_lMouDown(e: MouseEvent): void {
+    let iec = InputEditorComponent.inpEdComp;
+    iec.holdingEdge = true;
+    let tmp_note = iec.noteList[(e.target as HTMLDivElement).id];
+    iec.currNote = tmp_note;
+    iec.heldEdge = iec.currNote.edgeL;
+    document.addEventListener('mousemove', InputEditorEvents.NoteEdge_Left_MouMove, false);
+    document.addEventListener('mouseup', InputEditorEvents.NoteEdge_Left_lMouUp);
+  }
+
+
+  /** Event: mouse left click on right note edge
+   * @param e
+   */
+  static NoteEdge_Right_lMouDown(e: MouseEvent) {
+    const iec = InputEditorComponent.inpEdComp;
+    let tmp_note = iec.noteList[(e.target as HTMLDivElement).id];
+    iec.holdingEdge = true;
+    iec.currNote = tmp_note;
+    iec.heldEdge = e.target;
+    document.addEventListener('mousemove', InputEditorEvents.NoteEdge_Right_MouMove, false);
+    document.addEventListener('mouseup', InputEditorEvents.NoteEdge_Right_lMouUp);
+  }
+
+  /** Event: mouse move over left note edge
+   */
+  static NoteEdge_Left_MouMove(me: MouseEvent) {
+    let iec = InputEditorComponent.inpEdComp,
+      tmp_pos = iec.edtrView.snapX(me.x);
+    if (iec.currNote !== null && tmp_pos <= iec.currNote.end) {
+      iec.currNote.modifyNoteStart(tmp_pos);
+    }
+  }
+
+
+  /** Event: mouse move over right note edge
+   */
+  static NoteEdge_Right_MouMove(me: MouseEvent) {
+    let iec = InputEditorComponent.inpEdComp,
+      tmp_pos = iec.edtrView.snapX(me.x);
+    if (iec.currNote !== null) {
+      iec.currNote.modifyNoteEnd(tmp_pos);
+    }
+  }
+
+  /** Event: left mouse click up on left note edge
+   */
+  static NoteEdge_Left_lMouUp(me: MouseEvent) {
+    let iec = InputEditorComponent.inpEdComp;
+    iec.holdingEdge = false;
+    iec.currNote = null;
+    iec.heldEdge = null;
+    document.removeEventListener('mousemove', InputEditorEvents.NoteEdge_Left_MouMove, false);
+    document.removeEventListener('mouseup', InputEditorEvents.NoteEdge_Left_lMouUp);
+    (me.target as HTMLDivElement).style.cursor = 'default';
+  }
+
+  /** Event: left mouse click up on right note edge
+   * @param me
+   */
+  static NoteEdge_Right_lMouUp(me: MouseEvent) {
+    let iec = InputEditorComponent.inpEdComp;
+    iec.holdingEdge = false;
+    iec.currNote = null;
+    iec.heldEdge = null;
+    document.removeEventListener('mousemove', InputEditorEvents.NoteEdge_Right_MouMove, false);
+    document.removeEventListener('mouseup', InputEditorEvents.NoteEdge_Right_lMouUp);
+  }
+
   //
   // /* Grid */
   // Grid_lMouDown(e: MouseEvent) {

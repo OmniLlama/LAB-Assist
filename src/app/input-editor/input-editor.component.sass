@@ -358,10 +358,14 @@ $clr-00: rgba(255, 213, 0, 0.78)
   background-color: #555
   border: 1px solid #000
 
-.note-edge
+.note-edge-left
   @include Mixins.unselectable
   position: absolute
-
+  cursor: w-resize
+.note-edge-right
+  @include Mixins.unselectable
+  position: absolute
+  cursor: e-resize
 .part
   position: absolute
   z-index: 9

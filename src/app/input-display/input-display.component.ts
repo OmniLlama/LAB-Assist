@@ -130,7 +130,6 @@ export class InputDisplayComponent implements OnInit {
   }
 
   removeHtmlGamepad(gamepad: Gamepad): void {
-    // Hide start message
     document.getElementById('start').style.display = 'block';
     this.controllers_div.removeChild(padObjs[gamepad.index].html.div);
     delete pads[gamepad.index];

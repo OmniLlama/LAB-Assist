@@ -24,7 +24,7 @@ export class InputEditorFunctions {
 
   static testFinishNote(trkr: Tracker) {
     let iec = InputEditorComponent.inpEdComp;
-    trkr.htmlNote.finishNote(iec.edtrView.playhead.bbox.pageCenter);
+    trkr.htmlNote.finishNote(trkr.htmlNote.start, iec.edtrView.playhead.bbox.pageCenter);
     trkr.htmlNote = null;
 
   }

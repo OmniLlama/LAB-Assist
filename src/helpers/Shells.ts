@@ -202,7 +202,7 @@ export class AudioContextShell {
   ctx: AudioContext;
   globalGain: GainNode;
   globalComp: DynamicsCompressorNode;
-  oscTy: OscillatorOptions['type'] = 'triangle';
+  oscTy: OscillatorOptions['type'] = 'sine';
   oscs: Array<OscillatorShell>;
 
   constructor(ctx: AudioContext, startGain: number) {

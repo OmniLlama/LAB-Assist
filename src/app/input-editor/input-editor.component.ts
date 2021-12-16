@@ -23,9 +23,14 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
   midiFile;
   midiFileList;
   audCntxt: AudioContext;
-  snapAmt;
 
   edtrView: EditorView;
+
+  get PlayheadFramePos() {
+    if (this.edtrView) {
+      return this.edtrView.playhead.getPlayheadFramePos();
+    }
+  }
 
   currNote: HTMLNote = null;
 
@@ -35,7 +40,7 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
 
   moveNote(me: MouseEvent) {
     if (this.currNote) {
-      this.currNote.updateNotePos(me);
+      this.currNote.updateNotePos(this.edtrView.snapX(me.x));
     }
   }
 
@@ -75,6 +80,7 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
     InputEditorVisuals.render();
     iec.edtrView.updateDraw();
   }
+
   /**
    * turns on GUI elements once all are properly initalized
    * @param flag - whether to turn on the GUI
