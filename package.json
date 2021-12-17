@@ -26,7 +26,6 @@
     "firebase": "^8.9.1",
     "heartbeat-sequencer": "0.0.26",
     "html5-gamepad": "^1.1.0",
-    "jzz": "^0.9.9",
     "jzz-input-kbd": "^1.2.1",
     "jzz-synth-osc": "^1.1.8",
     "jzz-synth-tiny": "^1.2.7",

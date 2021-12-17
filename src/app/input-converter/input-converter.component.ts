@@ -4,9 +4,7 @@ import {
   pads,
   padObjs, URLDStrings, nameButton,
 } from '../input-display/input-display.component';
-import * as JZZ from 'jzz';
 import {GamepadType, ButtonNotationType, DirectionState, ButtonsState, xbBtns, OscillatorType} from 'src/helpers/Enums';
-import * as jzzInpKbd from 'jzz-input-kbd';
 
 import {InputConverterEvents} from './input-converter-events';
 import {InputConverterVisuals} from './input-converter-visuals';
