@@ -6,7 +6,7 @@ export class InputDisplayEvents {
    * @param e event
    */
   static connecthandler(e, idc: InputDisplayComponent): void {
-    idc.addHtmlGamepad(e.gamepad);
+    idc.addGamepadObject(e.gamepad);
   }
 
   /**
@@ -15,6 +15,6 @@ export class InputDisplayEvents {
    */
   static disconnecthandler(e, idc: InputDisplayComponent): void {
     // idc.removegamepad(e.gamepad);
-    idc.removeHtmlGamepad(e.gamepad);
+    idc.removeGamepadObject(e.gamepad);
   }
 }

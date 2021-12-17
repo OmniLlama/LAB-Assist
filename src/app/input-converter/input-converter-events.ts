@@ -1,48 +1,97 @@
 import {InputEditorFunctions} from '../input-editor/input-editor-functions';
-import {InputConverterComponent} from './input-converter.component';
+import {createTrackerGroup, InputConverterComponent} from './input-converter.component';
 import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {InputConverterFunctions} from './input-converter-functions';
 import {InputConverterVisuals} from './input-converter-visuals';
 import {GamepadObject, Tracker} from '../../helpers/Defs';
 import {numberToPitchString, pitchNumToFrequency} from '../../helpers/Func';
-import {Div, Span} from '../../helpers/Gen';
-import {DirectionState, hasFlag} from '../../helpers/Enums';
+import {Div, Span, SubDiv} from '../../helpers/Gen';
+import {DirectionState, flagIdxs, GamepadType, hasFlag, xbBtns} from '../../helpers/Enums';
 import {ButtonHTMLShell} from '../../helpers/Shells';
-import {InputDisplayComponent, padObjs} from '../input-display/input-display.component';
+import {InputDisplayComponent, padObjs, URLDStrings} from '../input-display/input-display.component';
 
 export class InputConverterEvents {
+  /**
+   * Waits for, then receives the first controller that is added to the display component,
+   * Initializes arrays that hold the various inputs and their respective notes
+   */
+  static getController() {
+    const icc = InputConverterComponent.inpConvComp;
+    const iec = InputEditorComponent.inpEdComp;
+    if (padObjs.length > 0 && !icc.activePadObj) {
+      // this.activePadObj = padObjs[0];
+      icc.activePadObj = padObjs.find((pO) => pO !== undefined);
+      let padType = GamepadType[icc.activePadObj.type];
+      console.log(padType);
+      icc.div_ls = SubDiv(icc.div, 'editor-input-icons-left');
+      icc.div_rs = SubDiv(icc.div, 'editor-input-icons-right');
+      icc.div_dpad = SubDiv(icc.div, 'editor-input-icons-dpad');
+      icc.div_btns = SubDiv(icc.div, 'editor-input-icons-btn');
+
+      URLDStrings.forEach((dir) => {
+        const shell = new ButtonHTMLShell(dir, 'editor-input-icon-direction', icc.div_ls);
+        icc.lsBtnShells.push(shell);
+      });
+      URLDStrings.forEach((name) => {
+        const shell = new ButtonHTMLShell(name, 'editor-input-icon-direction', icc.div_rs);
+        icc.rsBtnShells.push(shell);
+      });
+      URLDStrings.forEach((name) => {
+        const shell = new ButtonHTMLShell(name, 'editor-input-icon-direction', icc.div_dpad);
+        icc.dpadBtnShells.push(shell);
+      });
+      xbBtns.forEach((name) => {
+        const shell = new ButtonHTMLShell(name, 'editor-input-icon-button', icc.div_btns);
+        icc.btnShells.push(shell);
+      });
+      icc.lsTrackerGroup = createTrackerGroup(4);
+      icc.rsTrackerGroup = createTrackerGroup(4);
+      icc.dpadTrackerGroup = createTrackerGroup(4);
+      icc.btnTrackerGroup = createTrackerGroup(icc.activePadObj.Btns.length);
+
+      iec.edtrView.updateDraw();
+      if (icc.activePadObj) {
+        icc.audioCtx.playAtFor(7, 0, .4)
+          .playAtFor(5, .15, .3)
+          .playAtFor(0, .3, .5);
+        InputConverterVisuals.rAF((cb) => InputConverterEvents.updateController());
+      }
+    } else {
+      InputConverterVisuals.rAF((cb) => InputConverterEvents.getController());
+    }
+  }
   static updateController(): void {
     const icc = InputConverterComponent.inpConvComp;
     const iec = InputEditorComponent.inpEdComp;
     const padObj = icc.activePadObj;
-    if (icc.recordingPrimed) {
-      if (iec.edtrView.playing && !icc.trackingNotes) {
-        InputConverterEvents.startTrackingNotes(icc);
-      } else if (!iec.edtrView.playing && icc.trackingNotes) {
-        InputConverterEvents.stopTrackingNotes(icc, iec);
-      }
-    }
-
-    icc.stateChanged = padObj.lsDirState !== (padObj.useLS ? icc.lastLSState : padObj.lsDirState) ||
-      padObj.rsDirState !== (padObj.useRS ? icc.lastRSState : padObj.rsDirState) ||
-      padObj.dpadDirState !== (padObj.useDPad ? icc.lastDPadState : padObj.dpadDirState) ||
-      padObj.btnsState !== icc.lastBtnsState;
-    if (icc.stateChanged || icc.stateFrameCnt === 999) {
-      icc.div_currInputHistory = Div(null, 'input-history-node');
-      icc.span_currInputFrameCnt = Span(null, 'input-history-frame-count');
-      icc.div_currInputHistory.append(icc.span_currInputFrameCnt);
-    }
-
-    if (icc.stateChanged || icc.stateFrameCnt >= 999) {
-      icc.div_inputHistory.insertBefore(icc.div_currInputHistory, icc.div_inputHistory.firstChild);
-      const removed = icc.inputHistoryQueue.qThru(icc.div_currInputHistory);
-      if (removed) {
-        icc.div_inputHistory.removeChild(removed);
-      }
-      icc.stateFrameCnt = 0;
-    }
-
     if (padObj) {
+      if (icc.recordingPrimed) {
+        if (iec.edtrView.playing && !icc.trackingNotes) {
+          InputConverterEvents.startTrackingNotes(icc);
+        } else if (!iec.edtrView.playing && icc.trackingNotes) {
+          InputConverterEvents.stopTrackingNotes(icc, iec);
+        }
+      }
+
+      icc.stateChanged = padObj.lsDirState !== (padObj.useLS ? icc.lastLSState : padObj.lsDirState) ||
+        padObj.rsDirState !== (padObj.useRS ? icc.lastRSState : padObj.rsDirState) ||
+        padObj.dpadDirState !== (padObj.useDPad ? icc.lastDPadState : padObj.dpadDirState) ||
+        padObj.btnsState !== icc.lastBtnsState;
+      if (icc.stateChanged || icc.stateFrameCnt === 999) {
+        icc.div_currInputHistory = Div(null, 'input-history-node');
+        icc.span_currInputFrameCnt = Span(null, 'input-history-frame-count');
+        icc.div_currInputHistory.append(icc.span_currInputFrameCnt);
+      }
+
+      if (icc.stateChanged || icc.stateFrameCnt >= 999) {
+        icc.div_inputHistory.insertBefore(icc.div_currInputHistory, icc.div_inputHistory.firstChild);
+        const removed = icc.inputHistoryQueue.qThru(icc.div_currInputHistory);
+        if (removed) {
+          icc.div_inputHistory.removeChild(removed);
+        }
+        icc.stateFrameCnt = 0;
+      }
+
       if (padObj.useLS) {
         InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(0), icc.lsTrackerGroup, icc.lsBtnShells,
           padObj.lsDirState, 0, iec.edtrView.playhead.xPos);
@@ -56,17 +105,19 @@ export class InputConverterEvents {
         InputConverterEvents.updateControllerDPadTrackers(padObj, iec.edtrView.playhead.xPos);
       }
       InputConverterEvents.updateControllerButtonTrackers(padObj, iec.edtrView.playhead.xPos);
-    }
 
 
-    if (icc.stateFrameCnt < 999) {
-      icc.span_currInputFrameCnt.innerHTML = `${++icc.stateFrameCnt}`;
+      if (icc.stateFrameCnt < 999) {
+        icc.span_currInputFrameCnt.innerHTML = `${++icc.stateFrameCnt}`;
+      }
+      icc.lastLSState = padObj.lsDirState;
+      icc.lastRSState = padObj.rsDirState;
+      icc.lastDPadState = padObj.dpadDirState;
+      icc.lastBtnsState = padObj.btnsState;
+      InputConverterVisuals.rAF(InputConverterEvents.updateController);
+    } else {
+      InputConverterVisuals.rAF(InputConverterEvents.getController);
     }
-    icc.lastLSState = padObj.lsDirState;
-    icc.lastRSState = padObj.rsDirState;
-    icc.lastDPadState = padObj.dpadDirState;
-    icc.lastBtnsState = padObj.btnsState;
-    InputConverterVisuals.rAF(InputConverterEvents.updateController);
   }
 
   /**
@@ -195,7 +246,7 @@ export class InputConverterEvents {
     const majScaleArr: number[] = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19]; //major scale
     const scale: number[] = harmMinScaleArr;
     const icc = InputConverterComponent.inpConvComp;
-    padObj.pad.buttons.forEach((b, idx) => {
+    padObj.Btns.forEach((b, idx) => {
       if (idx >= scale.length) {
         return;
       }
