@@ -10,7 +10,8 @@ This is an Angular-based web-implementation of a fusion between a controller inp
 
 ## NOTE: Running and Troubleshooting
 
-run npm update
+before initial run, run `npm install`
+further compatibility issues / future updates, run `npm update`
 
 ## Development server
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`.
