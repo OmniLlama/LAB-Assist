@@ -1,5 +1,3 @@
-import {EnumValue} from '@angular/compiler-cli/src/ngtsc/partial_evaluator';
-
 export function hasFlag(e: number, v: number): boolean {
   return (e & v) === v;
 }
@@ -117,3 +115,14 @@ export const AxisToAnalogName = {
   0: 'LS X', 1: 'LS Y', 2: 'RS X', 3: 'RS Y'
 };
 
+export const htmlIdxToDirStr = {
+  0: `up-left`,
+  1: `up`,
+  2: `up-right`,
+  3: `left`,
+  4: `center`,
+  5: `right`,
+  6: `down-left`,
+  7: `down`,
+  8: `down-right`
+};

@@ -8,7 +8,7 @@ import {GamepadType, ButtonNotationType, DirectionState, ButtonsState, xbBtns, O
 
 import {InputConverterEvents} from './input-converter-events';
 import {InputConverterVisuals} from './input-converter-visuals';
-import {EditorView, GamepadObject, Queue, Tracker} from '../../helpers/Defs';
+import {EditorView, GamepadObject, InputTrackerSet, Queue, Tracker} from '../../helpers/Defs';
 import {AudioContextShell, ButtonHTMLShell} from '../../helpers/Shells';
 import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {SubDiv} from '../../helpers/Gen';
@@ -82,10 +82,7 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   liveUpdateHeldNotes: boolean = true;
   recordingPrimed: boolean = true;
   trackedNotes: Array<[number, number, number]>; // startTicks, endTicks, pitch
-  lsTrackerGroup: Array<Tracker>;
-  rsTrackerGroup: Array<Tracker>;
-  dpadTrackerGroup: Array<Tracker>;
-  btnTrackerGroup: Array<Tracker>;
+  trackerSet: InputTrackerSet;
   deadZone = .5;
 
   /**

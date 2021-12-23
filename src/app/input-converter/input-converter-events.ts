@@ -3,12 +3,12 @@ import {createTrackerGroup, InputConverterComponent} from './input-converter.com
 import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {InputConverterFunctions} from './input-converter-functions';
 import {InputConverterVisuals} from './input-converter-visuals';
-import {GamepadObject, Tracker} from '../../helpers/Defs';
+import {GamepadObject, InputTrackerSet, Tracker} from '../../helpers/Defs';
 import {numberToPitchString, pitchNumToFrequency} from '../../helpers/Func';
 import {Div, Span, SubDiv} from '../../helpers/Gen';
 import {DirectionState, flagIdxs, GamepadType, hasFlag, xbBtns} from '../../helpers/Enums';
 import {ButtonHTMLShell} from '../../helpers/Shells';
-import {InputDisplayComponent, padObjs, URLDStrings} from '../input-display/input-display.component';
+import {dirSetStr, InputDisplayComponent, padObjs, URLDStrings} from '../input-display/input-display.component';
 
 export class InputConverterEvents {
   /**
@@ -29,25 +29,22 @@ export class InputConverterEvents {
       icc.div_btns = SubDiv(icc.div, 'editor-input-icons-btn');
 
       URLDStrings.forEach((dir) => {
-        const shell = new ButtonHTMLShell(dir, 'editor-input-icon-direction', icc.div_ls);
+        const shell = new ButtonHTMLShell(dir, 'editor-input-icon-direction', icc.div_ls, dirSetStr[0]);
         icc.lsBtnShells.push(shell);
       });
       URLDStrings.forEach((name) => {
-        const shell = new ButtonHTMLShell(name, 'editor-input-icon-direction', icc.div_rs);
+        const shell = new ButtonHTMLShell(name, 'editor-input-icon-direction', icc.div_rs, dirSetStr[1]);
         icc.rsBtnShells.push(shell);
       });
       URLDStrings.forEach((name) => {
-        const shell = new ButtonHTMLShell(name, 'editor-input-icon-direction', icc.div_dpad);
+        const shell = new ButtonHTMLShell(name, 'editor-input-icon-direction', icc.div_dpad, dirSetStr[2]);
         icc.dpadBtnShells.push(shell);
       });
       xbBtns.forEach((name) => {
-        const shell = new ButtonHTMLShell(name, 'editor-input-icon-button', icc.div_btns);
+        const shell = new ButtonHTMLShell(name, 'editor-input-icon-button', icc.div_btns, 'acts');
         icc.btnShells.push(shell);
       });
-      icc.lsTrackerGroup = createTrackerGroup(4);
-      icc.rsTrackerGroup = createTrackerGroup(4);
-      icc.dpadTrackerGroup = createTrackerGroup(4);
-      icc.btnTrackerGroup = createTrackerGroup(icc.activePadObj.Btns.length);
+      icc.trackerSet = new InputTrackerSet(icc.activePadObj);
 
       iec.edtrView.updateDraw();
       if (icc.activePadObj) {
@@ -60,6 +57,7 @@ export class InputConverterEvents {
       InputConverterVisuals.rAF((cb) => InputConverterEvents.getController());
     }
   }
+
   static updateController(): void {
     const icc = InputConverterComponent.inpConvComp;
     const iec = InputEditorComponent.inpEdComp;
@@ -93,12 +91,12 @@ export class InputConverterEvents {
       }
 
       if (padObj.useLS) {
-        InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(0), icc.lsTrackerGroup, icc.lsBtnShells,
+        InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(0), icc.trackerSet.lsGroup, icc.lsBtnShells,
           padObj.lsDirState, 0, iec.edtrView.playhead.xPos);
       }
 
       if (padObj.useRS) {
-        InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(1), icc.rsTrackerGroup, icc.rsBtnShells,
+        InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(1), icc.trackerSet.rsGroup, icc.rsBtnShells,
           padObj.rsDirState, 2, iec.edtrView.playhead.xPos);
       }
       if (padObj.useDPad) {
@@ -186,13 +184,13 @@ export class InputConverterEvents {
       }
     });
     InputConverterEvents.updateConverterButton(btnShells[0],
-      DirectionState.Up === (DirectionState.Up & dirState), icc.stateChanged);
+      hasFlag(dirState, DirectionState.Up), icc.stateChanged);
     InputConverterEvents.updateConverterButton(btnShells[1],
-      DirectionState.Right === (DirectionState.Right & dirState), icc.stateChanged);
+      hasFlag(dirState, DirectionState.Right), icc.stateChanged);
     InputConverterEvents.updateConverterButton(btnShells[2],
-      DirectionState.Left === (DirectionState.Left & dirState), icc.stateChanged);
+      hasFlag(dirState, DirectionState.Left), icc.stateChanged);
     InputConverterEvents.updateConverterButton(btnShells[3],
-      DirectionState.Down === (DirectionState.Down & dirState), icc.stateChanged);
+      hasFlag(dirState, DirectionState.Down), icc.stateChanged);
   }
 
   /**
@@ -202,7 +200,7 @@ export class InputConverterEvents {
 
     const icc = InputConverterComponent.inpConvComp;
     padObj.DPadURLD.forEach((b, idx) => {
-      let trkr = icc.dpadTrackerGroup[idx];
+      let trkr = icc.trackerSet.dpadGroup[idx];
       let pitch = InputConverterFunctions.getDirectionPitchFromDPad(idx);
       if (b.pressed && !trkr.held) {
         icc.audioCtx.oscs[pitch].start();
@@ -250,7 +248,7 @@ export class InputConverterEvents {
       if (idx >= scale.length) {
         return;
       }
-      let trkr = icc.btnTrackerGroup[idx];
+      let trkr = icc.trackerSet.btnGroup[idx];
       let pitchNum = InputConverterFunctions.getButtonPitch(idx);
       // if PRESSED this frame
       if (b.pressed && !trkr.held) {

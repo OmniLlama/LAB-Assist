@@ -1,8 +1,8 @@
 import {MovementTrail} from '../app/input-display/movement-trail';
 import {InputDisplayVisuals} from '../app/input-display/input-display-visuals';
 import {Div, Span, SubDiv, SubImg, SubSpan} from './Gen';
-import {htmlIdxToDirStr, nameButton} from '../app/input-display/input-display.component';
-import {AxisToAnalogName, DirectionState} from './Enums';
+import {nameButton} from '../app/input-display/input-display.component';
+import {AxisToAnalogName, DirectionState, htmlIdxToDirStr} from './Enums';
 import {clamp, pitchNumToFrequency} from './Func';
 import {GamepadObject} from './Defs';
 import {InputDisplayFunctions} from '../app/input-display/input-display-functions';
@@ -17,12 +17,18 @@ export class ButtonHTMLShell implements HTMLShell {
   pressedImg: HTMLImageElement;
   name: string;
 
-  constructor(name: string, className: string, parent = null) {
+  constructor(name: string, className: string, parent = null, groupID = null) {
     this.name = name;
     this.div = Div(name, className);
     this.img = SubImg(this.div, name);
     this.pressedImg = SubImg(this.div, name + '_pressed');
+    if (groupID) {
+      this.div.setAttribute('group', groupID);
+      this.img.setAttribute('group', groupID);
+      this.pressedImg.setAttribute('group', groupID);
+    }
     this.pressedImg.style.display = 'none';
+
     if (parent) {
       parent.appendChild(this.div);
     }
@@ -112,20 +118,20 @@ export class DirectionalHTMLShell implements HTMLShell {
   tracer: HTMLDivElement;
   trail: MovementTrail;
 
-  constructor(id: string, tracer) {
+  constructor(id: string, tracer: HTMLDivElement) {
     this.div = document.createElement('div');
     this.div.className = 'dirs3x3';
     this.div.id = id;
-    this.ul = new ButtonHTMLShell(htmlIdxToDirStr[0], `dirBtns-diag`, this.div);
-    this.u = new ButtonHTMLShell(htmlIdxToDirStr[1], `dirBtns-ortho`, this.div);
-    this.ur = new ButtonHTMLShell(htmlIdxToDirStr[2], `dirBtns-diag`, this.div);
-    this.l = new ButtonHTMLShell(htmlIdxToDirStr[3], `dirBtns-ortho`, this.div);
+    this.ul = new ButtonHTMLShell(htmlIdxToDirStr[0], `dirBtns-diag`, this.div, id);
+    this.u = new ButtonHTMLShell(htmlIdxToDirStr[1], `dirBtns-ortho`, this.div, id);
+    this.ur = new ButtonHTMLShell(htmlIdxToDirStr[2], `dirBtns-diag`, this.div, id);
+    this.l = new ButtonHTMLShell(htmlIdxToDirStr[3], `dirBtns-ortho`, this.div, id);
     this.center_gap = Div('center');
-    this.center = new ButtonHTMLShell(htmlIdxToDirStr[4], `dirBtns-ortho`, this.div);
-    this.r = new ButtonHTMLShell(htmlIdxToDirStr[5], `dirBtns-ortho`, this.div);
-    this.dl = new ButtonHTMLShell(htmlIdxToDirStr[6], `dirBtns-diag`, this.div);
-    this.d = new ButtonHTMLShell(htmlIdxToDirStr[7], `dirBtns-ortho`, this.div);
-    this.dr = new ButtonHTMLShell(htmlIdxToDirStr[8], `dirBtns-diag`, this.div);
+    this.center = new ButtonHTMLShell(htmlIdxToDirStr[4], `dirBtns-ortho`, this.div, id);
+    this.r = new ButtonHTMLShell(htmlIdxToDirStr[5], `dirBtns-ortho`, this.div, id);
+    this.dl = new ButtonHTMLShell(htmlIdxToDirStr[6], `dirBtns-diag`, this.div, id);
+    this.d = new ButtonHTMLShell(htmlIdxToDirStr[7], `dirBtns-ortho`, this.div, id);
+    this.dr = new ButtonHTMLShell(htmlIdxToDirStr[8], `dirBtns-diag`, this.div, id);
     this.tracer = tracer;
     this.center.div.appendChild(this.tracer);
     this.trail = new MovementTrail(this.div);
@@ -247,7 +253,10 @@ export class AudioContextShell {
 }
 
 export class OscillatorShell {
+  live: boolean = false;
+  dead: boolean = true;
   node: OscillatorNode;
+  oldNode: OscillatorNode;
   ctx: AudioContext;
   parent: AudioNode;
 
@@ -260,15 +269,24 @@ export class OscillatorShell {
 
   start(delay: number = 0) {
     this.node.start(this.ctx.currentTime + delay);
+    this.live = true;
+    this.dead = false;
   }
 
   stop(delay: number = 0) {
-    this.node.stop(this.ctx.currentTime + delay);
+    if (this.live) {
+      this.node.stop(this.ctx.currentTime + delay);
+    }
+    this.live = false;
+    this.oldNode = this.node;
     this.regenNode();
   }
 
   turnOverType(type: OscillatorOptions['type']) {
-    // this.node.stop();
+    if (!this.dead) {
+
+    }
+    this.live = false;
     this.regenNode(type);
   }
 

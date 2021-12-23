@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {AfterContentInit, AfterViewInit, Component, OnInit} from '@angular/core';
 import {AngularFirestore} from '@angular/fire/firestore';
 import {Observable} from 'rxjs';
 import * as firebase from 'firebase';
@@ -17,7 +17,8 @@ export let dNowMS = 0;
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.sass']
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent implements AfterViewInit, AfterContentInit {
+
   title = 'LAB-Assist';
   fps: FPSTracker = new FPSTracker();
   icc: InputConverterComponent;
@@ -30,9 +31,10 @@ export class AppComponent implements AfterViewInit {
 
   constructor() {
   }
-
-  ngAfterViewInit(): void {
+  ngAfterContentInit(): void {
     this.fps = new FPSTracker();
+  }
+  ngAfterViewInit(): void {
     this.icc = InputConverterComponent.inpConvComp;
     this.idc =  InputDisplayComponent.inpDispCmp;
     this.iec  = InputEditorComponent.inpEdComp;

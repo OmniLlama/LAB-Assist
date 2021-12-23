@@ -1,15 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {
-  ButtonLayoutType,
-  ButtonNotationType,
-  ButtonsState,
-  ggBtns,
-  MovementNotationType,
-  scBtns,
-  snkBtns,
-  tknBtns,
-  xbBtns
-} from 'src/helpers/Enums';
+import {ButtonLayoutType, ButtonNotationType, ggBtns, MovementNotationType, scBtns, snkBtns, tknBtns, xbBtns} from 'src/helpers/Enums';
 import {InputDisplayEvents} from './input-display-events';
 import {GamepadObject} from '../../helpers/Defs';
 import {decToBin} from '../../helpers/Func';
@@ -18,21 +8,9 @@ import {InputConverterComponent} from '../input-converter/input-converter.compon
 export let pads: Array<Gamepad> = new Array<Gamepad>();
 export let padObjs: Array<GamepadObject> = new Array<GamepadObject>();
 
-export const dirSetId = {0: 'left', 1: 'right', 2: 'dpad'};
-export const tracerAssnId = {0: 'ls', 1: 'rs', 2: 'dpad'};
+export const dirSetStr = {0: 'ls', 1: 'rs', 2: 'dpad'};
 
 export const URLDStrings = ['up', 'right', 'left', 'down'];
-export const htmlIdxToDirStr = {
-  0: `up-left`,
-  1: `up`,
-  2: `up-right`,
-  3: `left`,
-  4: `center`,
-  5: `right`,
-  6: `down-left`,
-  7: `down`,
-  8: `down-right`
-};
 
 @Component({
   selector: 'app-input-display',
