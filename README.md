@@ -4,20 +4,20 @@ This is an Angular-based web-implementation of a fusion between a controller inp
 
 ![LAB-Assist2](src/assets/LAB-Assist2.png)
 
-## NOTE: To Those who want to run/test
+### NOTE: To Those who want to run/test with a controller
+- Works best with an Xbox 360 / Xbox One / XSX / XInput Controller, partial and inaccurate functionality also possible with alternatives, but not guaranteed due to lack of ability to test, currently.
 
--Works best with an Xbox 360 / Xbox One / XSX / XInput Controller, partial and inaccurate functionality also possible with alternatives, but not guaranteed due to lack of ability to test currently.
+## Installing, Running and Troubleshooting
+### Install
+- Download the latest main branch source code and extract to a local file path
+- After navigating to the local folder in a terminal, run `npm install` to generate necessary files
+### Running
+- Run `ng serve` in the terminal to start a dev server. Once initialized, use a browser (Chrome recommended) and navigate to `http://localhost:4200/`
 
-## NOTE: Running and Troubleshooting
+#### further compiling issues / updating an existing local folder
+- Run `npm update`, though a clean install is recommended
 
-before initial run, run `npm install`
-
-further compatibility issues / future updates, run `npm update`
-
-## Development server
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`.
-
-## Hopefully Near-Future Improvements
+## Hopefully Near-Future Improvements / Upgrades
 
 - Overhauling visual/interface components.
   - Including more customizablility in button arrangement and color schemes, adding different platform schemes and game-dependent labelling
@@ -29,3 +29,9 @@ Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`.
   - Eventually creating more diverse and unique melodic interactions for longer/divergent input sequences, including different cadences/key shifts for branching input options (particularly in regard to fighting games and their combo systems)
   - Implementing input 'Rehearsal' AKA matching the playback and subsequent feedback
 - Fully implementing the database component and a proper interface for searching, tagging and loading different combos / inputs
+
+### Current Speculative Upgrades
+- Looking into an Electron-based desktop app version to be upgraded in sync with the web app (as much as possible)
+  -  Would make overlaying and syncing with other desktop apps natively much easier, for feature testing purposes
+  -  Overlay would be initially focused on displaying a universal input history, but would eventually include live controller overlays along with different rehearsal prompt types once rehearsal is fully implemented
+
