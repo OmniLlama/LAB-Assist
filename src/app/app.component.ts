@@ -1,7 +1,7 @@
 import {AfterContentInit, AfterViewInit, Component, OnInit} from '@angular/core';
-import {AngularFirestore} from '@angular/fire/firestore';
+// import {AngularFirestore} from '@angular/fire/firestore';
+// import * as firebase from 'firebase';
 import {Observable} from 'rxjs';
-import * as firebase from 'firebase';
 import {FPSTracker} from '../helpers/Defs';
 import {InputEditorComponent} from './input-editor/input-editor.component';
 import {FPS_60_MS} from '../helpers/Vals';
