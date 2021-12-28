@@ -1,3 +1,4 @@
+## NOTE: if looking for latest working release, please use the master branch, as this branch has active changes that may be incomplete 
 # LAB-Assist (Largely Audio-Based Assistant)
 
 This is an Angular-based web-implementation of a fusion between a controller input viewer and MIDI sequencer / Recorder. It's ultimate intent is to allow the viewing / recording / modifying of inputs with dynamically-generated musical playback to assist in learning timing-intensive games and strategies, e.g. Fighting games, Character-Action games, and Speedrunning.
