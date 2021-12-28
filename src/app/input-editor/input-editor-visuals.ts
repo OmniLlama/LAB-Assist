@@ -7,7 +7,7 @@ import {Img} from '../../helpers/Gen';
 export class InputEditorVisuals {
 
   static createEdges(note: HTMLNote, bbox: BBox, div: HTMLDivElement): [HTMLImageElement, HTMLImageElement] {
-    const edgeWidth = 5
+    const edgeWidth = 5;
     const tmp_bbox_l = new BBox(0 - edgeWidth, 0, edgeWidth, bbox.height);
     const tmp_bbox_r = new BBox(bbox.width, 0, edgeWidth, bbox.height);
     const img_Note_leftEdge = Img('note-edge-left', div.id, 'note-edge-left');
@@ -28,17 +28,6 @@ export class InputEditorVisuals {
     element.style.top = bbox.y + 'px';
     element.style.width = bbox.width + 'px';
     element.style.height = bbox.height + 'px';
-  }
-
-
-  /**
-   * General Editor Render Loop
-   */
-  static render() {
-    let iec = InputEditorComponent.inpEdComp,
-      iev = InputEditorVisuals;
-    iec.edtrView.playUpdate();
-    requestAnimationFrame(iev.render);
   }
 
   static createNoteEdgeBBoxes(bbox, xPx: number): [BBox, BBox] {

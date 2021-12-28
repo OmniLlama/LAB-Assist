@@ -1,4 +1,4 @@
-import {InputConverterComponent} from '../app/input-converter/input-converter.component';
+import {createTrackerGroup, InputConverterComponent} from '../app/input-converter/input-converter.component';
 import {normalizeVector, numberToPitchString} from './Func';
 import {Div, SubDiv} from './Gen';
 import {InputEditorVisuals} from '../app/input-editor/input-editor-visuals';
@@ -159,12 +159,6 @@ export class Playhead {
   }
 }
 
-export class Tracker {
-  held = false;
-  inpStart: number;
-  inpEnd: number;
-  htmlNote: HTMLNote;
-}
 
 export class HTMLPart {
   static idCntr = 0;
@@ -589,4 +583,26 @@ export class GamepadObject {
       this.html.funcs_div.appendChild(this.html.btnShells[btnNum].div);
     }
   }
+}
+
+export class Tracker {
+  held = false;
+  inpStart: number;
+  inpEnd: number;
+  htmlNote: HTMLNote;
+}
+
+export class InputTrackerSet {
+  lsGroup: Array<Tracker>;
+  rsGroup: Array<Tracker>;
+  dpadGroup: Array<Tracker>;
+  btnGroup: Array<Tracker>;
+
+  constructor(pO: GamepadObject) {
+    this.lsGroup = createTrackerGroup(4);
+    this.rsGroup = createTrackerGroup(4);
+    this.dpadGroup = createTrackerGroup(4);
+    this.btnGroup = createTrackerGroup(pO.Btns.length);
+  }
+
 }

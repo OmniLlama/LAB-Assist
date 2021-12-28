@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import * as firebase from 'firebase/app';
-import { AngularFirestore } from '@angular/fire/firestore';
+// import * as firebase from 'firebase/app';
+// import { AngularFirestore } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 
 declare var sequencer: any;

@@ -77,7 +77,6 @@ export class InputEditorComponent implements OnInit, AfterViewInit {
     iec.edtrView = new EditorView(36, 240, 360,
       icc.div.getBoundingClientRect().height);
     InputEditorEvents.initKeyboard(iec);
-    InputEditorVisuals.render();
     iec.edtrView.updateDraw();
   }
 

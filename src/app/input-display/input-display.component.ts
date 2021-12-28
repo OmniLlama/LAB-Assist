@@ -1,37 +1,16 @@
 import {Component, OnInit} from '@angular/core';
-import {
-  ButtonLayoutType,
-  ButtonNotationType,
-  ButtonsState,
-  ggBtns,
-  MovementNotationType,
-  scBtns,
-  snkBtns,
-  tknBtns,
-  xbBtns
-} from 'src/helpers/Enums';
+import {ButtonLayoutType, ButtonNotationType, ggBtns, MovementNotationType, scBtns, snkBtns, tknBtns, xbBtns} from 'src/helpers/Enums';
 import {InputDisplayEvents} from './input-display-events';
 import {GamepadObject} from '../../helpers/Defs';
 import {decToBin} from '../../helpers/Func';
+import {InputConverterComponent} from '../input-converter/input-converter.component';
 
 export let pads: Array<Gamepad> = new Array<Gamepad>();
 export let padObjs: Array<GamepadObject> = new Array<GamepadObject>();
 
-export const dirSetId = {0: 'left', 1: 'right', 2: 'dpad'};
-export const tracerAssnId = {0: 'ls', 1: 'rs', 2: 'dpad'};
+export const dirSetStr = {0: 'ls', 1: 'rs', 2: 'dpad'};
 
 export const URLDStrings = ['up', 'right', 'left', 'down'];
-export const htmlIdxToDirStr = {
-  0: `up-left`,
-  1: `up`,
-  2: `up-right`,
-  3: `left`,
-  4: `center`,
-  5: `right`,
-  6: `down-left`,
-  7: `down`,
-  8: `down-right`
-};
 
 @Component({
   selector: 'app-input-display',
@@ -120,20 +99,23 @@ export class InputDisplayComponent implements OnInit {
     }
   }
 
-  addHtmlGamepad(gamepad: Gamepad): void {
+  addGamepadObject(gamepad: Gamepad): void {
     pads[gamepad.index] = gamepad;
     padObjs[gamepad.index] = new GamepadObject(gamepad);
     document.getElementById('start').style.display = 'none';
     this.controllers_div.appendChild(padObjs[gamepad.index].html.div);
-    // InputEditorComponent.inpEdComp.edtrView.updateDraw();
     InputDisplayComponent.rAF(cb => this.updateStatus());
   }
 
-  removeHtmlGamepad(gamepad: Gamepad): void {
+  removeGamepadObject(gamepad: Gamepad): void {
     document.getElementById('start').style.display = 'block';
     this.controllers_div.removeChild(padObjs[gamepad.index].html.div);
-    delete pads[gamepad.index];
-    delete padObjs[gamepad.index];
+    const icc = InputConverterComponent.inpConvComp;
+    if (padObjs[gamepad.index] === icc.activePadObj) {
+      icc.activePadObj = null;
+    }
+    pads.splice(gamepad.index, 1);
+    padObjs.splice(gamepad.index, 1);
     InputDisplayComponent.rAF(cb => this.updateStatus());
   }
 
@@ -150,7 +132,7 @@ export class InputDisplayComponent implements OnInit {
     for (const pad of gamepads) {
       if (pad) {
         if (!(pad.index in pads)) {
-          this.addHtmlGamepad(pad);
+          this.addGamepadObject(pad);
         } else {
           pads[pad.index] = pad;
         }

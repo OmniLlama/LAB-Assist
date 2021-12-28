@@ -1,8 +1,21 @@
-import {EnumValue} from '@angular/compiler-cli/src/ngtsc/partial_evaluator';
-
-export function hasFlag(e: number, v: number): boolean{
+export function hasFlag(e: number, v: number): boolean {
   return (e & v) === v;
 }
+
+export function flagIdxs(e: number) {
+  let idxs: number[] = [];
+  let flag = 1;
+  let currShift = 0;
+  while (flag <= e) {
+    if (hasFlag(e, flag)) {
+      idxs.push(currShift);
+    }
+    currShift++;
+    flag = flag << 1;
+  }
+  return idxs;
+}
+
 export enum DirectionState {
   None = 0,
   Up = 1 << 0,
@@ -14,11 +27,6 @@ export enum DirectionState {
   DownLeft = DirectionState.Down | DirectionState.Left,
   DownRight = DirectionState.Down | DirectionState.Right
 }
-// export function HTMLDirectionIdx(dir: DirectionState): number {
-//   switch (dir) {
-//
-//   }
-// }
 
 export enum ButtonsState {
   None = 0,
@@ -47,7 +55,7 @@ export enum ButtonLayoutType {
   Arcade = 'arcade',
   Linear = 'linear',
   FacesLeft = 'faces-left',
-  FacesMiddle= 'faces-middle'
+  FacesMiddle = 'faces-middle'
 }
 
 export enum GamepadType {
@@ -84,7 +92,7 @@ export enum ButtonNotationType {
   Xbox = 'xb'
 }
 
-export enum OscillatorType{
+export enum OscillatorType {
   Sine = 'sine',
   Triangle = 'triangle',
   Square = 'square',
@@ -92,7 +100,7 @@ export enum OscillatorType{
 }
 
 export const xbBtns = ['a', 'b', 'x', 'y', 'lb', 'rb', 'lt', 'rt', 'select', 'start', 'lsc', 'rsc'];
-export const psBtns = ['X', 'O', '[]', '^', 'l1', 'r1', 'l2', 'r2'];
+export const psBtns = ['cross', 'circle', 'square', 'triangle', 'l1', 'r1', 'l2', 'r2', 'select', 'start', 'lsc', 'rsc'];
 export const sfBtns = ['lk', 'mk', 'lp', 'mp', 'l1', 'hp', 'l2', 'hk'];
 export const ggBtns = ['P', 'D', 'K', 'S', 'HS', 'l1', 'l2', 'SP'];
 export const tknBtns = ['LK', 'RK', 'LP', 'RP'];
@@ -107,3 +115,14 @@ export const AxisToAnalogName = {
   0: 'LS X', 1: 'LS Y', 2: 'RS X', 3: 'RS Y'
 };
 
+export const htmlIdxToDirStr = {
+  0: `up-left`,
+  1: `up`,
+  2: `up-right`,
+  3: `left`,
+  4: `center`,
+  5: `right`,
+  6: `down-left`,
+  7: `down`,
+  8: `down-right`
+};

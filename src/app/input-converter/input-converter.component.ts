@@ -8,7 +8,7 @@ import {GamepadType, ButtonNotationType, DirectionState, ButtonsState, xbBtns, O
 
 import {InputConverterEvents} from './input-converter-events';
 import {InputConverterVisuals} from './input-converter-visuals';
-import {EditorView, GamepadObject, Queue, Tracker} from '../../helpers/Defs';
+import {EditorView, GamepadObject, InputTrackerSet, Queue, Tracker} from '../../helpers/Defs';
 import {AudioContextShell, ButtonHTMLShell} from '../../helpers/Shells';
 import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {SubDiv} from '../../helpers/Gen';
@@ -82,10 +82,7 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   liveUpdateHeldNotes: boolean = true;
   recordingPrimed: boolean = true;
   trackedNotes: Array<[number, number, number]>; // startTicks, endTicks, pitch
-  lsTrackerGroup: Array<Tracker>;
-  rsTrackerGroup: Array<Tracker>;
-  dpadTrackerGroup: Array<Tracker>;
-  btnTrackerGroup: Array<Tracker>;
+  trackerSet: InputTrackerSet;
   deadZone = .5;
 
   /**
@@ -105,57 +102,10 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     this.div = document.getElementById('editor-input-icons') as HTMLDivElement;
     this.div_inputHistory = document.getElementById('input-history') as HTMLDivElement;
-    InputConverterVisuals.rAF((cb) => this.getController());
+    InputConverterVisuals.rAF((cb) => InputConverterEvents.getController());
   }
 
-  /**
-   * Waits for, then receives the first controller that is added to the display component,
-   * Initializes arrays that hold the various inputs and their respective notes
-   */
-  getController() {
-    const icc = InputConverterComponent.inpConvComp;
-    const iec = InputEditorComponent.inpEdComp;
-    if (padObjs.length > 0 && !this.activePadObj) {
-      this.activePadObj = padObjs[0];
-      let padType = GamepadType[icc.activePadObj.type];
-      console.log(padType);
-      icc.div_ls = SubDiv(icc.div, 'editor-input-icons-left');
-      icc.div_rs = SubDiv(icc.div, 'editor-input-icons-right');
-      icc.div_dpad = SubDiv(icc.div, 'editor-input-icons-dpad');
-      icc.div_btns = SubDiv(icc.div, 'editor-input-icons-btn');
 
-      URLDStrings.forEach((dir) => {
-        const shell = new ButtonHTMLShell(dir, 'editor-input-icon-direction', this.div_ls);
-        icc.lsBtnShells.push(shell);
-      });
-      URLDStrings.forEach((name) => {
-        const shell = new ButtonHTMLShell(name, 'editor-input-icon-direction', this.div_rs);
-        icc.rsBtnShells.push(shell);
-      });
-      URLDStrings.forEach((name) => {
-        const shell = new ButtonHTMLShell(name, 'editor-input-icon-direction', this.div_dpad);
-        icc.dpadBtnShells.push(shell);
-      });
-      xbBtns.forEach((name) => {
-        const shell = new ButtonHTMLShell(name, 'editor-input-icon-button', this.div_btns);
-        icc.btnShells.push(shell);
-      });
-      icc.lsTrackerGroup = createTrackerGroup(4);
-      icc.rsTrackerGroup = createTrackerGroup(4);
-      icc.dpadTrackerGroup = createTrackerGroup(4);
-      icc.btnTrackerGroup = createTrackerGroup(this.activePadObj.Btns.length);
-
-      iec.edtrView.updateDraw();
-      if (this.activePadObj) {
-        icc.audioCtx.playAtFor(7, 0, .4)
-          .playAtFor(5, .15, .3)
-          .playAtFor(0, .3, .5);
-        InputConverterVisuals.rAF((cb) => InputConverterEvents.updateController());
-      }
-    } else {
-      InputConverterVisuals.rAF((cb) => icc.getController());
-    }
-  }
 }
 
 export function createTrackerGroup(cnt: number): Array<Tracker> {

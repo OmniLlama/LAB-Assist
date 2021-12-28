@@ -68,8 +68,22 @@ $input-history-node-width: 20px
       img
         @include Mixins.unselectable
         //border-right: rgba(227, 227, 227, .5) 1px solid
-        border-left: rgba(227, 227, 227, .5) 1px solid
+        border-left: rgba(255, 255, 255, 0.7) 2px solid
+        border-radius: 2px 2px 8px 4px
         max-width: $input-history-node-width
+        &[group='ls']
+          opacity: 0.8
+          color: rgba(255,255,255,0.40)
+          background-color: rgba(53, 255, 255, 0.3)
+        &[group='rs']
+          opacity: 0.8
+          background-color: rgba(255, 6, 6, 0.3)
+        &[group='dpad']
+          opacity: 0.8
+          background-color: rgba(29, 255, 0, 0.3)
+        &[group='acts']
+          background-color: rgba(117, 117, 117, 0.2)
+
 
       img:last-child
         //border-right-style: double
