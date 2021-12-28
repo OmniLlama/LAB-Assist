@@ -24,7 +24,6 @@
     "core-js": "^2.6.12",
     "dependency-check": "^4.1.0",
     "firebase": "^8.9.1",
-    "heartbeat-sequencer": "0.0.26",
     "html5-gamepad": "^1.1.0",
     "jzz-input-kbd": "^1.2.1",
     "jzz-synth-osc": "^1.1.8",
