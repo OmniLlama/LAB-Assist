@@ -1,4 +1,3 @@
-## NOTE: if looking for latest working release, please use the master branch, as this branch has active changes that may be incomplete 
 # LAB-Assist (Largely Audio-Based Assistant)
 
 This is an Angular-based web-implementation of a fusion between a controller input viewer and MIDI sequencer / Recorder. It's ultimate intent is to allow the viewing / recording / modifying of inputs with dynamically-generated musical playback to assist in learning timing-intensive games and strategies, e.g. Fighting games, Character-Action games, and Speedrunning.
@@ -8,7 +7,8 @@ This is an Angular-based web-implementation of a fusion between a controller inp
 ### NOTE: To Those who want to run/test with a controller
 - Works best with an Xbox 360 / Xbox One / XSX / XInput Controller, partial and inaccurate functionality also possible with alternatives, but not guaranteed due to lack of ability to test, currently.
 
-## Installing, Running and Troubleshooting
+## Installing, Running and Troubleshooting (Requires Node.js [16.13.1 LTS: current version in use in development])
+### If you have run a version from before 12/28/21, you may have to upgrade your version of Node.js, though only if version < 12
 ### Install
 - Download the latest main branch source code and extract to a local file path
 - After navigating to the local folder in a terminal, run `npm install` to generate necessary files
