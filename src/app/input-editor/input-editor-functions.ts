@@ -1,7 +1,8 @@
 import {InputEditorComponent} from './input-editor.component';
-import {BBox, HTMLNote, HTMLPart, Tracker} from '../../helpers/Defs';
+import {BBox, HTMLNote, HTMLPart} from '../../helpers/Defs';
 import {InputEditorVisuals} from './input-editor-visuals';
 import {InputConverterFunctions} from '../input-converter/input-converter-functions';
+import {Tracker} from '../../helpers/Defs/Trackers';
 
 const NOTE_OFF = 0x80;
 const NOTE_ON = 0x90;
@@ -16,12 +17,6 @@ export class InputEditorFunctions {
     iec.edtrView.score.appendChild(trkr.htmlNote.div);
     iec.noteList[trkr.htmlNote.id] = trkr.htmlNote;
   }
-
-  static testUpdateNote(trkr: Tracker) {
-    let iec = InputEditorComponent.inpEdComp;
-    trkr.htmlNote.updateNoteEnd(iec.edtrView.playhead.bbox.pageCenter);
-  }
-
   static testFinishNote(trkr: Tracker) {
     let iec = InputEditorComponent.inpEdComp;
     trkr.htmlNote.finishNote(trkr.htmlNote.start, iec.edtrView.playhead.bbox.pageCenter);

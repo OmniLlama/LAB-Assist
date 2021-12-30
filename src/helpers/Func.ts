@@ -96,3 +96,4 @@ export function pitchNumToFrequency(pitchNum: number): number {
   const temperament = 2 ** (1 / 12);
   return baseFreq * temperament ** -(nice - pitchNum);
 }
+

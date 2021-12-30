@@ -1,17 +1,12 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {
-  InputDisplayComponent,
-  pads,
-  padObjs, URLDStrings, nameButton,
-} from '../input-display/input-display.component';
-import {GamepadType, ButtonNotationType, DirectionState, ButtonsState, xbBtns, OscillatorType} from 'src/helpers/Enums';
+import {ButtonsState, DirectionState, OscillatorType} from 'src/helpers/Enums';
 
 import {InputConverterEvents} from './input-converter-events';
 import {InputConverterVisuals} from './input-converter-visuals';
-import {EditorView, GamepadObject, InputTrackerSet, Queue, Tracker} from '../../helpers/Defs';
+import {GamepadObject, Queue} from '../../helpers/Defs';
 import {AudioContextShell, ButtonHTMLShell} from '../../helpers/Shells';
 import {InputEditorComponent} from '../input-editor/input-editor.component';
-import {SubDiv} from '../../helpers/Gen';
+import {InputTrackerSet} from '../../helpers/Defs/Trackers';
 
 
 @Component({
@@ -106,14 +101,6 @@ export class InputConverterComponent implements OnInit, AfterViewInit {
   }
 
 
-}
-
-export function createTrackerGroup(cnt: number): Array<Tracker> {
-  const arr = new Array<Tracker>();
-  for (let i = 0; i < cnt; i++) {
-    arr.push(new Tracker());
-  }
-  return arr;
 }
 
 

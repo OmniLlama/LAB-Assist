@@ -5,7 +5,7 @@ export class InputConverterFunctions {
    * Sends pitch based on which button was sent
    * @param ind
    */
-  static getButtonPitch(ind: number) {
+  static getButtonChannel(ind: number) {
     switch (ind) {
       case 0:
         return 11;
@@ -38,7 +38,7 @@ export class InputConverterFunctions {
    * Sends pitch based on which d-pad input direction was sent
    * @param idx
    */
-  static getDirectionPitchFromDPad(idx): number {
+  static getDirectionChannelFromDPad(idx): number {
     switch (idx) {
       case 0:
         return 15;
@@ -55,7 +55,7 @@ export class InputConverterFunctions {
    * Sends pitch based on which axis direction was sent
    * @param idx
    */
-  static getDirectionPitchFromAxis(idx, val): number {
+  static getDirectionChannelFromAxis(idx, val): number {
     switch (idx) {
       case 0:
         return val > 0 ? 22 : 21;
@@ -67,5 +67,14 @@ export class InputConverterFunctions {
         return val > 0 ? 16 : 19;
     }
   }
-
+  static twoChannelSetsBy4Way(idx: number): [[number, number], [number, number]] {
+    switch (idx) {
+      case 0:
+        return [[21, 22], [23, 20]];
+      case 1:
+        return [[17, 18], [19, 16]];
+      case 2:
+        return [[17, 18], [19, 16]];
+    }
+  }
 }

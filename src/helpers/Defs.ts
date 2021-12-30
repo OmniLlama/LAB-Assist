@@ -1,12 +1,13 @@
-import {createTrackerGroup, InputConverterComponent} from '../app/input-converter/input-converter.component';
+import {InputConverterComponent} from '../app/input-converter/input-converter.component';
 import {normalizeVector, numberToPitchString} from './Func';
 import {Div, SubDiv} from './Gen';
 import {InputEditorVisuals} from '../app/input-editor/input-editor-visuals';
 import {InputEditorEvents} from '../app/input-editor/input-editor-events';
 import {ButtonLayoutType, ButtonsState, DirectionState, GamepadType, GamepadTypeString} from './Enums';
 import {GamepadHTMLShell} from './Shells';
-import {frameDelayMS, dNowMS, frameJitter} from '../app/app.component';
+import {frameJitter} from '../app/app.component';
 import {FPS_60_MS} from './Vals';
+
 
 export class BBox {
   x: number;
@@ -99,7 +100,13 @@ export class Playhead {
   get scrolledYStartPos() {
     return this.startPos[1] + window.scrollY;
   }
+  get xPos(): number {
+    return this.bbox.x;
+  }
 
+  get livePos(): number {
+    return this.bbox.pageCenter;
+  }
   constructor(view: EditorView, x, y, w, h) {
     this.edtrView = view;
     this.div = Div('test-playhead');
@@ -108,10 +115,6 @@ export class Playhead {
     this.bbox = new BBox(x, y, w, h);
     this.bbox.updateElementToBBox(this.div);
     // this.bbox.updateElementTransformToBBox(this.div);
-  }
-
-  get xPos(): number {
-    return this.bbox.x;
   }
 
   set StartPos(pos: [number, number]) {
@@ -255,12 +258,15 @@ export class HTMLNote {
   }
 
 }
+
 class HTMLNoteEdge {
   note: HTMLNote;
+
   constructor(note: HTMLNote) {
     this.note = note;
   }
 }
+
 export class EditorView {
   div: HTMLDivElement;
   score: HTMLDivElement;
@@ -311,11 +317,16 @@ export class EditorView {
     this.playhead.reset(false);
   }
 
+  get playPos() {
+    return
+  }
+
   playUpdate() {
     if (this.playing) {
       this.playhead.playUpdate();
     }
   }
+
 
   stopPlayState() {
     this.setPlayState(false);
@@ -352,7 +363,7 @@ export class FPSTracker {
   update(): number {
     this.now = performance.now();
     this.dNow = this.now - this.lastNow;
-    this.fps = Math.floor(1 / ((this.now - this.lastNow) / 1000));
+    this.fps = Math.floor(1 / (this.dNow / 1000));
     this.fpsHistory.qThru(this.fps);
     this.avgFPS = this.average;
     this.lastNow = this.now;
@@ -585,24 +596,3 @@ export class GamepadObject {
   }
 }
 
-export class Tracker {
-  held = false;
-  inpStart: number;
-  inpEnd: number;
-  htmlNote: HTMLNote;
-}
-
-export class InputTrackerSet {
-  lsGroup: Array<Tracker>;
-  rsGroup: Array<Tracker>;
-  dpadGroup: Array<Tracker>;
-  btnGroup: Array<Tracker>;
-
-  constructor(pO: GamepadObject) {
-    this.lsGroup = createTrackerGroup(4);
-    this.rsGroup = createTrackerGroup(4);
-    this.dpadGroup = createTrackerGroup(4);
-    this.btnGroup = createTrackerGroup(pO.Btns.length);
-  }
-
-}

@@ -1,14 +1,15 @@
 import {InputEditorFunctions} from '../input-editor/input-editor-functions';
-import {createTrackerGroup, InputConverterComponent} from './input-converter.component';
+import {InputConverterComponent} from './input-converter.component';
 import {InputEditorComponent} from '../input-editor/input-editor.component';
 import {InputConverterFunctions} from './input-converter-functions';
 import {InputConverterVisuals} from './input-converter-visuals';
-import {GamepadObject, InputTrackerSet, Tracker} from '../../helpers/Defs';
+import {GamepadObject} from '../../helpers/Defs';
 import {numberToPitchString, pitchNumToFrequency} from '../../helpers/Func';
 import {Div, Span, SubDiv} from '../../helpers/Gen';
 import {DirectionState, flagIdxs, GamepadType, hasFlag, xbBtns} from '../../helpers/Enums';
 import {ButtonHTMLShell} from '../../helpers/Shells';
 import {dirSetStr, InputDisplayComponent, padObjs, URLDStrings} from '../input-display/input-display.component';
+import {FourWayTracker, InputTrackerSet, Tracker} from '../../helpers/Defs/Trackers';
 
 export class InputConverterEvents {
   /**
@@ -91,16 +92,16 @@ export class InputConverterEvents {
       }
 
       if (padObj.useLS) {
-        InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(0), icc.trackerSet.lsGroup, icc.lsBtnShells,
+        InputConverterEvents.updateControllerStickTrackers(padObj, icc.trackerSet.lsGroup, padObj.axisPair(0), icc.lsBtnShells,
           padObj.lsDirState, 0, iec.edtrView.playhead.xPos);
       }
 
       if (padObj.useRS) {
-        InputConverterEvents.updateControllerStxTrackers(padObj.axisPair(1), icc.trackerSet.rsGroup, icc.rsBtnShells,
+        InputConverterEvents.updateControllerStickTrackers(padObj, icc.trackerSet.rsGroup, padObj.axisPair(1), icc.rsBtnShells,
           padObj.rsDirState, 2, iec.edtrView.playhead.xPos);
       }
       if (padObj.useDPad) {
-        InputConverterEvents.updateControllerDPadTrackers(padObj, iec.edtrView.playhead.xPos);
+        InputConverterEvents.updateControllerDPadTrackers(padObj, icc.trackerSet.dpadGroup, iec.edtrView.playhead.xPos);
       }
       InputConverterEvents.updateControllerButtonTrackers(padObj, iec.edtrView.playhead.xPos);
 
@@ -121,68 +122,63 @@ export class InputConverterEvents {
   /**
    * Update Controller Axes
    */
-  static updateControllerStxTrackers(axes: [number, number], trackerGroup: Tracker[], btnShells: ButtonHTMLShell[],
-                                     dirState: DirectionState, indexOffset: number, currTicks: number) {
-    let icc = InputConverterComponent.inpConvComp;
-    axes.forEach((a, idx) => {
-      const icc = InputConverterComponent.inpConvComp;
-      const neg = trackerGroup[(idx * 2)];
-      const pos = trackerGroup[(idx * 2) + 1];
-      let pitchNum;
-      if (a.valueOf() > icc.deadZone) {
-        pitchNum = InputConverterFunctions.getDirectionPitchFromAxis(idx + indexOffset, a.valueOf());
-        if (!pos.held) {
-          pos.held = true;
-          neg.held = false;
-          if (icc.trackingNotes) {
-            InputConverterEvents.startTracker(pos,
-              currTicks,
-              pitchNum
-            );
-          }
-        }
-      } else if (a.valueOf() < -icc.deadZone) {
-        pitchNum = InputConverterFunctions.getDirectionPitchFromAxis(idx + indexOffset, a.valueOf());
-        if (!neg.held) {
-          pos.held = false;
-          neg.held = true;
-          if (icc.trackingNotes) {
-            InputConverterEvents.startTracker(neg,
-              currTicks,
-              pitchNum
-            );
-          }
-        }
-      } else {
-        neg.held = false;
-        pos.held = false;
-      }
-      if (icc.trackingNotes) {
-        if (pos.held) {
-          InputConverterEvents.updateTracker(pos,
-            currTicks,
-            icc.liveUpdateHeldNotes);
-        } else if (neg.held) {
-          InputConverterEvents.updateTracker(neg,
-            currTicks,
-            icc.liveUpdateHeldNotes);
-        }
-        if (!pos.held && pos.htmlNote != null) {
-          InputConverterEvents.endTracker(pos,
-            currTicks,
-            pitchNum,
-            icc.trackedNotes,
-            icc.liveUpdateHeldNotes);
-        }
-        if (!neg.held && neg.htmlNote != null) {
-          InputConverterEvents.endTracker(neg,
-            currTicks,
-            pitchNum,
-            icc.trackedNotes,
-            icc.liveUpdateHeldNotes);
-        }
-      }
-    });
+  static updateControllerStickTrackers(pO: GamepadObject, trkr: FourWayTracker, axes: [number, number], btnShells: ButtonHTMLShell[],
+                                       dirState: DirectionState, indexOffset: number, currTicks: number) {
+    trkr.update(axes, pO, currTicks);
+
+    const icc = InputConverterComponent.inpConvComp;
+    // axes.forEach((ax, idx) => {
+    //   const neg = trkr.idx(idx).neg;
+    //   const pos = trkr.idx(idx).pos;
+    //   let channel;
+    //   if (ax.valueOf() > icc.deadZone) {
+    //     channel = InputConverterFunctions.getDirectionChannelFromAxis(idx + indexOffset, ax.valueOf());
+    //     if (!pos.held) {
+    //       pos.held = true;
+    //       neg.held = false;
+    //       if (icc.trackingNotes) {
+    //         pos.start(currTicks,
+    //         );
+    //       }
+    //     }
+    //   } else if (ax.valueOf() < -icc.deadZone) {
+    //     channel = InputConverterFunctions.getDirectionChannelFromAxis(idx + indexOffset, ax.valueOf());
+    //     if (!neg.held) {
+    //       pos.held = false;
+    //       neg.held = true;
+    //       if (icc.trackingNotes) {
+    //         neg.start(currTicks,
+    //         );
+    //       }
+    //     }
+    //   } else {
+    //     neg.held = false;
+    //     pos.held = false;
+    //   }
+    //   if (icc.trackingNotes) {
+    //     if (pos.held) {
+    //       pos.update(
+    //         currTicks,
+    //         icc.liveUpdateHeldNotes);
+    //     } else if (neg.held) {
+    //       neg.update(
+    //         currTicks,
+    //         icc.liveUpdateHeldNotes);
+    //     }
+    //     if (!pos.held && pos.htmlNote != null) {
+    //       pos.end(currTicks,
+    //         channel,
+    //         icc.trackedNotes,
+    //         icc.liveUpdateHeldNotes);
+    //     }
+    //     if (!neg.held && neg.htmlNote != null) {
+    //       neg.end(currTicks,
+    //         channel,
+    //         icc.trackedNotes,
+    //         icc.liveUpdateHeldNotes);
+    //     }
+    //   }
+    // });
     InputConverterEvents.updateConverterButton(btnShells[0],
       hasFlag(dirState, DirectionState.Up), icc.stateChanged);
     InputConverterEvents.updateConverterButton(btnShells[1],
@@ -196,31 +192,25 @@ export class InputConverterEvents {
   /**
    * Update Controller Digital Pad
    */
-  static updateControllerDPadTrackers(padObj: GamepadObject, currTicks: number) {
+  static updateControllerDPadTrackers(padObj: GamepadObject, trkr: FourWayTracker, currTicks: number) {
 
     const icc = InputConverterComponent.inpConvComp;
     padObj.DPadURLD.forEach((b, idx) => {
-      let trkr = icc.trackerSet.dpadGroup[idx];
-      let pitch = InputConverterFunctions.getDirectionPitchFromDPad(idx);
+      let trkr = icc.trackerSet.dpadGroup.idx(idx % 2).idx(idx % 2);
       if (b.pressed && !trkr.held) {
-        icc.audioCtx.oscs[pitch].start();
+        icc.audioCtx.oscs[trkr.Channel].start();
         // if RECORDING
         if (icc.trackingNotes) {
-          InputConverterEvents.startTracker(trkr,
-            currTicks,
-            pitch
-          );
+          trkr.start(currTicks);
         } else {
           trkr.held = true;
         }
         // if RELEASED this frame
       } else if (!b.pressed && trkr.held) {
-        icc.audioCtx.oscs[pitch].stop();
+        icc.audioCtx.oscs[trkr.Channel].stop();
         // if RECORDING
         if (icc.trackingNotes) {
-          InputConverterEvents.endTracker(trkr,
-            currTicks,
-            pitch,
+          trkr.end(currTicks,
             icc.trackedNotes,
             icc.liveUpdateHeldNotes);
         } else {
@@ -229,7 +219,7 @@ export class InputConverterEvents {
       }
       // EXPERIMENTALISISISMZ
       if (icc.trackingNotes) {
-        InputConverterEvents.updateTracker(trkr, currTicks, icc.liveUpdateHeldNotes);
+        trkr.update(currTicks, icc.liveUpdateHeldNotes);
       }
       InputConverterEvents.updateConverterButton(icc.dpadBtnShells[idx], b.pressed, icc.stateChanged);
     });
@@ -248,28 +238,23 @@ export class InputConverterEvents {
       if (idx >= scale.length) {
         return;
       }
-      let trkr = icc.trackerSet.btnGroup[idx];
-      let pitchNum = InputConverterFunctions.getButtonPitch(idx);
+      let trkr = icc.trackerSet.btn(idx);
+      let pitch = InputConverterFunctions.getButtonChannel(idx);
       // if PRESSED this frame
       if (b.pressed && !trkr.held) {
-        icc.audioCtx.oscs[pitchNum].start();
+        icc.audioCtx.oscs[trkr.Channel].start();
         // if RECORDING
         if (icc.trackingNotes) {
-          InputConverterEvents.startTracker(trkr,
-            currTicks,
-            InputConverterFunctions.getButtonPitch(idx)
-          );
+          trkr.start(currTicks);
         } else {
           trkr.held = true;
         }
         // if RELEASED this frame
       } else if (!b.pressed && trkr.held) {
-        icc.audioCtx.oscs[pitchNum].stop();
+        icc.audioCtx.oscs[trkr.Channel].stop();
         // if RECORDING
         if (icc.trackingNotes) {
-          InputConverterEvents.endTracker(trkr,
-            currTicks,
-            InputConverterFunctions.getButtonPitch(idx),
+          trkr.end(currTicks,
             icc.trackedNotes,
             icc.liveUpdateHeldNotes);
         } else {
@@ -277,7 +262,7 @@ export class InputConverterEvents {
         }
       }
       if (icc.trackingNotes) {
-        InputConverterEvents.updateTracker(trkr, currTicks, icc.liveUpdateHeldNotes);
+        trkr.update(currTicks, icc.liveUpdateHeldNotes);
       }
       InputConverterEvents.updateConverterButton(icc.btnShells[idx], b.pressed, icc.stateChanged);
     });
@@ -303,26 +288,6 @@ export class InputConverterEvents {
     icc.trackingNotes = false;
   }
 
-  static updateTracker(trkr: Tracker, ticks: number, liveUpdate: boolean) {
-    if (trkr.held) {
-      if (liveUpdate) {
-        InputEditorFunctions.testUpdateNote(trkr);
-      }
-    }
-  }
 
-  static startTracker(trkr: Tracker, ticks: number, pitch: number) {
-    trkr.held = true;
-    trkr.inpStart = ticks;
-    InputEditorFunctions.testCreateNote(trkr, pitch);
-  }
-
-  static endTracker(trkr: Tracker, ticks: number, pitch: number, trackedNotes: Array<[number, number, number]>,
-                    liveUpdate = false) {
-    trkr.inpEnd = ticks;
-    trackedNotes.push([trkr.inpStart, trkr.inpEnd, pitch]);
-    trkr.held = false;
-    InputEditorFunctions.testFinishNote(trkr);
-  }
 }
 
