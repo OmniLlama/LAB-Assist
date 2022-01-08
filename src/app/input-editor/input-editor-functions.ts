@@ -2,7 +2,7 @@ import {InputEditorComponent} from './input-editor.component';
 import {BBox, HTMLNote, HTMLPart} from '../../helpers/Defs';
 import {InputEditorVisuals} from './input-editor-visuals';
 import {InputConverterFunctions} from '../input-converter/input-converter-functions';
-import {Tracker} from '../../helpers/Defs/Trackers';
+import {DigiTracker, Tracker} from '../../helpers/Defs/Trackers';
 
 const NOTE_OFF = 0x80;
 const NOTE_ON = 0x90;
@@ -10,17 +10,16 @@ const MIDI_HEARTBEAT = 0xFE;
 
 export class InputEditorFunctions {
 
-  static testCreateNote(trkr: Tracker, pitch: number) {
+  static testCreateNote(trkr: Tracker) {
     let iec = InputEditorComponent.inpEdComp;
-    trkr.htmlNote = new HTMLNote(pitch, iec.edtrView.playhead.bbox.pageCenter,
-      iec.edtrView.playhead.bbox.y + ((iec.edtrView.pitchCount - pitch - 1) * iec.edtrView.pitchHeight));
-    iec.edtrView.score.appendChild(trkr.htmlNote.div);
-    iec.noteList[trkr.htmlNote.id] = trkr.htmlNote;
+
+    iec.edtrView.score.appendChild(trkr.liveNote.div);
+    iec.noteList[trkr.liveNote.id] = trkr.liveNote;
   }
   static testFinishNote(trkr: Tracker) {
     let iec = InputEditorComponent.inpEdComp;
-    trkr.htmlNote.finishNote(trkr.htmlNote.start, iec.edtrView.playhead.bbox.pageCenter);
-    trkr.htmlNote = null;
+    trkr.liveNote.finishNote(trkr.liveNote.start, iec.edtrView.playhead.bbox.pageCenter);
+    trkr.liveNote = null;
 
   }
 

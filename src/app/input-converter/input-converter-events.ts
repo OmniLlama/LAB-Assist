@@ -9,7 +9,7 @@ import {Div, Span, SubDiv} from '../../helpers/Gen';
 import {DirectionState, flagIdxs, GamepadType, hasFlag, xbBtns} from '../../helpers/Enums';
 import {ButtonHTMLShell} from '../../helpers/Shells';
 import {dirSetStr, InputDisplayComponent, padObjs, URLDStrings} from '../input-display/input-display.component';
-import {FourWayTracker, InputTrackerSet, Tracker} from '../../helpers/Defs/Trackers';
+import {FourWayAnlgTracker, InputTrackerSet, DigiTracker, FourWayDigiTracker} from '../../helpers/Defs/Trackers';
 
 export class InputConverterEvents {
   /**
@@ -70,6 +70,19 @@ export class InputConverterEvents {
         } else if (!iec.edtrView.playing && icc.trackingNotes) {
           InputConverterEvents.stopTrackingNotes(icc, iec);
         }
+        if (padObj.useLS) {
+          InputConverterEvents.updateControllerStickTrackers(padObj, icc.trackerSet.lsGroup, padObj.axisPair(0), icc.lsBtnShells,
+            padObj.lsDirState, 0, iec.edtrView.playhead.xPos);
+        }
+
+        if (padObj.useRS) {
+          InputConverterEvents.updateControllerStickTrackers(padObj, icc.trackerSet.rsGroup, padObj.axisPair(1), icc.rsBtnShells,
+            padObj.rsDirState, 2, iec.edtrView.playhead.xPos);
+        }
+        if (padObj.useDPad) {
+          InputConverterEvents.updateControllerDPadTrackers(padObj, icc.trackerSet.dpadGroup, iec.edtrView.playhead.xPos);
+        }
+        InputConverterEvents.updateControllerButtonTrackers(padObj, iec.edtrView.playhead.xPos);
       }
 
       icc.stateChanged = padObj.lsDirState !== (padObj.useLS ? icc.lastLSState : padObj.lsDirState) ||
@@ -91,20 +104,6 @@ export class InputConverterEvents {
         icc.stateFrameCnt = 0;
       }
 
-      if (padObj.useLS) {
-        InputConverterEvents.updateControllerStickTrackers(padObj, icc.trackerSet.lsGroup, padObj.axisPair(0), icc.lsBtnShells,
-          padObj.lsDirState, 0, iec.edtrView.playhead.xPos);
-      }
-
-      if (padObj.useRS) {
-        InputConverterEvents.updateControllerStickTrackers(padObj, icc.trackerSet.rsGroup, padObj.axisPair(1), icc.rsBtnShells,
-          padObj.rsDirState, 2, iec.edtrView.playhead.xPos);
-      }
-      if (padObj.useDPad) {
-        InputConverterEvents.updateControllerDPadTrackers(padObj, icc.trackerSet.dpadGroup, iec.edtrView.playhead.xPos);
-      }
-      InputConverterEvents.updateControllerButtonTrackers(padObj, iec.edtrView.playhead.xPos);
-
 
       if (icc.stateFrameCnt < 999) {
         icc.span_currInputFrameCnt.innerHTML = `${++icc.stateFrameCnt}`;
@@ -122,7 +121,7 @@ export class InputConverterEvents {
   /**
    * Update Controller Axes
    */
-  static updateControllerStickTrackers(pO: GamepadObject, trkr: FourWayTracker, axes: [number, number], btnShells: ButtonHTMLShell[],
+  static updateControllerStickTrackers(pO: GamepadObject, trkr: FourWayAnlgTracker, axes: [number, number], btnShells: ButtonHTMLShell[],
                                        dirState: DirectionState, indexOffset: number, currTicks: number) {
     trkr.update(axes, pO, currTicks);
 
@@ -192,11 +191,11 @@ export class InputConverterEvents {
   /**
    * Update Controller Digital Pad
    */
-  static updateControllerDPadTrackers(padObj: GamepadObject, trkr: FourWayTracker, currTicks: number) {
+  static updateControllerDPadTrackers(padObj: GamepadObject, trkr: FourWayDigiTracker, currTicks: number) {
 
     const icc = InputConverterComponent.inpConvComp;
     padObj.DPadURLD.forEach((b, idx) => {
-      let trkr = icc.trackerSet.dpadGroup.idx(idx % 2).idx(idx % 2);
+      const trkr = icc.trackerSet.dpadGroup.idx(idx % 2).idx(idx % 2);
       if (b.pressed && !trkr.held) {
         icc.audioCtx.oscs[trkr.Channel].start();
         // if RECORDING
@@ -211,8 +210,7 @@ export class InputConverterEvents {
         // if RECORDING
         if (icc.trackingNotes) {
           trkr.end(currTicks,
-            icc.trackedNotes,
-            icc.liveUpdateHeldNotes);
+            icc.trackedNotes);
         } else {
           trkr.held = false;
         }
@@ -239,7 +237,6 @@ export class InputConverterEvents {
         return;
       }
       let trkr = icc.trackerSet.btn(idx);
-      let pitch = InputConverterFunctions.getButtonChannel(idx);
       // if PRESSED this frame
       if (b.pressed && !trkr.held) {
         icc.audioCtx.oscs[trkr.Channel].start();
@@ -255,8 +252,7 @@ export class InputConverterEvents {
         // if RECORDING
         if (icc.trackingNotes) {
           trkr.end(currTicks,
-            icc.trackedNotes,
-            icc.liveUpdateHeldNotes);
+            icc.trackedNotes);
         } else {
           trkr.held = false;
         }
