@@ -100,6 +100,7 @@ export class Playhead {
   get scrolledYStartPos() {
     return this.startPos[1] + window.scrollY;
   }
+
   get xPos(): number {
     return this.bbox.x;
   }
@@ -107,6 +108,7 @@ export class Playhead {
   get livePos(): number {
     return this.bbox.pageCenter;
   }
+
   constructor(view: EditorView, x, y, w, h) {
     this.edtrView = view;
     this.div = Div('test-playhead');
@@ -318,7 +320,7 @@ export class EditorView {
   }
 
   get playPos() {
-    return
+    return;
   }
 
   playUpdate() {
@@ -375,6 +377,10 @@ export class Queue<T> {
   q: T[] = [];
   max: number;
 
+  get cnt() {
+    return this.q.length;
+  }
+
   constructor(max) {
     this.max = max;
   }
@@ -406,22 +412,24 @@ export class GamepadObject {
   pad: Gamepad;
   html: GamepadHTMLShell;
 
-  useLS: boolean = true;
-  useRS: boolean = true;
-  useDPad: boolean = true;
-
   get UsedDirs(): Array<boolean> {
     return [this.useLS, this.useRS, this.useDPad];
   }
+
+  useLS: boolean = true;
+  useRS: boolean = true;
+  useDPad: boolean = true;
 
   activeInEditor: boolean;
 
   vertDZ: number = 0.4;
   horiDZ: number = 0.5;
   trigDZ: number = .8;
+
   lsDirState: DirectionState;
   rsDirState: DirectionState;
   dpadDirState: DirectionState;
+  btnsState: ButtonsState;
 
   get DirStates() {
     return [this.lsDirState, this.rsDirState, this.dpadDirState];
@@ -430,8 +438,8 @@ export class GamepadObject {
   dpadBtns: readonly GamepadButton[];
 
   funcBtnCnt: number = 4;
+  guideBtn: number = 1;
   btns: readonly GamepadButton[];
-  btnsState: ButtonsState;
   btnLayoutTy: ButtonLayoutType = ButtonLayoutType.Arcade;
   btnLayout: number[];
 
@@ -446,10 +454,15 @@ export class GamepadObject {
   constructor(gp) {
     if (gp !== null && gp !== undefined) {
       this.pad = gp;
-      this.type = this.getType(gp.id);
+      this.type = this.parseType(gp.id);
       this.btnLayout = this.getButtonLayout();
       this.html = new GamepadHTMLShell(this);
-      this.dpadBtns = this.DPadURLD;
+      // Awful fix for now
+      this.guideBtn = this.pad.buttons.length % 2;
+      this.dpadBtns = this.DPad();
+
+      this.btns = this.Btns;
+      console.log('Button Number: ' + this.pad.buttons.length);
     } else {
     }
   }
@@ -475,22 +488,18 @@ export class GamepadObject {
   }
 
   get Btns(): readonly GamepadButton[] {
-    return this.pad.buttons;
+    return this.pad.buttons.slice(0, -this.funcBtnCnt - this.guideBtn);
   }
 
-  get DPad(): readonly GamepadButton[] {
-    const bs = new Array<GamepadButton>();
-    this.getDPadButtonNumbers().forEach((b, i) => {
-      bs[i] = this.pad.buttons[b];
-    });
-    return bs;
+  DPad(order: number[] = null): readonly GamepadButton[] {
+    const bs = this.pad.buttons.slice(-4 - this.guideBtn, -1);
+    return !order ? bs : [bs[order[0]], bs[order[1]], bs[order[2]], bs[order[3]]];
   }
 
   get DPadURLD(): readonly GamepadButton[] {
-    const bns = this.getDPadButtonNumbers();
-    const bs = [this.pad.buttons[bns[0]], this.pad.buttons[bns[3]], this.pad.buttons[bns[2]], this.pad.buttons[bns[1]]];
-    return bs;
+    return this.DPad([0, 3, 2, 1]);
   }
+
 
   get DirVecs(): Array<[number, number]> {
     return this.AxisPairs.concat(this.DPadToVector());
@@ -499,20 +508,20 @@ export class GamepadObject {
 
   updateGamepad(gamepads: Gamepad[]) {
     this.pad = gamepads[this.pad.index];
-    this.dpadBtns = this.DPadURLD;
+    this.dpadBtns = this.DPad();
     this.btns = this.Btns;
     this.lsDirState = (this.axisByIdx(1) < -this.vertDZ ? DirectionState.Up : 0) |
-      (this.axisByIdx(0) > this.horiDZ ? DirectionState.Right : 0) |
+      (this.axisByIdx(1) > this.vertDZ ? DirectionState.Down : 0) |
       (this.axisByIdx(0) < -this.horiDZ ? DirectionState.Left : 0) |
-      (this.axisByIdx(1) > this.vertDZ ? DirectionState.Down : 0);
+      (this.axisByIdx(0) > this.horiDZ ? DirectionState.Right : 0);
     this.rsDirState = (this.axisByIdx(3) < -this.vertDZ ? DirectionState.Up : 0) |
-      (this.axisByIdx(2) > this.horiDZ ? DirectionState.Right : 0) |
+      (this.axisByIdx(3) > this.vertDZ ? DirectionState.Down : 0) |
       (this.axisByIdx(2) < -this.horiDZ ? DirectionState.Left : 0) |
-      (this.axisByIdx(3) > this.vertDZ ? DirectionState.Down : 0);
+      (this.axisByIdx(2) > this.horiDZ ? DirectionState.Right : 0);
     this.dpadDirState = (this.dpadBtns[0].pressed ? DirectionState.Up : 0) |
-      (this.dpadBtns[1].pressed ? DirectionState.Right : 0) |
+      (this.dpadBtns[1].pressed ? DirectionState.Down : 0) |
       (this.dpadBtns[2].pressed ? DirectionState.Left : 0) |
-      (this.dpadBtns[3].pressed ? DirectionState.Down : 0);
+      (this.dpadBtns[3].pressed ? DirectionState.Right : 0);
     this.btnsState = (this.btns[0].pressed ? ButtonsState.BtnA : 0) |
       (this.btns[1].pressed ? ButtonsState.BtnB : 0) |
       (this.btns[2].pressed ? ButtonsState.BtnX : 0) |
@@ -528,19 +537,24 @@ export class GamepadObject {
   }
 
   DPadToVector(): [number, number] {
+    const pad = this.DPad();
     return normalizeVector(
-      (this.DPad[2].pressed ? -1 : 0) +
-      (this.DPad[3].pressed ? 1 : 0),
-      (this.DPad[0].pressed ? -1 : 0) +
-      (this.DPad[1].pressed ? 1 : 0),
+      -pad[2].value + pad[3].value,
+      -pad[0].value + pad[1].value,
       true);
+  }
+
+  DPadToValues(): [number, number] {
+    const pad = this.DPad();
+    return [-pad[0].value + pad[1].value,
+      -pad[2].value + pad[3].value];
   }
 
   /**
    * parses the manufacturer and other info to determine the type of layout needed
    * @param str
    */
-  getType(str: string): GamepadType {
+  parseType(str: string): GamepadType {
     str = str.toLowerCase();
     if (str.includes(GamepadTypeString.XInput)) {
       return GamepadType.XInput;
@@ -557,12 +571,12 @@ export class GamepadObject {
   /**
    * returns the order that the d-pads buttons should be presented, depending upon the manufacturer and standard
    */
-  getDPadButtonNumbers(): number[] {
+  getDPadButtonOrder(): number[] {
     switch (this.type) {
       case GamepadType.XInput:
-        return [12, 13, 14, 15];
+        return [0, 1, 2, 3];
       default:
-        return [12, 13, 14, 15];
+        return [0, 1, 2, 3];
     }
   }
 

@@ -1,8 +1,4 @@
-import {InputEditorComponent, setElementValue} from './input-editor.component';
-import {InputEditorFunctions} from './input-editor-functions';
-import {InputEditorVisuals} from './input-editor-visuals';
-import {InputConverterFunctions} from '../input-converter/input-converter-functions';
-import {numberToPitchString} from '../../helpers/Func';
+import {InputEditorComponent} from './input-editor.component';
 
 export class InputEditorEvents {
 

@@ -126,58 +126,6 @@ export class InputConverterEvents {
     trkr.update(axes, pO, currTicks);
 
     const icc = InputConverterComponent.inpConvComp;
-    // axes.forEach((ax, idx) => {
-    //   const neg = trkr.idx(idx).neg;
-    //   const pos = trkr.idx(idx).pos;
-    //   let channel;
-    //   if (ax.valueOf() > icc.deadZone) {
-    //     channel = InputConverterFunctions.getDirectionChannelFromAxis(idx + indexOffset, ax.valueOf());
-    //     if (!pos.held) {
-    //       pos.held = true;
-    //       neg.held = false;
-    //       if (icc.trackingNotes) {
-    //         pos.start(currTicks,
-    //         );
-    //       }
-    //     }
-    //   } else if (ax.valueOf() < -icc.deadZone) {
-    //     channel = InputConverterFunctions.getDirectionChannelFromAxis(idx + indexOffset, ax.valueOf());
-    //     if (!neg.held) {
-    //       pos.held = false;
-    //       neg.held = true;
-    //       if (icc.trackingNotes) {
-    //         neg.start(currTicks,
-    //         );
-    //       }
-    //     }
-    //   } else {
-    //     neg.held = false;
-    //     pos.held = false;
-    //   }
-    //   if (icc.trackingNotes) {
-    //     if (pos.held) {
-    //       pos.update(
-    //         currTicks,
-    //         icc.liveUpdateHeldNotes);
-    //     } else if (neg.held) {
-    //       neg.update(
-    //         currTicks,
-    //         icc.liveUpdateHeldNotes);
-    //     }
-    //     if (!pos.held && pos.htmlNote != null) {
-    //       pos.end(currTicks,
-    //         channel,
-    //         icc.trackedNotes,
-    //         icc.liveUpdateHeldNotes);
-    //     }
-    //     if (!neg.held && neg.htmlNote != null) {
-    //       neg.end(currTicks,
-    //         channel,
-    //         icc.trackedNotes,
-    //         icc.liveUpdateHeldNotes);
-    //     }
-    //   }
-    // });
     InputConverterEvents.updateConverterButton(btnShells[0],
       hasFlag(dirState, DirectionState.Up), icc.stateChanged);
     InputConverterEvents.updateConverterButton(btnShells[1],
@@ -191,34 +139,11 @@ export class InputConverterEvents {
   /**
    * Update Controller Digital Pad
    */
-  static updateControllerDPadTrackers(padObj: GamepadObject, trkr: FourWayDigiTracker, currTicks: number) {
+  static updateControllerDPadTrackers(pO: GamepadObject, trkr: FourWayDigiTracker, currTicks: number) {
 
+    trkr.update(pO.DPadToValues(), pO, currTicks);
     const icc = InputConverterComponent.inpConvComp;
-    padObj.DPadURLD.forEach((b, idx) => {
-      const trkr = icc.trackerSet.dpadGroup.idx(idx % 2).idx(idx % 2);
-      if (b.pressed && !trkr.held) {
-        icc.audioCtx.oscs[trkr.Channel].start();
-        // if RECORDING
-        if (icc.trackingNotes) {
-          trkr.start(currTicks);
-        } else {
-          trkr.held = true;
-        }
-        // if RELEASED this frame
-      } else if (!b.pressed && trkr.held) {
-        icc.audioCtx.oscs[trkr.Channel].stop();
-        // if RECORDING
-        if (icc.trackingNotes) {
-          trkr.end(currTicks,
-            icc.trackedNotes);
-        } else {
-          trkr.held = false;
-        }
-      }
-      // EXPERIMENTALISISISMZ
-      if (icc.trackingNotes) {
-        trkr.update(currTicks, icc.liveUpdateHeldNotes);
-      }
+    pO.dpadBtns.forEach((b, idx) => {
       InputConverterEvents.updateConverterButton(icc.dpadBtnShells[idx], b.pressed, icc.stateChanged);
     });
   }
@@ -226,40 +151,35 @@ export class InputConverterEvents {
   /**
    * Update Controller Buttons
    */
-  static updateControllerButtonTrackers(padObj: GamepadObject, currTicks: number) {
+  static updateControllerButtonTrackers(pO: GamepadObject, currTicks: number) {
 
-    const harmMinScaleArr: number[] = [0, 2, 3, 5, 7, 8, 11, 12, 14, 15, 17, 19]; //harmonic minor scale
-    const majScaleArr: number[] = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19]; //major scale
-    const scale: number[] = harmMinScaleArr;
+
     const icc = InputConverterComponent.inpConvComp;
-    padObj.Btns.forEach((b, idx) => {
-      if (idx >= scale.length) {
-        return;
-      }
-      let trkr = icc.trackerSet.btn(idx);
-      // if PRESSED this frame
-      if (b.pressed && !trkr.held) {
-        icc.audioCtx.oscs[trkr.Channel].start();
-        // if RECORDING
-        if (icc.trackingNotes) {
-          trkr.start(currTicks);
-        } else {
-          trkr.held = true;
-        }
-        // if RELEASED this frame
-      } else if (!b.pressed && trkr.held) {
-        icc.audioCtx.oscs[trkr.Channel].stop();
-        // if RECORDING
-        if (icc.trackingNotes) {
-          trkr.end(currTicks,
-            icc.trackedNotes);
-        } else {
-          trkr.held = false;
-        }
-      }
-      if (icc.trackingNotes) {
-        trkr.update(currTicks, icc.liveUpdateHeldNotes);
-      }
+    pO.Btns.forEach((b, idx) => {
+      // let trkr = icc.trackerSet.btn(idx);
+      // // if PRESSED this frame
+      // if (b.pressed && !trkr.held) {
+      //   icc.audioCtx.oscs[trkr.Channel].start();
+      //   // if RECORDING
+      //   if (icc.trackingNotes) {
+      //     trkr.start(currTicks);
+      //   } else {
+      //     trkr.held = true;
+      //   }
+      //   // if RELEASED this frame
+      // } else if (!b.pressed && trkr.held) {
+      //   icc.audioCtx.oscs[trkr.Channel].stop();
+      //   // if RECORDING
+      //   if (icc.trackingNotes) {
+      //     trkr.end(currTicks,
+      //       icc.trackedNotes);
+      //   } else {
+      //     trkr.held = false;
+      //   }
+      // }
+      // if (icc.trackingNotes) {
+      //   trkr.update(currTicks, icc.liveUpdateHeldNotes);
+      // }
       InputConverterEvents.updateConverterButton(icc.btnShells[idx], b.pressed, icc.stateChanged);
     });
   }

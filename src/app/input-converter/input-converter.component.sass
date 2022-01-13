@@ -55,7 +55,7 @@ $input-history-node-width: 20px
 
   #input-history
     white-space: nowrap
-    width: 300 * ($input-history-node-width + 1)
+    width: 240 * ($input-history-node-width)
 
     .input-history-node
       @include Mixins.unselectable
@@ -85,9 +85,9 @@ $input-history-node-width: 20px
         //  background-color: rgba(117, 117, 117, 0.2)
 
 
-      img:last-child
-        //border-right-style: double
-        border-left-style: double
+      //img:last-child
+      //  //border-right-style: double
+      //  border-left-style: double
     $frame-count-hover-scale: 1.2
     $frame-count-font-size: 11px
     .input-history-frame-count

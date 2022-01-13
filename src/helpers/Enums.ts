@@ -150,5 +150,6 @@ export enum Channel {
   ch20,
   ch21,
   ch22,
-  ch23
+  ch23,
+  ch24,
 }
