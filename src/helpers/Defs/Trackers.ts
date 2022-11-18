@@ -11,16 +11,13 @@ export class Tracker {
   liveEnd: number;
   liveNote: HTMLNote;
   channel: Channel;
-  trig: number;
 
   get Channel(): number {
     return this.channel as number;
   }
 
-  constructor(chan: number = null) {
-    if (chan) {
-      this.channel = chan as Channel;
-    }
+  constructor(chan: number) {
+    this.channel = chan as Channel;
   }
 
   start(ticks: number) {
@@ -39,7 +36,7 @@ export class Tracker {
     InputEditorFunctions.testFinishNote(this);
   }
 
-  update(val: number, ticks: number, liveUpdate: boolean) {
+  update(ticks: number, liveUpdate: boolean) {
     if (this.held) {
       if (liveUpdate) {
         this.liveUpdate();
@@ -59,12 +56,11 @@ class TwoWayTracker {
   pos: Tracker;
 
   constructor(channels: [number, number] = null) {
-    if (channels) {
+    if(channels) {
       this.neg = new Tracker(channels[0]);
       this.pos = new Tracker(channels[1]);
     }
   }
-
   idx(idx: number): Tracker {
     switch (idx) {
       case 0:
@@ -98,23 +94,24 @@ export class FourWayTracker {
 
 export class DigiTracker extends Tracker {
 
-  constructor(chan: number) {
-    super();
-    this.channel = chan as Channel;
+  constructor(props) {
+    super(props);
   }
+
+  update(ticks: number, liveUpdate: boolean) {
+    if (this.held) {
+      if (liveUpdate) {
+        this.liveUpdate();
+      }
+    }
+  }
+
 
 }
 
 export class TwoWayDigiTracker extends TwoWayTracker {
   neg: DigiTracker;
   pos: DigiTracker;
-
-  constructor(channels: [number, number]) {
-    super();
-    this.neg = new DigiTracker(channels[0]);
-    this.pos = new DigiTracker(channels[1]);
-  }
-
 
   update(val: number, ticks: number) {
     const icc = InputConverterComponent.inpConvComp;
@@ -145,13 +142,8 @@ export class FourWayDigiTracker extends FourWayTracker {
   ud: TwoWayDigiTracker;
   lr: TwoWayDigiTracker;
 
-  constructor(channelSets: [[number, number], [number, number]] = null) {
-    super();
-    if (channelSets) {
-      this.ud = new TwoWayDigiTracker(channelSets[0]);
-      this.lr = new TwoWayDigiTracker(channelSets[1]);
-    }
-  }
+
+
 
   idx(idx: number): TwoWayDigiTracker {
     switch (idx) {
@@ -168,26 +160,23 @@ export class FourWayDigiTracker extends FourWayTracker {
   }
 }
 
-export class AnlgTracker extends Tracker {
-  constructor(chan: number) {
-    super();
-    this.channel = chan as Channel;
+export class ButtonTrackerSet {
+  btns: DigiTracker[];
+
+  constructor(cnt: number) {
+    this.btns = new Array<DigiTracker>();
+    for (let i = 0; i < cnt; i++) {
+      this.btns.push(new DigiTracker(InputConverterFunctions.getButtonChannel(i)));
+    }
   }
+
 }
 
 export class TwoWayAnlgTracker extends TwoWayTracker {
-  neg: AnlgTracker;
-  pos: AnlgTracker;
-
-  constructor(channels) {
-    super();
-    this.neg = new AnlgTracker(channels[0]);
-    this.pos = new AnlgTracker(channels[1]);
-  }
 
   update(val: number, dz: number, ticks: number) {
     const icc = InputConverterComponent.inpConvComp;
-    if (val > dz) {
+    if (val.valueOf() > dz) {
       if (!this.pos.held) {
         this.pos.held = true;
         this.neg.held = false;
@@ -195,7 +184,7 @@ export class TwoWayAnlgTracker extends TwoWayTracker {
           this.pos.start(ticks);
         }
       }
-    } else if (val < -dz) {
+    } else if (val.valueOf() < -dz) {
       if (!this.neg.held) {
         this.pos.held = false;
         this.neg.held = true;
@@ -214,7 +203,7 @@ export class FourWayAnlgTracker extends FourWayTracker {
   ud: TwoWayAnlgTracker;
   lr: TwoWayAnlgTracker;
 
-  constructor(channelSets: [[number, number], [number, number]]) {
+  constructor(channelSets) {
     super();
     this.ud = new TwoWayAnlgTracker(channelSets[0]);
     this.lr = new TwoWayAnlgTracker(channelSets[1]);
@@ -226,17 +215,6 @@ export class FourWayAnlgTracker extends FourWayTracker {
   }
 }
 
-export class ButtonTrackerSet {
-  btns: DigiTracker[];
-
-  constructor(cnt: number) {
-    this.btns = new Array<DigiTracker>();
-    for (let i = 0; i < cnt; i++) {
-      this.btns.push(new DigiTracker(InputConverterFunctions.getButtonChannel(i)));
-    }
-  }
-
-}
 
 export class InputTrackerSet {
   lsGroup: FourWayAnlgTracker;
