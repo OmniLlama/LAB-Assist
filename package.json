@@ -26,7 +26,7 @@
     "firebase": "^9.4.0",
     "html5-gamepad": "^1.1.0",
     "npm-check": "^5.9.2",
-    "opensheetmusicdisplay": "^1.1.0",
+    "opensheetmusicdisplay": "^1.7.3",
     "rxfire": "^6.0.0",
     "rxjs": "^6.6.7",
     "tslib": "^2.0.0",
